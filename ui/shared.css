@@ -1,6 +1,5 @@
 #sceneforge-container {
   position: fixed;
-  inset: 0;
   z-index: 10;
   background: var(--color-bg, #1a1a2e);
   pointer-events: all;

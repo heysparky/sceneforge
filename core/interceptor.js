@@ -13,10 +13,18 @@ export async function onCanvasReady() {
   const type = scene.getFlag('sceneforge', 'type');
   if (!type) return;
 
+  const bounds = document.getElementById('board')?.getBoundingClientRect();
+
   suppressCanvas();
 
   sfContainer = document.createElement('div');
   sfContainer.id = 'sceneforge-container';
+  if (bounds?.width) {
+    sfContainer.style.left   = `${bounds.left}px`;
+    sfContainer.style.top    = `${bounds.top}px`;
+    sfContainer.style.width  = `${bounds.width}px`;
+    sfContainer.style.height = `${bounds.height}px`;
+  }
   (document.getElementById('interface') ?? document.body).appendChild(sfContainer);
 
   const contentEl = document.createElement('div');

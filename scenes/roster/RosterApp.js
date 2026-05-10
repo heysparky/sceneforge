@@ -39,6 +39,15 @@ export default class RosterApp {
       'modules/sceneforge/scenes/roster/roster.html',
       { cards, config, isGM: game.user.isGM }
     );
+    this.#activateListeners();
+  }
+
+  #activateListeners() {
+    const el = this.#container;
+    el.querySelector('[data-action="toggle-enrollment"]')
+      ?.addEventListener('click', () => this.#toggleEnrollment());
+    el.querySelector('[data-action="edit-roster"]')
+      ?.addEventListener('click', () => new RosterGM(this.#scene).render(true));
   }
 
   teardown() {
@@ -49,20 +58,7 @@ export default class RosterApp {
   }
 
   gmControls() {
-    const roster = this.#scene.flags?.sceneforge?.roster ?? {};
-    const open = roster.config?.enrollmentOpen ?? true;
-    return [
-      {
-        icon: open ? 'fas fa-door-open' : 'fas fa-door-closed',
-        label: open ? 'Enrollment: Open' : 'Enrollment: Closed',
-        onClick: () => this.#toggleEnrollment(),
-      },
-      {
-        icon: 'fas fa-cog',
-        label: 'Edit Roster',
-        onClick: () => new RosterGM(this.#scene).render(true),
-      },
-    ];
+    return [];
   }
 
   async #toggleEnrollment() {

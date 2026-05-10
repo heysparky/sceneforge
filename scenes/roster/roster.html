@@ -1,5 +1,17 @@
 <div class="sceneforge-roster{{#unless config.enrollmentOpen}} enrollment-closed{{/unless}}">
 
+  {{#if isGM}}
+  <div class="sf-gm-bar">
+    <button type="button" class="sf-gm-action" data-action="toggle-enrollment">
+      <i class="{{#if config.enrollmentOpen}}fas fa-door-open{{else}}fas fa-door-closed{{/if}}" aria-hidden="true"></i>
+      {{#if config.enrollmentOpen}}Enrollment: Open{{else}}Enrollment: Closed{{/if}}
+    </button>
+    <button type="button" class="sf-gm-action" data-action="edit-roster">
+      <i class="fas fa-cog" aria-hidden="true"></i> Edit Roster
+    </button>
+  </div>
+  {{/if}}
+
   {{#unless config.enrollmentOpen}}
   <div class="sf-enrollment-banner">
     <i class="fas fa-lock" aria-hidden="true"></i>

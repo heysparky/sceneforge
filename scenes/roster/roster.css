@@ -11,6 +11,37 @@
   color: var(--color-text-primary, #c9c7b8);
 }
 
+.sf-gm-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin: -2rem -2rem 1.5rem;
+  background: rgba(0, 0, 0, 0.82);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+}
+
+.sf-gm-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 3px;
+  color: var(--color-text-primary, #c9c7b8);
+  cursor: pointer;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.sf-gm-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .sf-enrollment-banner {
   display: flex;
   align-items: center;

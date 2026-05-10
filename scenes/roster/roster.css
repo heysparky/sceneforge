@@ -159,7 +159,6 @@
 .sf-gm-panel {
   display: flex;
   flex-direction: column;
-  height: 100%;
   font-size: 0.85rem;
 }
 
@@ -191,6 +190,7 @@
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .sf-tab-panel.active {
@@ -200,9 +200,11 @@
 .sf-pool-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  min-height: 0;
 }
 
 .sf-pool-row {
@@ -213,6 +215,9 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid transparent;
   border-radius: 3px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .sf-pool-row.drag-over { border-color: var(--color-text-hyperlink, #ff6400); }
@@ -251,6 +256,7 @@
 
 .sf-actor-info input[type="text"] {
   width: 100%;
+  min-width: 0;
   box-sizing: border-box;
   font-size: 0.78rem;
   padding: 0.15rem 0.4rem;

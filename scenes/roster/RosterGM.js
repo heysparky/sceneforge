@@ -1,21 +1,22 @@
-export default class RosterGM extends Application {
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
+export default class RosterGM extends HandlebarsApplicationMixin(ApplicationV2) {
   constructor(scene, options = {}) {
     super(options);
     this._scene = scene;
   }
 
-  static get defaultOptions() {
-    return foundry.utils.mergeObject(super.defaultOptions, {
-      id: 'sceneforge-roster-gm',
-      title: 'Edit Roster',
-      template: 'modules/sceneforge/scenes/roster/roster-gm.html',
-      width: 560,
-      height: 500,
-      resizable: true,
-    });
-  }
+  static DEFAULT_OPTIONS = {
+    id: 'sceneforge-roster-gm',
+    window: { title: 'Edit Roster', resizable: true },
+    position: { width: 560, height: 500 },
+  };
 
-  getData() {
+  static PARTS = {
+    main: { template: 'modules/sceneforge/scenes/roster/roster-gm.html' },
+  };
+
+  async _prepareContext(_options) {
     const roster = this._scene.flags?.sceneforge?.roster ?? {};
     const config = roster.config ?? { enrollmentOpen: true, otherPlayerPermission: 1, showClaimedBy: true };
     const claims = roster.claims ?? {};
@@ -38,9 +39,8 @@ export default class RosterGM extends Application {
     return { actors, config, permissionOptions };
   }
 
-  activateListeners(html) {
-    super.activateListeners(html);
-    const el = html instanceof jQuery ? html[0] : html;
+  _onRender(_context, _options) {
+    const el = this.element;
 
     el.querySelectorAll('.sf-tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -49,16 +49,15 @@ export default class RosterGM extends Application {
       });
     });
 
-    el.querySelector('[name="enrollmentOpen"]')?.addEventListener('change', () => this._saveConfig(el));
-    el.querySelector('[name="otherPlayerPermission"]')?.addEventListener('change', () => this._saveConfig(el));
-    el.querySelector('[name="showClaimedBy"]')?.addEventListener('change', () => this._saveConfig(el));
+    el.querySelector('[name="enrollmentOpen"]')?.addEventListener('change', () => this._saveConfig());
+    el.querySelector('[name="otherPlayerPermission"]')?.addEventListener('change', () => this._saveConfig());
+    el.querySelector('[name="showClaimedBy"]')?.addEventListener('change', () => this._saveConfig());
 
     el.querySelectorAll('[data-description-for]').forEach(input => {
       input.addEventListener('blur', () => this._saveDescription(input.dataset.descriptionFor, input.value));
     });
 
     el.querySelector('.sf-add-actor-btn')?.addEventListener('click', () => this._openActorPicker());
-
     el.querySelectorAll('.sf-remove-actor-btn').forEach(btn => {
       btn.addEventListener('click', () => this._removeActor(btn.dataset.actorId));
     });
@@ -66,7 +65,8 @@ export default class RosterGM extends Application {
     this._initDragSort(el);
   }
 
-  async _saveConfig(el) {
+  async _saveConfig() {
+    const el = this.element;
     const enrollmentOpen = el.querySelector('[name="enrollmentOpen"]')?.checked ?? true;
     const otherPlayerPermission = Number(el.querySelector('[name="otherPlayerPermission"]')?.value ?? 1);
     const showClaimedBy = el.querySelector('[name="showClaimedBy"]')?.checked ?? true;
@@ -90,29 +90,28 @@ export default class RosterGM extends Application {
     const poolIds = new Set((roster.pool ?? []).map(e => e.actorId));
     const available = game.actors.filter(a => a.type === 'character' && !poolIds.has(a.id));
 
-    const rows = available.map(a =>
-      `<div class="sf-actor-pick" data-id="${a.id}">
-        <img src="${a.img}" width="28" height="28">
-        <span>${a.name}</span>
-      </div>`
-    ).join('') || '<p class="sf-picker-empty">No available characters.</p>';
+    const opts = available.length
+      ? available.map(a => `<option value="${a.id}">${a.name}</option>`).join('')
+      : '<option disabled>No available characters</option>';
 
-    let picker;
-    picker = new Dialog({
-      title: 'Add Character',
-      content: `<div class="sf-actor-picker">${rows}</div>`,
-      buttons: { close: { label: 'Cancel' } },
-      render: (html) => {
-        const el = html instanceof jQuery ? html[0] : html;
-        el.querySelectorAll('.sf-actor-pick').forEach(row => {
-          row.addEventListener('click', async () => {
-            await this._addActor(row.dataset.id);
-            picker.close();
-          });
-        });
-      },
+    const actorId = await foundry.applications.api.DialogV2.wait({
+      window: { title: 'Add Character' },
+      content: `<select name="actor-id" size="${Math.min(available.length || 1, 8)}"
+                        style="width:100%;margin-top:0.5rem">${opts}</select>`,
+      buttons: [
+        {
+          action: 'add',
+          label: 'Add to Roster',
+          default: true,
+          callback: (_event, _button, dialog) =>
+            dialog.element.querySelector('[name="actor-id"]')?.value ?? null,
+        },
+        { action: 'cancel', label: 'Cancel' },
+      ],
+      rejectClose: false,
     });
-    picker.render(true);
+
+    if (actorId) await this._addActor(actorId);
   }
 
   async _addActor(actorId) {

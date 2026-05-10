@@ -1,5 +1,5 @@
 export async function openSceneCreator() {
-  const content = await renderTemplate('modules/sceneforge/ui/scene-creator.html', {
+  const content = await foundry.applications.handlebars.renderTemplate('modules/sceneforge/ui/scene-creator.html', {
     types: [
       { id: 'roster', label: game.i18n.localize('SCENEFORGE.SceneTypes.roster.Label') },
       { id: 'merchant', label: game.i18n.localize('SCENEFORGE.SceneTypes.merchant.Label') },

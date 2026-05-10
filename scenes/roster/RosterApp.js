@@ -35,7 +35,7 @@ export default class RosterApp {
       })
       .filter(Boolean);
 
-    this.#container.innerHTML = await renderTemplate(
+    this.#container.innerHTML = await foundry.applications.handlebars.renderTemplate(
       'modules/sceneforge/scenes/roster/roster.html',
       { cards, config, isGM: game.user.isGM }
     );

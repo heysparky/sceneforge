@@ -8,7 +8,7 @@
     "verified": "14.361"
   },
   "esmodules": ["sceneforge.js"],
-  "styles": ["ui/shared.css"],
+  "styles": ["ui/shared.css", "scenes/roster/roster.css"],
   "languages": [
     {
       "lang": "en",

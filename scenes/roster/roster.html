@@ -1,0 +1,35 @@
+<div class="sceneforge-roster{{#unless config.enrollmentOpen}} enrollment-closed{{/unless}}">
+
+  {{#unless config.enrollmentOpen}}
+  <div class="sf-enrollment-banner">
+    <i class="fas fa-lock" aria-hidden="true"></i>
+    Enrollment is currently closed.
+  </div>
+  {{/unless}}
+
+  <div class="sf-roster-grid">
+    {{#each cards}}
+    <div class="sf-roster-card{{#if claimedBy}} claimed{{/if}}"
+         data-actor-id="{{actor.id}}" tabindex="0" role="button" aria-label="{{actor.name}}">
+      <div class="sf-card-portrait">
+        <img src="{{actor.img}}" alt="{{actor.name}}">
+        {{#if claimedBy}}
+        <div class="sf-card-overlay">
+          <i class="fas fa-lock" aria-hidden="true"></i>
+          <span>Taken</span>
+        </div>
+        {{/if}}
+      </div>
+      <div class="sf-card-info">
+        <h3>{{actor.name}}</h3>
+        {{#if entry.description}}<p>{{entry.description}}</p>{{/if}}
+      </div>
+    </div>
+    {{else}}
+    <div class="sf-roster-empty">
+      {{#if isGM}}Add characters to get started.{{else}}Check back soon.{{/if}}
+    </div>
+    {{/each}}
+  </div>
+
+</div>

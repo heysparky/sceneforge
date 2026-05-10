@@ -2,13 +2,50 @@
   position: fixed;
   inset: 0;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: var(--color-bg, #1a1a2e);
   pointer-events: all;
 }
 
+#sceneforge-content {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* GM controls strip — absolute within #sceneforge-container */
+#sceneforge-gm-controls {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+  pointer-events: all;
+}
+
+#sceneforge-gm-controls button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--color-text-primary, #c9c7b8);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+
+#sceneforge-gm-controls button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Placeholder — merchant stub and any future unimplemented type */
 .sceneforge-placeholder {
   display: flex;
   flex-direction: column;
@@ -18,9 +55,7 @@
   text-align: center;
 }
 
-.sceneforge-placeholder i {
-  opacity: 0.4;
-}
+.sceneforge-placeholder i { opacity: 0.4; }
 
 .sceneforge-placeholder h2 {
   margin: 0;

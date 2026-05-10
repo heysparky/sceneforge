@@ -1,0 +1,26 @@
+{
+  "id": "sceneforge",
+  "title": "SceneForge",
+  "description": "Create specialized scenes with custom HTML interfaces instead of battle map canvases.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14.361"
+  },
+  "esmodules": ["sceneforge.js"],
+  "styles": ["ui/shared.css"],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "authors": [
+    {
+      "name": "Karen McMullan"
+    }
+  ],
+  "license": "LICENSE",
+  "socket": true
+}

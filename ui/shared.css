@@ -1,0 +1,36 @@
+#sceneforge-container {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg, #1a1a2e);
+  pointer-events: all;
+}
+
+.sceneforge-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--color-text-primary, #c9c7b8);
+  text-align: center;
+}
+
+.sceneforge-placeholder i {
+  opacity: 0.4;
+}
+
+.sceneforge-placeholder h2 {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--color-text-hyperlink, #ff6400);
+  border: none;
+}
+
+.sceneforge-placeholder p {
+  margin: 0;
+  font-style: italic;
+  opacity: 0.6;
+}

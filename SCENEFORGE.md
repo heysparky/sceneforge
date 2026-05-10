@@ -184,3 +184,16 @@ scene.flags.sceneforge = {
 - Don't hardcode colors — CSS custom properties only, reference Foundry variables where possible
 - Don't build merchant features — stub only (placeholder UI + clean teardown, nothing else)
 - GM users: `permissions.js` never touches users with GM role
+
+---
+
+## Future Scene Types
+
+Possible candidates for post-v1 development. Not stubbed, not architected — just noted.
+
+- **Roster** — v1, fully implemented
+- **Merchant** — v1, stubbed; future: reads merchant actor inventory, handles buy/sell with gold transfer, chat feedback for out-of-stock/broke, GM notifications for haggle/steal attempts; system-specific gold/inventory abstraction needed
+- **Landing Page** — welcome screen when players connect; could own Foundry's default scene slot
+- **Timeline** — campaign history, session recaps, visual chronology
+- **Downtime** — structured downtime activity selection and tracking
+- **Bastion / Safehouse** — party home base management (D&D 2024 bastions, Blades in the Dark style, etc.)

@@ -2,7 +2,7 @@
 
 ## What This Is
 
-SceneForge is a Foundry VTT v14 module. GMs create **specialized scenes** — Foundry scenes that render a custom HTML interface instead of a battle map canvas. v1 ships with a Character Roster scene (fully implemented) and a Merchant scene (stubbed to prove the framework).
+SceneForge is a Foundry VTT v14 module. GMs create **specialized scenes** — Foundry scenes that render a custom HTML interface instead of a battle map canvas. v1 ships with the SceneForge framework and a Character Roster scene (fully implemented) with a Merchant scene (stubbed to prove the framework).
 
 **Non-negotiable constraints:**
 - No external dependencies. Vanilla JS + Foundry APIs only.

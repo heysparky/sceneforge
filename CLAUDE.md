@@ -90,6 +90,13 @@ await foundry.applications.handlebars.renderTemplate('modules/sceneforge/path/to
 scene.flags.sceneforge.roster              // read (no await)
 await scene.setFlag('sceneforge', 'roster', newData);  // write
 
+// Module settings (world-scope, synced to all clients automatically)
+game.settings.get('sceneforge', 'rosterEnrollmentOpen')        // Boolean
+game.settings.get('sceneforge', 'rosterOtherPlayerPermission') // Number 0/1/2
+game.settings.get('sceneforge', 'rosterShowClaimedBy')         // Boolean
+await game.settings.set('sceneforge', 'rosterEnrollmentOpen', true);
+// onChange fires Hooks.callAll('sceneforge:settingsChanged') → RosterApp re-renders all clients
+
 // Socket
 game.socket.on('module.sceneforge', handler);
 game.socket.emit('module.sceneforge', message);
@@ -127,11 +134,8 @@ scene.flags.sceneforge = {
   type: "roster",       // "roster" | "merchant"
   version: "1.0.0",
   roster: {
-    config: {
-      enrollmentOpen: boolean,
-      otherPlayerPermission: number,  // 0/1/2
-      showClaimedBy: boolean,
-    },
+    // No config here — enrollmentOpen / otherPlayerPermission / showClaimedBy
+    // are module settings (game.settings), not per-scene flags.
     pool: [
       { actorId: string, description: string, sortOrder: number }
     ],
@@ -154,11 +158,6 @@ Actor data, user data, and Foundry permissions are **never** stored in flags —
   payload: { actorId?, userId?, reason? }
 }
 ```
-
-**Module settings** (registered via `game.settings.register`, World scope):
-- `defaultOtherPlayerPermission` — Number, default 1
-- `notifyOnClaim` — Boolean, default true
-- `notifyOnRelease` — Boolean, default true
 
 ## Common Pitfalls
 

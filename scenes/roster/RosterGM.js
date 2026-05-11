@@ -18,7 +18,6 @@ export default class RosterGM extends HandlebarsApplicationMixin(ApplicationV2) 
 
   async _prepareContext(_options) {
     const roster = this._scene.flags?.sceneforge?.roster ?? {};
-    const config = roster.config ?? { enrollmentOpen: true, otherPlayerPermission: 1, showClaimedBy: true };
     const claims = roster.claims ?? {};
 
     const actors = (roster.pool ?? [])
@@ -30,28 +29,11 @@ export default class RosterGM extends HandlebarsApplicationMixin(ApplicationV2) 
       }))
       .filter(e => e.actor);
 
-    const permissionOptions = [
-      { value: 0, label: 'None',     selected: config.otherPlayerPermission === 0 },
-      { value: 1, label: 'Limited',  selected: config.otherPlayerPermission === 1 },
-      { value: 2, label: 'Observer', selected: config.otherPlayerPermission === 2 },
-    ];
-
-    return { actors, config, permissionOptions };
+    return { actors };
   }
 
   _onRender(_context, _options) {
     const el = this.element;
-
-    el.querySelectorAll('.sf-tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        el.querySelectorAll('.sf-tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-        el.querySelectorAll('.sf-tab-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === btn.dataset.tab));
-      });
-    });
-
-    el.querySelector('[name="enrollmentOpen"]')?.addEventListener('change', () => this._saveConfig());
-    el.querySelector('[name="otherPlayerPermission"]')?.addEventListener('change', () => this._saveConfig());
-    el.querySelector('[name="showClaimedBy"]')?.addEventListener('change', () => this._saveConfig());
 
     el.querySelectorAll('[data-description-for]').forEach(input => {
       input.addEventListener('blur', () => this._saveDescription(input.dataset.descriptionFor, input.value));
@@ -63,18 +45,6 @@ export default class RosterGM extends HandlebarsApplicationMixin(ApplicationV2) 
     });
 
     this._initDragSort(el);
-  }
-
-  async _saveConfig() {
-    const el = this.element;
-    const enrollmentOpen = el.querySelector('[name="enrollmentOpen"]')?.checked ?? true;
-    const otherPlayerPermission = Number(el.querySelector('[name="otherPlayerPermission"]')?.value ?? 1);
-    const showClaimedBy = el.querySelector('[name="showClaimedBy"]')?.checked ?? true;
-    const roster = this._scene.flags?.sceneforge?.roster ?? {};
-    await this._scene.setFlag('sceneforge', 'roster', {
-      ...roster,
-      config: { enrollmentOpen, otherPlayerPermission, showClaimedBy },
-    });
   }
 
   async _saveDescription(actorId, value) {

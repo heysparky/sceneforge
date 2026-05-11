@@ -2,8 +2,10 @@ import './scenes/roster/index.js';
 import './scenes/merchant/index.js';
 import { onCanvasReady } from './core/interceptor.js';
 import { openSceneCreator } from './ui/scene-creator.js';
+import { registerSettings } from './core/settings.js';
 
 Hooks.once('init', () => {
+  registerSettings();
   Hooks.on('canvasReady', onCanvasReady);
 
   Hooks.on('renderSceneDirectory', (_app, html) => {

@@ -1,62 +1,30 @@
 <div class="sf-gm-panel">
 
-  <div class="sf-tabs">
-    <button type="button" class="sf-tab-btn active" data-tab="characters">Characters</button>
-    <button type="button" class="sf-tab-btn" data-tab="settings">Settings</button>
-  </div>
-
-  <div class="sf-tab-panel active" data-tab="characters">
-    <div class="sf-pool-list">
-      {{#each actors}}
-      <div class="sf-pool-row" draggable="true" data-actor-id="{{actor.id}}">
-        <span class="sf-drag-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
-        <img class="sf-actor-thumb" src="{{actor.img}}" alt="{{actor.name}}">
-        <div class="sf-actor-info">
-          <strong>{{actor.name}}</strong>
-          <input type="text" placeholder="One-sentence description…"
-                 value="{{description}}" data-description-for="{{actor.id}}">
-        </div>
-        {{#unless claimed}}
-        <button type="button" class="sf-remove-actor-btn" data-actor-id="{{actor.id}}" title="Remove">
-          <i class="fas fa-times"></i>
-        </button>
-        {{/unless}}
+  <div class="sf-pool-list">
+    {{#each actors}}
+    <div class="sf-pool-row" draggable="true" data-actor-id="{{actor.id}}">
+      <span class="sf-drag-handle" aria-hidden="true"><i class="fas fa-grip-vertical"></i></span>
+      <img class="sf-actor-thumb" src="{{actor.img}}" alt="{{actor.name}}">
+      <div class="sf-actor-info">
+        <strong>{{actor.name}}</strong>
+        <input type="text" placeholder="One-sentence description…"
+               value="{{description}}" data-description-for="{{actor.id}}">
       </div>
-      {{else}}
-      <p class="sf-empty-pool">No characters added yet.</p>
-      {{/each}}
-    </div>
-    <div class="sf-panel-footer">
-      <button type="button" class="sf-add-actor-btn">
-        <i class="fas fa-user-plus"></i> Add Character
+      {{#unless claimed}}
+      <button type="button" class="sf-remove-actor-btn" data-actor-id="{{actor.id}}" title="Remove">
+        <i class="fas fa-times"></i>
       </button>
+      {{/unless}}
     </div>
+    {{else}}
+    <p class="sf-empty-pool">No characters added yet.</p>
+    {{/each}}
   </div>
 
-  <div class="sf-tab-panel" data-tab="settings">
-    <div class="form-group">
-      <label>Enrollment</label>
-      <div>
-        <input type="checkbox" name="enrollmentOpen"{{#if config.enrollmentOpen}} checked{{/if}}>
-        <span class="hint">Players can claim characters when open.</span>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Other-player permission</label>
-      <select name="otherPlayerPermission">
-        {{#each permissionOptions}}
-        <option value="{{value}}"{{#if selected}} selected{{/if}}>{{label}}</option>
-        {{/each}}
-      </select>
-      <p class="notes">Applied to all non-GM, non-owner users after a claim.</p>
-    </div>
-    <div class="form-group">
-      <label>Show claimer name</label>
-      <div>
-        <input type="checkbox" name="showClaimedBy"{{#if config.showClaimedBy}} checked{{/if}}>
-        <span class="hint">Show who claimed a character, vs. just "Taken".</span>
-      </div>
-    </div>
+  <div class="sf-panel-footer">
+    <button type="button" class="sf-add-actor-btn">
+      <i class="fas fa-user-plus"></i> Add Character
+    </button>
   </div>
 
 </div>

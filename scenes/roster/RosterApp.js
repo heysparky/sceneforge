@@ -4,6 +4,7 @@ export default class RosterApp {
   #scene = null;
   #container = null;
   #updateHandler = null;
+  #settingsHandler = null;
 
   async render(scene, container) {
     this.#scene = scene;
@@ -16,13 +17,18 @@ export default class RosterApp {
     };
     Hooks.on('updateScene', this.#updateHandler);
 
+    this.#settingsHandler = () => this.#renderContent();
+    Hooks.on('sceneforge:settingsChanged', this.#settingsHandler);
+
     await this.#renderContent();
   }
 
   async #renderContent() {
     const roster = this.#scene.flags?.sceneforge?.roster ?? {};
-    const config = roster.config ?? { enrollmentOpen: true, otherPlayerPermission: 1, showClaimedBy: true };
     const claims = roster.claims ?? {};
+
+    const enrollmentOpen = game.settings.get('sceneforge', 'rosterEnrollmentOpen');
+    const showClaimedBy = game.settings.get('sceneforge', 'rosterShowClaimedBy');
 
     const cards = (roster.pool ?? [])
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
@@ -37,7 +43,7 @@ export default class RosterApp {
 
     this.#container.innerHTML = await foundry.applications.handlebars.renderTemplate(
       'modules/sceneforge/scenes/roster/roster.html',
-      { cards, config, isGM: game.user.isGM }
+      { cards, enrollmentOpen, showClaimedBy, isGM: game.user.isGM }
     );
     this.#activateListeners();
   }
@@ -55,6 +61,10 @@ export default class RosterApp {
       Hooks.off('updateScene', this.#updateHandler);
       this.#updateHandler = null;
     }
+    if (this.#settingsHandler) {
+      Hooks.off('sceneforge:settingsChanged', this.#settingsHandler);
+      this.#settingsHandler = null;
+    }
   }
 
   gmControls() {
@@ -62,11 +72,7 @@ export default class RosterApp {
   }
 
   async #toggleEnrollment() {
-    const roster = this.#scene.flags?.sceneforge?.roster ?? {};
-    const config = roster.config ?? { enrollmentOpen: true, otherPlayerPermission: 1, showClaimedBy: true };
-    await this.#scene.setFlag('sceneforge', 'roster', {
-      ...roster,
-      config: { ...config, enrollmentOpen: !config.enrollmentOpen },
-    });
+    const current = game.settings.get('sceneforge', 'rosterEnrollmentOpen');
+    await game.settings.set('sceneforge', 'rosterEnrollmentOpen', !current);
   }
 }

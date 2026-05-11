@@ -156,45 +156,28 @@
 
 /* ── GM config panel ──────────────────────────────────────── */
 
-.sf-gm-panel {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.85rem;
-}
-
-.sf-tabs {
-  display: flex;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  margin-bottom: 0.75rem;
-  flex-shrink: 0;
-}
-
-.sf-tab-btn {
-  padding: 0.45rem 1rem;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  cursor: pointer;
-  color: var(--color-text-secondary, #999);
-  font-size: 0.85rem;
-}
-
-.sf-tab-btn.active {
-  border-bottom-color: var(--color-text-hyperlink, #ff6400);
-  color: var(--color-text-primary, #c9c7b8);
-}
-
-.sf-tab-panel {
-  display: none;
-  flex-direction: column;
-  flex: 1;
+/* Force the ApplicationV2 window content to use flex so inner scroll works */
+#sceneforge-roster-gm .window-content {
+  padding: 0;
   overflow: hidden;
-  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.sf-tab-panel.active {
+#sceneforge-roster-gm [data-application-part] {
+  flex: 1;
+  min-height: 0;
   display: flex;
+  flex-direction: column;
+}
+
+.sf-gm-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  padding: 0.5rem;
 }
 
 .sf-pool-list {

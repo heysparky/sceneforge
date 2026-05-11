@@ -17,11 +17,11 @@ A feature is done when its exit criteria pass in a running Foundry v14 instance 
 - Merchant stub: placeholder UI only. No inventory, no config, no interaction.
 
 **Exit criteria:**
-- [ ] Module loads in Foundry v14, no console errors
-- [ ] GM can create a Roster scene and a Merchant scene via the creator dialog
-- [ ] Activating either scene suppresses the canvas and shows placeholder text
-- [ ] Activating a normal scene shows a normal map
-- [ ] Switching between scenes leaves no console errors, no orphaned DOM
+- [x] Module loads in Foundry v14, no console errors
+- [x] GM can create a Roster scene and a Merchant scene via the creator dialog
+- [x] Activating either scene suppresses the canvas and shows placeholder text
+- [x] Activating a normal scene shows a normal map 
+- [ ] Switching between scenes leaves no console errors, no orphaned DOM (PARTIAL FAIL: you cannot View a sceneforge scene, things get weird)
 
 ---
 
@@ -38,11 +38,11 @@ A feature is done when its exit criteria pass in a running Foundry v14 instance 
 - GM preview: see the roster as players will
 
 **Exit criteria:**
-- [ ] GM can add/remove actors, write descriptions, reorder pool
-- [ ] GM can toggle enrollment and set permission level
-- [ ] All config persists across page refresh
-- [ ] GM preview renders portraits and descriptions correctly
-- [ ] GM overlay visible to GM, invisible to players
+- [x] GM can add/remove actors, write descriptions, reorder pool
+- [x] GM can toggle enrollment and set permission level
+- [x] All config persists across page refresh
+- [x] GM preview renders portraits and descriptions correctly
+- [x] GM overlay visible to GM, invisible to players
 
 ---
 

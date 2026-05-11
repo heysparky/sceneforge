@@ -6,6 +6,7 @@ export function registerSettings() {
     hint: 'SCENEFORGE.Settings.Roster.EnrollmentOpen.Hint',
     scope: 'world',
     config: true,
+    restricted: true,
     type: Boolean,
     default: true,
     group: GROUP,
@@ -17,6 +18,7 @@ export function registerSettings() {
     hint: 'SCENEFORGE.Settings.Roster.OtherPlayerPermission.Hint',
     scope: 'world',
     config: true,
+    restricted: true,
     type: Number,
     default: 1,
     choices: {
@@ -33,6 +35,7 @@ export function registerSettings() {
     hint: 'SCENEFORGE.Settings.Roster.ShowClaimedBy.Hint',
     scope: 'world',
     config: true,
+    restricted: true,
     type: Boolean,
     default: true,
     group: GROUP,

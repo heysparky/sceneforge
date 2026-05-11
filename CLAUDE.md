@@ -58,26 +58,67 @@ teardown() { }
 gmControls() { return []; } // array of { icon, label, onClick }
 ```
 
-## Key Foundry v14 APIs
+## Foundry v14 API Reference
+
+### What to use (confirmed current in v14.361)
 
 ```js
-// Module entry point in module.json
-"esmodules": ["sceneforge.js"]
+// Application UI — ALL custom UIs must use ApplicationV2
+const { ApplicationV2, HandlebarsApplicationMixin, DialogV2 } = foundry.applications.api;
+class MyPanel extends HandlebarsApplicationMixin(ApplicationV2) {
+  static DEFAULT_OPTIONS = { id: '...', window: { title: '...' }, position: { width: 500, height: 400 } };
+  static PARTS = { main: { template: 'modules/sceneforge/...' } };
+  async _prepareContext(_options) { return { ...data }; }
+  _onRender(_context, _options) { /* use this.element, not html arg */ }
+}
+
+// Dialogs — always DialogV2, never Dialog
+const result = await DialogV2.wait({
+  window: { title: '...' },
+  content: '<p>html string</p>',
+  buttons: [
+    { action: 'ok', label: 'OK', default: true, callback: (_e, _b, dialog) => dialog.element.querySelector('input').value },
+    { action: 'cancel', label: 'Cancel' },
+  ],
+  rejectClose: false,  // resolves null on Escape/close instead of rejecting
+});
+
+// Templates
+await foundry.applications.handlebars.renderTemplate('modules/sceneforge/path/to.html', data);
 
 // Flags
-scene.flags.sceneforge.roster          // read
-await scene.setFlag('sceneforge', 'roster', newData)  // write
+scene.flags.sceneforge.roster              // read (no await)
+await scene.setFlag('sceneforge', 'roster', newData);  // write
 
 // Socket
-game.socket.on('module.sceneforge', handler)
-game.socket.emit('module.sceneforge', message)
+game.socket.on('module.sceneforge', handler);
+game.socket.emit('module.sceneforge', message);
 
 // Actor ownership (GM clients only)
-await actor.update({ ownership: { [userId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER } })
-// Levels: 0=None, 1=Limited, 2=Observer, 3=Owner
+await actor.update({ ownership: { [userId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER } });
+// Levels: NONE=0, LIMITED=1, OBSERVER=2, OWNER=3
 
-// Config panels extend FormApplication; scene views extend Application
+// Utilities
+foundry.utils.deepClone(obj)   // deep clone plain objects
+game.actors / game.users / game.scenes  // live collections, no change
 ```
+
+### What is deprecated — never use
+
+| Deprecated | Use instead |
+|---|---|
+| `Application` / `FormApplication` (v1) | `ApplicationV2` + `HandlebarsApplicationMixin` |
+| `Dialog` | `foundry.applications.api.DialogV2` |
+| Global `renderTemplate(path, data)` | `foundry.applications.handlebars.renderTemplate` |
+| `getData()` override | `_prepareContext(_options)` |
+| `activateListeners(html)` override | `_onRender(_context, _options)` — use `this.element` |
+
+### Hook signatures in v14
+
+- `renderSceneDirectory(app, element, context, options)` — `element` is an HTMLElement (not jQuery). Code already guards: `html.querySelector ? html : html[0]`.
+- `canvasReady()` — unchanged.
+- `collapseSidebar(sidebar, collapsed)` — unchanged.
+- `ContextMenuEntry` warnings (`condition→visible`, `name→label`) originate in Foundry's own code, not ours — cannot be fixed by a module.
 
 ## Data Model
 
@@ -139,4 +180,4 @@ Actor data, user data, and Foundry permissions are **never** stored in flags —
 
 ## Current Development Status
 
-Greenfield — documentation only, no code yet. Follow milestones in `MILESTONES.md` (Milestone 0 = Skeleton through Milestone 5 = Release Candidate). A feature is done when its exit criteria pass in a running Foundry v14 instance, not when the code looks right.
+Milestones 0 and 1 complete (skeleton + Roster GM tools). All v14 API migrations done (ApplicationV2, DialogV2, handlebars.renderTemplate). Next: Milestone 2 — Player Claim Flow (socket.js, full RosterApp player interactions). A feature is done when its exit criteria pass in a running Foundry v14.361 instance, not when the code looks right.

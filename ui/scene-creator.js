@@ -1,3 +1,5 @@
+const { DialogV2 } = foundry.applications.api;
+
 export async function openSceneCreator() {
   const content = await foundry.applications.handlebars.renderTemplate('modules/sceneforge/ui/scene-creator.html', {
     types: [
@@ -6,25 +8,26 @@ export async function openSceneCreator() {
     ],
   });
 
-  new Dialog({
-    title: game.i18n.localize('SCENEFORGE.SceneCreator.Title'),
+  const result = await DialogV2.wait({
+    window: { title: game.i18n.localize('SCENEFORGE.SceneCreator.Title') },
     content,
-    buttons: {
-      create: {
+    buttons: [
+      {
+        action: 'create',
         label: game.i18n.localize('SCENEFORGE.SceneCreator.Create'),
-        callback: async (html) => {
-          const el = html.querySelector ? html : html[0];
-          const type = el.querySelector('[name="scene-type"]').value;
-          const name = el.querySelector('[name="scene-name"]').value.trim()
-            || game.i18n.localize(`SCENEFORGE.SceneTypes.${type}.DefaultName`);
-          await Scene.create({
-            name,
-            flags: { sceneforge: { type, version: '1.0.0' } },
-          });
-        },
+        default: true,
+        callback: (_event, _button, dialog) => ({
+          type: dialog.element.querySelector('[name="scene-type"]').value,
+          name: dialog.element.querySelector('[name="scene-name"]').value.trim(),
+        }),
       },
-      cancel: { label: 'Cancel' },
-    },
-    default: 'create',
-  }).render(true);
+      { action: 'cancel', label: 'Cancel' },
+    ],
+    rejectClose: false,
+  });
+
+  if (!result) return;
+  const { type, name: rawName } = result;
+  const name = rawName || game.i18n.localize(`SCENEFORGE.SceneTypes.${type}.DefaultName`);
+  await Scene.create({ name, flags: { sceneforge: { type, version: '1.0.0' } } });
 }

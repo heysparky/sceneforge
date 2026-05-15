@@ -12,8 +12,9 @@ export function emit(msg) {
 }
 
 async function _handleGM({ action, sceneId, senderId, payload }) {
+  console.log('SF | _handleGM received:', action, { sceneId, senderId, payload });
   const scene = game.scenes.get(sceneId);
-  if (!scene) return;
+  if (!scene) { console.warn('SF | _handleGM: scene not found', sceneId); return; }
   if (action === 'roster.claim')   await _claim(scene, senderId, payload.actorId);
   if (action === 'roster.release') await _release(scene, senderId, payload.actorId);
 }
@@ -57,13 +58,18 @@ async function _release(scene, userId, actorId) {
   const roster = scene.flags?.sceneforge?.roster ?? {};
   const claims = { ...(roster.claims ?? {}) };
   const claim  = claims[actorId];
-  if (!claim || claim.userId !== userId) return;
+  console.log('SF | _release:', { actorId, userId, claim: JSON.stringify(claim) });
+  if (!claim) { console.warn('SF | _release: no claim found for', actorId); return; }
+  if (claim.userId !== userId) {
+    console.warn('SF | _release: userId mismatch — claim.userId:', claim.userId, 'senderId:', userId);
+    return;
+  }
 
-  // Clear the claim first so updateScene fires a clean re-render before the
-  // deleteActor hook races with our own setFlag call.
   const duplicateId = claim.duplicateId;
   delete claims[actorId];
+  console.log('SF | _release: calling setFlag');
   await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
+  console.log('SF | _release: setFlag complete');
 
   const duplicate = game.actors.get(duplicateId);
   if (duplicate) {
@@ -75,16 +81,20 @@ async function _release(scene, userId, actorId) {
 // Called directly on the GM client — bypasses the socket (GMs don't receive their own emits).
 // No userId ownership check: GM can force-release any claim.
 export async function gmRelease(sceneId, actorId) {
+  console.log('SF | gmRelease called:', { sceneId, actorId });
   const scene = game.scenes.get(sceneId);
-  if (!scene) return;
+  if (!scene) { console.warn('SF | gmRelease: scene not found', sceneId); return; }
   const roster = scene.flags?.sceneforge?.roster ?? {};
   const claims = { ...(roster.claims ?? {}) };
   const claim  = claims[actorId];
-  if (!claim) return;
+  console.log('SF | gmRelease: claim=', JSON.stringify(claim), 'claims keys=', Object.keys(claims));
+  if (!claim) { console.warn('SF | gmRelease: no claim found for actorId:', actorId); return; }
 
   const duplicateId = claim.duplicateId;
   delete claims[actorId];
+  console.log('SF | gmRelease: calling setFlag');
   await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
+  console.log('SF | gmRelease: setFlag complete');
 
   const duplicate = game.actors.get(duplicateId);
   if (duplicate) {

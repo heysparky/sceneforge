@@ -12,7 +12,8 @@ export default class RosterApp {
     this.#container = container;
 
     this.#updateHandler = (updated) => {
-      if (updated.id === scene.id) this.#renderContent();
+      console.log('SF | updateScene fired, id match:', updated.id === scene.id, updated.id, scene.id);
+      if (updated.id === scene.id) this.#renderContent().catch(console.error);
     };
     Hooks.on('updateScene', this.#updateHandler);
 
@@ -24,6 +25,7 @@ export default class RosterApp {
 
   async #renderContent() {
     const roster = this.#scene.flags?.sceneforge?.roster ?? {};
+    console.log('SF | #renderContent: claims=', JSON.stringify(roster.claims));
     const claims = roster.claims ?? {};
 
     const enrollmentOpen = game.settings.get('sceneforge', 'rosterEnrollmentOpen');

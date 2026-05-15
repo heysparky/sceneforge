@@ -68,8 +68,9 @@ function measureChrome() {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
 
-    // Left panel: touches left edge, narrower than 30% of screen, taller than 80px
-    if (r.left <= 2 && r.width > 10 && r.width < w * 0.3 && r.height > 80) {
+    // Left panel: right edge is within the left 30% of screen, tall enough to be a panel,
+    // and positioned in the top half (excludes players list, hotbar, etc.)
+    if (r.right > 10 && r.right < w * 0.3 && r.height > 80 && r.top < h * 0.5) {
       chromeLeft = Math.max(chromeLeft, r.right);
     }
 
@@ -78,8 +79,6 @@ function measureChrome() {
       chromeTop = Math.max(chromeTop, r.bottom);
     }
   }
-
-  console.log('SceneForge | chrome:', { chromeLeft, chromeTop });
 }
 
 // ── Bounds tracking ───────────────────────────────────────────

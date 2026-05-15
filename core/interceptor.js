@@ -51,14 +51,37 @@ function teardownActive() {
 // ── Bounds tracking ───────────────────────────────────────────
 
 function computeCanvasBounds() {
-  // #board is sized by Foundry to fill exactly the usable canvas area.
-  // visibility:hidden keeps it in layout so getBoundingClientRect() stays valid.
-  const board = document.getElementById('board');
-  if (board) {
-    const { left, top, width, height } = board.getBoundingClientRect();
-    return { left, top, width: Math.max(0, width), height: Math.max(0, height) };
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  let left = 0, top = 0, right = w, bottom = h;
+
+  // #sidebar and #hotbar are the actual chrome elements — use them directly.
+  const sidebarR = document.getElementById('sidebar')?.getBoundingClientRect();
+  if (sidebarR && sidebarR.left > w * 0.5 && sidebarR.width > 10) right = sidebarR.left;
+
+  const hotbarR = document.getElementById('hotbar')?.getBoundingClientRect();
+  if (hotbarR && hotbarR.top > h * 0.5) bottom = hotbarR.top;
+
+  // #ui-left and #ui-top are huge layout zones (not just the chrome strips).
+  // Scan their descendants for the actual narrow/short elements anchored to each edge.
+  const uiLeft = document.getElementById('ui-left');
+  if (uiLeft) {
+    for (const el of uiLeft.querySelectorAll('*')) {
+      const r = el.getBoundingClientRect();
+      if (r.left <= 2 && r.width > 20 && r.width < w * 0.15) left = Math.max(left, r.right);
+    }
   }
-  return { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+
+  const uiTop = document.getElementById('ui-top');
+  if (uiTop) {
+    for (const el of uiTop.querySelectorAll('*')) {
+      const r = el.getBoundingClientRect();
+      if (r.top <= 2 && r.height > 20 && r.height < h * 0.15) top = Math.max(top, r.bottom);
+    }
+  }
+
+  console.log('SceneForge | bounds:', { left, top, right, bottom });
+  return { left, top, width: Math.max(0, right - left), height: Math.max(0, bottom - top) };
 }
 
 function applyBounds() {
@@ -76,8 +99,10 @@ function startBoundsTracking() {
   applyBounds();
 
   boundsObserver = new ResizeObserver(applyBounds);
-  const board = document.getElementById('board');
-  if (board) boundsObserver.observe(board);
+  for (const id of ['ui-left', 'ui-top', 'sidebar', 'hotbar']) {
+    const el = document.getElementById(id);
+    if (el) boundsObserver.observe(el);
+  }
 
   Hooks.on('collapseSidebar', applyBounds);
   window.addEventListener('resize', applyBounds);
@@ -93,21 +118,11 @@ function stopBoundsTracking() {
 // ── Canvas suppression ────────────────────────────────────────
 
 function suppressCanvas() {
-  const board = document.getElementById('board');
-  if (board) {
-    // visibility:hidden not display:none — board keeps its layout dimensions
-    // so getBoundingClientRect() stays valid for bounds tracking.
-    board.style.setProperty('visibility', 'hidden');
-    board.style.setProperty('pointer-events', 'none');
-  }
+  document.getElementById('board')?.style.setProperty('display', 'none');
   document.getElementById('hud')?.style.setProperty('display', 'none');
 }
 
 function restoreCanvas() {
-  const board = document.getElementById('board');
-  if (board) {
-    board.style.removeProperty('visibility');
-    board.style.removeProperty('pointer-events');
-  }
+  document.getElementById('board')?.style.removeProperty('display');
   document.getElementById('hud')?.style.removeProperty('display');
 }

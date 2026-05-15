@@ -1,5 +1,6 @@
 import { loadSceneType } from './registry.js';
 import { mountGMControls, unmountGMControls } from './gm-controls.js';
+import { cleanupStaleClaimsForScene } from './cleanup.js';
 
 let activeApp = null;
 let sfContainer = null;
@@ -29,6 +30,8 @@ export async function onCanvasReady() {
   const contentEl = document.createElement('div');
   contentEl.id = 'sceneforge-content';
   sfContainer.appendChild(contentEl);
+
+  await cleanupStaleClaimsForScene(scene);
 
   const mod = await loadSceneType(type);
   if (!mod?.default) {

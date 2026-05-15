@@ -4,6 +4,7 @@ import { onCanvasReady } from './core/interceptor.js';
 import { openSceneCreator } from './ui/scene-creator.js';
 import { registerSettings } from './core/settings.js';
 import { initSocket } from './core/socket.js';
+import { initCleanupHooks } from './core/cleanup.js';
 
 Hooks.once('init', () => {
   registerSettings();
@@ -26,4 +27,5 @@ Hooks.once('init', () => {
 
 Hooks.once('ready', () => {
   initSocket();
+  initCleanupHooks();
 });

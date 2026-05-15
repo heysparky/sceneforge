@@ -9,16 +9,18 @@ export async function onCanvasReady() {
   teardownActive();
 
   const scene = canvas.scene;
+  console.log('SceneForge | canvasReady | canvas.scene:', scene?.name, '| active:', game.scenes.active?.name);
   if (!scene) return;
 
   const type = scene.getFlag('sceneforge', 'type');
+  console.log('SceneForge | type flag:', type);
   if (!type) return;
 
   suppressCanvas();
 
   sfContainer = document.createElement('div');
   sfContainer.id = 'sceneforge-container';
-  (document.getElementById('interface') ?? document.body).appendChild(sfContainer);
+  document.body.appendChild(sfContainer);
 
   startBoundsTracking();
 
@@ -75,6 +77,7 @@ function computeCanvasBounds() {
 function applyBounds() {
   if (!sfContainer) return;
   const { left, top, width, height } = computeCanvasBounds();
+  console.log('SceneForge | bounds:', { left, top, width, height });
   Object.assign(sfContainer.style, {
     left:   `${left}px`,
     top:    `${top}px`,

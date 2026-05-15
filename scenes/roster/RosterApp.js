@@ -1,5 +1,5 @@
 import RosterGM from './RosterGM.js';
-import { emit } from '../../core/socket.js';
+import { emit, gmRelease } from '../../core/socket.js';
 
 export default class RosterApp {
   #scene = null;
@@ -12,7 +12,8 @@ export default class RosterApp {
     this.#container = container;
 
     this.#updateHandler = (updated, changes) => {
-      if (updated.id === scene.id && changes.flags?.sceneforge) {
+      if (updated.id === scene.id &&
+          foundry.utils.hasProperty(changes, 'flags.sceneforge.roster')) {
         this.#renderContent();
       }
     };
@@ -36,12 +37,14 @@ export default class RosterApp {
       .map(entry => {
         const actor = game.actors.get(entry.actorId);
         if (!actor) return null;
-        const claim       = claims[entry.actorId] ?? null;
-        const claimedBy   = claim?.userId ?? null;
-        const claimerName = claimedBy ? (game.users.get(claimedBy)?.name ?? '') : '';
-        const isOwnClaim  = claimedBy === game.user.id;
-        const isOtherClaim = !!claimedBy && !isOwnClaim;
-        return { actor, entry, claimedBy, claimerName, isOwnClaim, isOtherClaim };
+        const claim          = claims[entry.actorId] ?? null;
+        const claimedBy      = claim?.userId ?? null;
+        const claimerName    = claimedBy ? (game.users.get(claimedBy)?.name ?? '') : '';
+        const isOwnClaim     = claimedBy === game.user.id;
+        const isOtherClaim   = !!claimedBy && !isOwnClaim;
+        // GMs see a Release button on every claimed card; players only see it on their own.
+        const showReleaseBtn = game.user.isGM ? !!claimedBy : isOwnClaim;
+        return { actor, entry, claimedBy, claimerName, isOwnClaim, isOtherClaim, showReleaseBtn };
       })
       .filter(Boolean);
 
@@ -73,8 +76,13 @@ export default class RosterApp {
     el.querySelectorAll('.sf-release-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.stopPropagation();
-        emit({ action: 'roster.release', sceneId, senderId: game.user.id,
-               payload: { actorId: btn.dataset.actorId } });
+        const actorId = btn.dataset.actorId;
+        if (game.user.isGM) {
+          gmRelease(sceneId, actorId).catch(console.error);
+        } else {
+          emit({ action: 'roster.release', sceneId, senderId: game.user.id,
+                 payload: { actorId } });
+        }
       });
     });
   }

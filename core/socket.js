@@ -52,7 +52,30 @@ async function _release(scene, userId, actorId) {
   if (!claim || claim.userId !== userId) return;
 
   const duplicate = game.actors.get(claim.duplicateId);
-  if (duplicate) await duplicate.delete();
+  if (duplicate) {
+    try { await duplicate.delete(); }
+    catch (err) { console.error('SceneForge | Failed to delete duplicate actor:', err); }
+  }
+
+  delete claims[actorId];
+  await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
+}
+
+// Called directly on the GM client — bypasses the socket (GMs don't receive their own emits).
+// No userId ownership check: GM can force-release any claim.
+export async function gmRelease(sceneId, actorId) {
+  const scene = game.scenes.get(sceneId);
+  if (!scene) return;
+  const roster = scene.flags?.sceneforge?.roster ?? {};
+  const claims = { ...(roster.claims ?? {}) };
+  const claim  = claims[actorId];
+  if (!claim) return;
+
+  const duplicate = game.actors.get(claim.duplicateId);
+  if (duplicate) {
+    try { await duplicate.delete(); }
+    catch (err) { console.error('SceneForge | Failed to delete duplicate actor:', err); }
+  }
 
   delete claims[actorId];
   await scene.setFlag('sceneforge', 'roster', { ...roster, claims });

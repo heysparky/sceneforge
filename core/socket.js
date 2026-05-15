@@ -59,14 +59,17 @@ async function _release(scene, userId, actorId) {
   const claim  = claims[actorId];
   if (!claim || claim.userId !== userId) return;
 
-  const duplicate = game.actors.get(claim.duplicateId);
+  // Clear the claim first so updateScene fires a clean re-render before the
+  // deleteActor hook races with our own setFlag call.
+  const duplicateId = claim.duplicateId;
+  delete claims[actorId];
+  await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
+
+  const duplicate = game.actors.get(duplicateId);
   if (duplicate) {
     try { await duplicate.delete(); }
     catch (err) { console.error('SceneForge | Failed to delete duplicate actor:', err); }
   }
-
-  delete claims[actorId];
-  await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
 }
 
 // Called directly on the GM client — bypasses the socket (GMs don't receive their own emits).
@@ -79,12 +82,13 @@ export async function gmRelease(sceneId, actorId) {
   const claim  = claims[actorId];
   if (!claim) return;
 
-  const duplicate = game.actors.get(claim.duplicateId);
+  const duplicateId = claim.duplicateId;
+  delete claims[actorId];
+  await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
+
+  const duplicate = game.actors.get(duplicateId);
   if (duplicate) {
     try { await duplicate.delete(); }
     catch (err) { console.error('SceneForge | Failed to delete duplicate actor:', err); }
   }
-
-  delete claims[actorId];
-  await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
 }

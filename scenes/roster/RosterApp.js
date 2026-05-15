@@ -11,14 +11,8 @@ export default class RosterApp {
     this.#scene = scene;
     this.#container = container;
 
-    this.#updateHandler = (updated, changes) => {
-      if (updated.id !== scene.id) return;
-      // setFlag calls scene.update with a flat key 'flags.sceneforge.roster';
-      // hasProperty handles the nested form, 'in' handles the flat form.
-      if (foundry.utils.hasProperty(changes, 'flags.sceneforge.roster') ||
-          'flags.sceneforge.roster' in changes) {
-        this.#renderContent();
-      }
+    this.#updateHandler = (updated) => {
+      if (updated.id === scene.id) this.#renderContent();
     };
     Hooks.on('updateScene', this.#updateHandler);
 

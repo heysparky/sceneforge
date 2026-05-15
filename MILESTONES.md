@@ -57,6 +57,13 @@ A feature is done when its exit criteria pass in a running Foundry v14 instance 
 - Claim flow: click → confirm → socket → GM validates → flags update → permissions set → all clients re-render
 - Race condition: first write wins, second gets rejection toast
 
+**Implemented (not yet fully exit-tested):**
+- Claim button per card (explicit button, not card-click)
+- Duplicate-actor model: claimed character creates a player-owned copy
+- Race condition guard: per-user server-side check + client-side optimistic disable
+- Stale claim cleanup: on scene load, on deleteUser, on deleteActor hooks
+- `updateScene` triggers re-render; enrollment toggle broadcasts via settings hook
+
 **Exit criteria:**
 - [ ] Players see the roster when the scene is active
 - [ ] Players cannot see GM controls
@@ -73,14 +80,19 @@ A feature is done when its exit criteria pass in a running Foundry v14 instance 
 
 **Scope:** Characters can return to the roster.
 
-- Player release: "Release" button on own card → confirm → socket → permissions reset → all clients update
-- GM force-release: from GM controls overlay
+- Player release: "Release" button on own card → socket → duplicate actor deleted → claim cleared → all clients update
+- GM force-release: Release button visible to GM on any claimed card
 - GM reassignment: move claim from one player to another, permissions update
 - Edge case cleanup: deleted actor, removed user
 
+**Known blocker — Foundry flag mutation (2026-05-15):**
+Foundry's `diffObject` only iterates new-object keys, so `delete claims[actorId]` produces an empty diff and the write is silently skipped. Adding `_v: Date.now()` forces a non-empty diff (updateScene now fires) but `mergeObject` still preserves the deleted key in the local document — the claim survives the merge.
+
+**Fix required:** Replace `delete claims[actorId]` with `claims[actorId] = null` throughout `socket.js` and `cleanup.js`. Update `#renderContent` to treat null claims as unclaimed. This converts a key deletion (invisible to Foundry's diff) into a key update (detectable and applied correctly by mergeObject).
+
 **Exit criteria:**
-- [ ] Player can release their character with confirmation
-- [ ] After release: character unclaimed for all clients, permissions reset
+- [ ] Player can release their character
+- [ ] After release: character unclaimed for all clients, duplicate actor deleted
 - [ ] GM can force-release any claimed character
 - [ ] GM can reassign a claim to a different player
 - [ ] Deleting a claimed actor produces no errors or stuck state

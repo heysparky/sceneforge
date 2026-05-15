@@ -72,22 +72,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 4px;
   overflow: hidden;
-  cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
-}
-
-.sf-roster-card:hover:not(.claimed) {
-  border-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
-}
-
-.sf-roster-card:focus-visible {
-  outline: 2px solid var(--color-text-hyperlink, #ff6400);
-  outline-offset: 2px;
-}
-
-.sf-roster-card.claimed {
-  cursor: default;
+  transition: border-color 0.15s;
 }
 
 .sf-card-portrait {
@@ -179,6 +164,23 @@
 .sf-release-btn:hover {
   background: rgba(196, 43, 43, 0.28);
 }
+
+.sf-claim-btn {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.2rem 0;
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 2px;
+  color: var(--color-text-primary, #c9c7b8);
+  cursor: pointer;
+  text-align: center;
+}
+
+.sf-claim-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); }
+.sf-claim-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 .sf-roster-empty {
   grid-column: 1 / -1;

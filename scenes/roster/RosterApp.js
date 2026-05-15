@@ -42,20 +42,23 @@ export default class RosterApp {
         const claimerName    = claimedBy ? (game.users.get(claimedBy)?.name ?? '') : '';
         const isOwnClaim     = claimedBy === game.user.id;
         const isOtherClaim   = !!claimedBy && !isOwnClaim;
-        // GMs see a Release button on every claimed card; players only see it on their own.
         const showReleaseBtn = game.user.isGM ? !!claimedBy : isOwnClaim;
-        return { actor, entry, claimedBy, claimerName, isOwnClaim, isOtherClaim, showReleaseBtn };
+        const showClaimBtn   = !game.user.isGM && !claimedBy && enrollmentOpen;
+        return { actor, entry, claimedBy, claimerName, isOwnClaim, isOtherClaim,
+                 showReleaseBtn, showClaimBtn };
       })
       .filter(Boolean);
 
+    const playerHasClaim = cards.some(c => c.isOwnClaim);
+
     this.#container.innerHTML = await foundry.applications.handlebars.renderTemplate(
       'modules/sceneforge/scenes/roster/roster.html',
-      { cards, enrollmentOpen, showClaimedBy, isGM: game.user.isGM }
+      { cards, enrollmentOpen, showClaimedBy, isGM: game.user.isGM, playerHasClaim }
     );
-    this.#activateListeners(enrollmentOpen);
+    this.#activateListeners();
   }
 
-  #activateListeners(enrollmentOpen) {
+  #activateListeners() {
     const el      = this.#container;
     const sceneId = this.#scene.id;
 
@@ -64,14 +67,13 @@ export default class RosterApp {
     el.querySelector('[data-action="edit-roster"]')
       ?.addEventListener('click', () => new RosterGM(this.#scene).render(true));
 
-    if (!game.user.isGM && enrollmentOpen) {
-      el.querySelectorAll('.sf-roster-card:not(.claimed):not(.own-claim)').forEach(card => {
-        card.addEventListener('click', () => {
-          emit({ action: 'roster.claim', sceneId, senderId: game.user.id,
-                 payload: { actorId: card.dataset.actorId } });
-        });
+    el.querySelectorAll('.sf-claim-btn:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', () => {
+        el.querySelectorAll('.sf-claim-btn').forEach(b => b.disabled = true);
+        emit({ action: 'roster.claim', sceneId, senderId: game.user.id,
+               payload: { actorId: btn.dataset.actorId } });
       });
-    }
+    });
 
     el.querySelectorAll('.sf-release-btn').forEach(btn => {
       btn.addEventListener('click', e => {

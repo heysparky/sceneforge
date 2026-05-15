@@ -2,7 +2,7 @@ const CHANNEL = 'module.sceneforge';
 
 export function initSocket() {
   game.socket.on(CHANNEL, msg => {
-    if (game.user.isGM) _handleGM(msg);
+    if (game.user.isGM) _handleGM(msg).catch(console.error);
     else _handlePlayer(msg);
   });
 }
@@ -34,10 +34,18 @@ async function _claim(scene, userId, actorId) {
     return;
   }
 
+  const userAlreadyClaims = Object.values(claims).some(c => c.userId === userId);
+  if (userAlreadyClaims) {
+    emit({ action: 'roster.claim.rejected', sceneId: scene.id,
+           senderId: game.user.id, payload: { actorId, userId } });
+    return;
+  }
+
   const original = game.actors.get(actorId);
   if (!original) return;
 
   const data = original.toObject();
+  delete data._id;
   data.ownership = { default: 0, [userId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER };
   const duplicate = await Actor.create(data);
 

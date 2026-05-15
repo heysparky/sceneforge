@@ -2,7 +2,7 @@ const CHANNEL = 'module.sceneforge';
 
 export function initSocket() {
   game.socket.on(CHANNEL, msg => {
-    if (game.user.isGM) _handleGM(msg);
+    if (game.user.isGM) _handleGM(msg).catch(err => console.error('SceneForge | socket error:', err));
     else _handlePlayer(msg);
   });
 }
@@ -34,10 +34,17 @@ async function _claim(scene, userId, actorId) {
     return;
   }
 
+  if (Object.values(claims).some(c => c.userId === userId)) {
+    emit({ action: 'roster.claim.rejected', sceneId: scene.id,
+           senderId: game.user.id, payload: { actorId, userId } });
+    return;
+  }
+
   const original = game.actors.get(actorId);
   if (!original) return;
 
   const data = original.toObject();
+  delete data._id;
   data.ownership = { default: 0, [userId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER };
   const duplicate = await Actor.create(data);
 
@@ -52,7 +59,10 @@ async function _release(scene, userId, actorId) {
   if (!claim || claim.userId !== userId) return;
 
   const duplicate = game.actors.get(claim.duplicateId);
-  if (duplicate) await duplicate.delete();
+  if (duplicate) {
+    try { await duplicate.delete(); }
+    catch (err) { console.error('SceneForge | Failed to delete duplicate actor:', err); }
+  }
 
   delete claims[actorId];
   await scene.setFlag('sceneforge', 'roster', { ...roster, claims });

@@ -12,7 +12,8 @@ export default class RosterApp {
     this.#container = container;
 
     this.#updateHandler = (updated, changes) => {
-      if (updated.id === scene.id && changes.flags?.sceneforge) {
+      if (updated.id === scene.id &&
+          foundry.utils.hasProperty(changes, 'flags.sceneforge.roster')) {
         this.#renderContent();
       }
     };
@@ -36,23 +37,26 @@ export default class RosterApp {
       .map(entry => {
         const actor = game.actors.get(entry.actorId);
         if (!actor) return null;
-        const claim       = claims[entry.actorId] ?? null;
-        const claimedBy   = claim?.userId ?? null;
-        const claimerName = claimedBy ? (game.users.get(claimedBy)?.name ?? '') : '';
-        const isOwnClaim  = claimedBy === game.user.id;
+        const claim        = claims[entry.actorId] ?? null;
+        const claimedBy    = claim?.userId ?? null;
+        const claimerName  = claimedBy ? (game.users.get(claimedBy)?.name ?? '') : '';
+        const isOwnClaim   = claimedBy === game.user.id;
         const isOtherClaim = !!claimedBy && !isOwnClaim;
-        return { actor, entry, claimedBy, claimerName, isOwnClaim, isOtherClaim };
+        const showClaimBtn = !game.user.isGM && !claimedBy && enrollmentOpen;
+        return { actor, entry, claimedBy, claimerName, isOwnClaim, isOtherClaim, showClaimBtn };
       })
       .filter(Boolean);
 
+    const playerHasClaim = cards.some(c => c.isOwnClaim);
+
     this.#container.innerHTML = await foundry.applications.handlebars.renderTemplate(
       'modules/sceneforge/scenes/roster/roster.html',
-      { cards, enrollmentOpen, showClaimedBy, isGM: game.user.isGM }
+      { cards, enrollmentOpen, showClaimedBy, isGM: game.user.isGM, playerHasClaim }
     );
-    this.#activateListeners(enrollmentOpen);
+    this.#activateListeners();
   }
 
-  #activateListeners(enrollmentOpen) {
+  #activateListeners() {
     const el      = this.#container;
     const sceneId = this.#scene.id;
 
@@ -61,18 +65,16 @@ export default class RosterApp {
     el.querySelector('[data-action="edit-roster"]')
       ?.addEventListener('click', () => new RosterGM(this.#scene).render(true));
 
-    if (!game.user.isGM && enrollmentOpen) {
-      el.querySelectorAll('.sf-roster-card:not(.claimed):not(.own-claim)').forEach(card => {
-        card.addEventListener('click', () => {
-          emit({ action: 'roster.claim', sceneId, senderId: game.user.id,
-                 payload: { actorId: card.dataset.actorId } });
-        });
+    el.querySelectorAll('.sf-claim-btn:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', () => {
+        el.querySelectorAll('.sf-claim-btn').forEach(b => b.disabled = true);
+        emit({ action: 'roster.claim', sceneId, senderId: game.user.id,
+               payload: { actorId: btn.dataset.actorId } });
       });
-    }
+    });
 
     el.querySelectorAll('.sf-release-btn').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
+      btn.addEventListener('click', () => {
         emit({ action: 'roster.release', sceneId, senderId: game.user.id,
                payload: { actorId: btn.dataset.actorId } });
       });

@@ -4,6 +4,7 @@ export default class RosterGM extends HandlebarsApplicationMixin(ApplicationV2) 
   constructor(scene, options = {}) {
     super(options);
     this._scene = scene;
+    this._sceneUpdateHandler = null;
   }
 
   static DEFAULT_OPTIONS = {
@@ -22,11 +23,15 @@ export default class RosterGM extends HandlebarsApplicationMixin(ApplicationV2) 
 
     const actors = (roster.pool ?? [])
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-      .map(entry => ({
-        ...entry,
-        actor: game.actors.get(entry.actorId),
-        claimed: !!claims[entry.actorId]?.userId,
-      }))
+      .map(entry => {
+        const claimEntry = claims[entry.actorId];
+        return {
+          ...entry,
+          actor: game.actors.get(entry.actorId),
+          claimed: !!claimEntry,
+          claimerName: claimEntry ? (game.users.get(claimEntry.userId)?.name ?? 'Unknown') : null,
+        };
+      })
       .filter(e => e.actor);
 
     return { actors };
@@ -45,6 +50,24 @@ export default class RosterGM extends HandlebarsApplicationMixin(ApplicationV2) 
     });
 
     this._initDragSort(el);
+
+    if (!this._sceneUpdateHandler) {
+      this._sceneUpdateHandler = (scene, changes) => {
+        if (scene.id === this._scene.id &&
+            foundry.utils.hasProperty(changes, 'flags.sceneforge.roster')) {
+          this.render();
+        }
+      };
+      Hooks.on('updateScene', this._sceneUpdateHandler);
+    }
+  }
+
+  async _onClose(options) {
+    if (this._sceneUpdateHandler) {
+      Hooks.off('updateScene', this._sceneUpdateHandler);
+      this._sceneUpdateHandler = null;
+    }
+    return super._onClose(options);
   }
 
   async _saveDescription(actorId, value) {

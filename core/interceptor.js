@@ -59,32 +59,28 @@ function teardownActive() {
 function measureChrome() {
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const board = document.getElementById('board');
   chromeLeft = 0;
   chromeTop = 0;
 
-  // In v14, ApplicationV2 panels are appended to body, not inside #ui-left/#ui-top.
-  // Don't check containment — just scan until elementFromPoint returns #board (or body/html),
-  // meaning we've cleared the chrome and reached the canvas area.
-  const isCanvas = el => !el || el === board || el === document.body || el === document.documentElement;
+  // Every ApplicationV2 panel in Foundry v14 carries the CSS class "application".
+  // This includes scene controls, scene navigation, sidebar, hotbar — all of them.
+  // Check geometry to classify each one as left/top chrome.
+  for (const el of document.querySelectorAll('.application')) {
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) continue;
 
-  // Left: scan from x=1 at three heights
-  for (const y of [Math.round(h * 0.25), Math.round(h * 0.5), Math.round(h * 0.75)]) {
-    for (let x = 1; x < Math.min(w * 0.35, 500); x++) {
-      if (isCanvas(document.elementFromPoint(x, y))) break;
-      chromeLeft = Math.max(chromeLeft, x);
+    // Left panel: touches left edge, narrower than 30% of screen, taller than 80px
+    if (r.left <= 2 && r.width > 10 && r.width < w * 0.3 && r.height > 80) {
+      chromeLeft = Math.max(chromeLeft, r.right);
+    }
+
+    // Top panel: touches top edge, shorter than 20% of screen, wider than 200px
+    if (r.top <= 2 && r.height > 10 && r.height < h * 0.2 && r.width > 200) {
+      chromeTop = Math.max(chromeTop, r.bottom);
     }
   }
-  if (chromeLeft > 0) chromeLeft++;
 
-  // Top: scan from y=1 at three x positions in the canvas area (past left chrome)
-  for (const x of [Math.round(w * 0.4), Math.round(w * 0.5), Math.round(w * 0.6)]) {
-    for (let y = 1; y < Math.min(h * 0.35, 400); y++) {
-      if (isCanvas(document.elementFromPoint(x, y))) break;
-      chromeTop = Math.max(chromeTop, y);
-    }
-  }
-  if (chromeTop > 0) chromeTop++;
+  console.log('SceneForge | chrome:', { chromeLeft, chromeTop });
 }
 
 // ── Bounds tracking ───────────────────────────────────────────

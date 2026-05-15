@@ -22,11 +22,14 @@
 
     <div class="sf-roster-grid">
       {{#each cards}}
-      <div class="sf-roster-card{{#if claimedBy}} claimed{{/if}}"
+      <div class="sf-roster-card{{#if isOtherClaim}} claimed{{/if}}{{#if isOwnClaim}} own-claim{{/if}}"
            data-actor-id="{{actor.id}}" tabindex="0" role="button" aria-label="{{actor.name}}">
         <div class="sf-card-portrait">
           <img src="{{actor.img}}" alt="{{actor.name}}">
-          {{#if claimedBy}}
+          {{#if entry.description}}
+          <div class="sf-card-tooltip">{{entry.description}}</div>
+          {{/if}}
+          {{#if isOtherClaim}}
           <div class="sf-card-overlay">
             <i class="fas fa-lock" aria-hidden="true"></i>
             <span>Taken</span>
@@ -35,7 +38,9 @@
         </div>
         <div class="sf-card-info">
           <h3>{{actor.name}}</h3>
-          {{#if entry.description}}<p>{{entry.description}}</p>{{/if}}
+          {{#if isOwnClaim}}
+          <button type="button" class="sf-release-btn" data-actor-id="{{actor.id}}">Release</button>
+          {{/if}}
         </div>
       </div>
       {{else}}

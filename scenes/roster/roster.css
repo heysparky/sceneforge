@@ -108,6 +108,27 @@
   filter: saturate(0.25) brightness(0.6);
 }
 
+.sf-card-tooltip {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  color: var(--color-text-primary, #c9c7b8);
+  padding: 0.6rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  opacity: 0;
+  transition: opacity 0.18s;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.sf-card-portrait:hover .sf-card-tooltip {
+  opacity: 1;
+}
+
 .sf-card-overlay {
   position: absolute;
   inset: 0;
@@ -130,21 +151,33 @@
 
 .sf-card-info {
   padding: 0.65rem 0.75rem;
+  text-align: center;
 }
 
 .sf-card-info h3 {
-  margin: 0 0 0.2rem;
+  margin: 0;
   font-size: 0.95rem;
   border: none;
   padding: 0;
   color: var(--color-text-primary, #c9c7b8);
 }
 
-.sf-card-info p {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--color-text-secondary, #999);
-  line-height: 1.45;
+.sf-release-btn {
+  display: block;
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.2rem 0;
+  font-size: 0.7rem;
+  background: rgba(196, 43, 43, 0.12);
+  border: 1px solid rgba(196, 43, 43, 0.3);
+  border-radius: 2px;
+  color: var(--color-level-error, #c42b2b);
+  cursor: pointer;
+  text-align: center;
+}
+
+.sf-release-btn:hover {
+  background: rgba(196, 43, 43, 0.28);
 }
 
 .sf-roster-empty {

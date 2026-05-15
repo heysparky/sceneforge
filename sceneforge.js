@@ -3,6 +3,7 @@ import './scenes/merchant/index.js';
 import { onCanvasReady } from './core/interceptor.js';
 import { openSceneCreator } from './ui/scene-creator.js';
 import { registerSettings } from './core/settings.js';
+import { initSocket } from './core/socket.js';
 
 Hooks.once('init', () => {
   registerSettings();
@@ -24,6 +25,5 @@ Hooks.once('init', () => {
 });
 
 Hooks.once('ready', () => {
-  // Placeholder — full socket handling in Milestone 2
-  game.socket.on('module.sceneforge', () => {});
+  initSocket();
 });

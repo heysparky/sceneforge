@@ -1,4 +1,5 @@
 import RosterGM from './RosterGM.js';
+import { emit } from '../../core/socket.js';
 
 export default class RosterApp {
   #scene = null;
@@ -28,16 +29,19 @@ export default class RosterApp {
     const claims = roster.claims ?? {};
 
     const enrollmentOpen = game.settings.get('sceneforge', 'rosterEnrollmentOpen');
-    const showClaimedBy = game.settings.get('sceneforge', 'rosterShowClaimedBy');
+    const showClaimedBy  = game.settings.get('sceneforge', 'rosterShowClaimedBy');
 
     const cards = (roster.pool ?? [])
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
       .map(entry => {
         const actor = game.actors.get(entry.actorId);
         if (!actor) return null;
-        const claimedBy = claims[entry.actorId] ?? null;
+        const claim       = claims[entry.actorId] ?? null;
+        const claimedBy   = claim?.userId ?? null;
         const claimerName = claimedBy ? (game.users.get(claimedBy)?.name ?? '') : '';
-        return { actor, entry, claimedBy, claimerName };
+        const isOwnClaim  = claimedBy === game.user.id;
+        const isOtherClaim = !!claimedBy && !isOwnClaim;
+        return { actor, entry, claimedBy, claimerName, isOwnClaim, isOtherClaim };
       })
       .filter(Boolean);
 
@@ -45,15 +49,34 @@ export default class RosterApp {
       'modules/sceneforge/scenes/roster/roster.html',
       { cards, enrollmentOpen, showClaimedBy, isGM: game.user.isGM }
     );
-    this.#activateListeners();
+    this.#activateListeners(enrollmentOpen);
   }
 
-  #activateListeners() {
-    const el = this.#container;
+  #activateListeners(enrollmentOpen) {
+    const el      = this.#container;
+    const sceneId = this.#scene.id;
+
     el.querySelector('[data-action="toggle-enrollment"]')
       ?.addEventListener('click', () => this.#toggleEnrollment());
     el.querySelector('[data-action="edit-roster"]')
       ?.addEventListener('click', () => new RosterGM(this.#scene).render(true));
+
+    if (!game.user.isGM && enrollmentOpen) {
+      el.querySelectorAll('.sf-roster-card:not(.claimed):not(.own-claim)').forEach(card => {
+        card.addEventListener('click', () => {
+          emit({ action: 'roster.claim', sceneId, senderId: game.user.id,
+                 payload: { actorId: card.dataset.actorId } });
+        });
+      });
+    }
+
+    el.querySelectorAll('.sf-release-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        emit({ action: 'roster.release', sceneId, senderId: game.user.id,
+               payload: { actorId: btn.dataset.actorId } });
+      });
+    });
   }
 
   teardown() {

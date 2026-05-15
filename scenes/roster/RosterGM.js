@@ -25,7 +25,7 @@ export default class RosterGM extends HandlebarsApplicationMixin(ApplicationV2) 
       .map(entry => ({
         ...entry,
         actor: game.actors.get(entry.actorId),
-        claimed: !!claims[entry.actorId],
+        claimed: !!claims[entry.actorId]?.userId,
       }))
       .filter(e => e.actor);
 

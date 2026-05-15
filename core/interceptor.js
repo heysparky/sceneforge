@@ -9,11 +9,9 @@ export async function onCanvasReady() {
   teardownActive();
 
   const scene = canvas.scene;
-  console.log('SceneForge | canvasReady | canvas.scene:', scene?.name, '| active:', game.scenes.active?.name);
   if (!scene) return;
 
   const type = scene.getFlag('sceneforge', 'type');
-  console.log('SceneForge | type flag:', type);
   if (!type) return;
 
   suppressCanvas();
@@ -53,31 +51,19 @@ function teardownActive() {
 // ── Bounds tracking ───────────────────────────────────────────
 
 function computeCanvasBounds() {
-  const get = id => document.getElementById(id);
-  const controls = get('controls') ?? get('ui-left');
-  const nav      = get('navigation') ?? get('ui-top');
-  const sidebar  = get('sidebar') ?? get('ui-right');
-  const hotbar   = get('hotbar') ?? get('ui-bottom');
-
-  const left   = controls ? controls.getBoundingClientRect().right  : 0;
-  const top    = nav      ? nav.getBoundingClientRect().bottom      : 0;
-  const right  = (sidebar && !sidebar.classList.contains('collapsed'))
-    ? sidebar.getBoundingClientRect().left
-    : window.innerWidth;
-  const bottom = hotbar ? hotbar.getBoundingClientRect().top : window.innerHeight;
-
-  return {
-    left,
-    top,
-    width:  Math.max(0, right - left),
-    height: Math.max(0, bottom - top),
-  };
+  // #board is sized by Foundry to fill exactly the usable canvas area.
+  // visibility:hidden keeps it in layout so getBoundingClientRect() stays valid.
+  const board = document.getElementById('board');
+  if (board) {
+    const { left, top, width, height } = board.getBoundingClientRect();
+    return { left, top, width: Math.max(0, width), height: Math.max(0, height) };
+  }
+  return { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
 }
 
 function applyBounds() {
   if (!sfContainer) return;
   const { left, top, width, height } = computeCanvasBounds();
-  console.log('SceneForge | bounds:', { left, top, width, height });
   Object.assign(sfContainer.style, {
     left:   `${left}px`,
     top:    `${top}px`,
@@ -90,10 +76,8 @@ function startBoundsTracking() {
   applyBounds();
 
   boundsObserver = new ResizeObserver(applyBounds);
-  for (const id of ['controls', 'navigation', 'sidebar', 'hotbar', 'ui-left', 'ui-top', 'ui-right', 'ui-bottom']) {
-    const el = document.getElementById(id);
-    if (el) boundsObserver.observe(el);
-  }
+  const board = document.getElementById('board');
+  if (board) boundsObserver.observe(board);
 
   Hooks.on('collapseSidebar', applyBounds);
   window.addEventListener('resize', applyBounds);
@@ -109,11 +93,21 @@ function stopBoundsTracking() {
 // ── Canvas suppression ────────────────────────────────────────
 
 function suppressCanvas() {
-  document.getElementById('board')?.style.setProperty('display', 'none');
+  const board = document.getElementById('board');
+  if (board) {
+    // visibility:hidden not display:none — board keeps its layout dimensions
+    // so getBoundingClientRect() stays valid for bounds tracking.
+    board.style.setProperty('visibility', 'hidden');
+    board.style.setProperty('pointer-events', 'none');
+  }
   document.getElementById('hud')?.style.setProperty('display', 'none');
 }
 
 function restoreCanvas() {
-  document.getElementById('board')?.style.removeProperty('display');
+  const board = document.getElementById('board');
+  if (board) {
+    board.style.removeProperty('visibility');
+    board.style.removeProperty('pointer-events');
+  }
   document.getElementById('hud')?.style.removeProperty('display');
 }

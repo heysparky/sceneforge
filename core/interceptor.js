@@ -63,32 +63,28 @@ function measureChrome() {
   chromeLeft = 0;
   chromeTop = 0;
 
-  // Scan from the left edge at several Y positions. Stop as soon as elementFromPoint
-  // returns the board (canvas) or something outside #ui-left — that pixel is past the chrome.
-  const uiLeft = document.getElementById('ui-left');
-  if (uiLeft) {
-    for (const y of [Math.round(h * 0.25), Math.round(h * 0.5), Math.round(h * 0.75)]) {
-      for (let x = 1; x < Math.min(w * 0.35, 500); x++) {
-        const el = document.elementFromPoint(x, y);
-        if (!el || el === board || !uiLeft.contains(el) || el === uiLeft) break;
-        chromeLeft = Math.max(chromeLeft, x);
-      }
-    }
-    if (chromeLeft > 0) chromeLeft++;
-  }
+  // In v14, ApplicationV2 panels are appended to body, not inside #ui-left/#ui-top.
+  // Don't check containment — just scan until elementFromPoint returns #board (or body/html),
+  // meaning we've cleared the chrome and reached the canvas area.
+  const isCanvas = el => !el || el === board || el === document.body || el === document.documentElement;
 
-  // Scan from the top edge at several X positions in the canvas area (past left chrome).
-  const uiTop = document.getElementById('ui-top');
-  if (uiTop) {
-    for (const x of [Math.round(w * 0.4), Math.round(w * 0.5), Math.round(w * 0.6)]) {
-      for (let y = 1; y < Math.min(h * 0.35, 400); y++) {
-        const el = document.elementFromPoint(x, y);
-        if (!el || el === board || !uiTop.contains(el) || el === uiTop) break;
-        chromeTop = Math.max(chromeTop, y);
-      }
+  // Left: scan from x=1 at three heights
+  for (const y of [Math.round(h * 0.25), Math.round(h * 0.5), Math.round(h * 0.75)]) {
+    for (let x = 1; x < Math.min(w * 0.35, 500); x++) {
+      if (isCanvas(document.elementFromPoint(x, y))) break;
+      chromeLeft = Math.max(chromeLeft, x);
     }
-    if (chromeTop > 0) chromeTop++;
   }
+  if (chromeLeft > 0) chromeLeft++;
+
+  // Top: scan from y=1 at three x positions in the canvas area (past left chrome)
+  for (const x of [Math.round(w * 0.4), Math.round(w * 0.5), Math.round(w * 0.6)]) {
+    for (let y = 1; y < Math.min(h * 0.35, 400); y++) {
+      if (isCanvas(document.elementFromPoint(x, y))) break;
+      chromeTop = Math.max(chromeTop, y);
+    }
+  }
+  if (chromeTop > 0) chromeTop++;
 }
 
 // ── Bounds tracking ───────────────────────────────────────────

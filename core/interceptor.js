@@ -8,7 +8,7 @@ let boundsObserver = null;
 export async function onCanvasReady() {
   teardownActive();
 
-  const scene = game.scenes.active;
+  const scene = canvas.scene;
   if (!scene) return;
 
   const type = scene.getFlag('sceneforge', 'type');

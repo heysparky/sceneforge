@@ -4,6 +4,8 @@ import { mountGMControls, unmountGMControls } from './gm-controls.js';
 let activeApp = null;
 let sfContainer = null;
 let boundsObserver = null;
+let chromeLeft = 0;
+let chromeTop = 0;
 
 export async function onCanvasReady() {
   teardownActive();
@@ -14,6 +16,8 @@ export async function onCanvasReady() {
   const type = scene.getFlag('sceneforge', 'type');
   if (!type) return;
 
+  // Measure chrome BEFORE hiding the canvas — elementFromPoint needs the live board element.
+  measureChrome();
   suppressCanvas();
 
   sfContainer = document.createElement('div');
@@ -45,53 +49,69 @@ function teardownActive() {
   stopBoundsTracking();
   sfContainer?.remove();
   sfContainer = null;
+  chromeLeft = 0;
+  chromeTop = 0;
   restoreCanvas();
+}
+
+// ── Chrome measurement ────────────────────────────────────────
+
+function measureChrome() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const board = document.getElementById('board');
+  chromeLeft = 0;
+  chromeTop = 0;
+
+  // Scan from the left edge at several Y positions. Stop as soon as elementFromPoint
+  // returns the board (canvas) or something outside #ui-left — that pixel is past the chrome.
+  const uiLeft = document.getElementById('ui-left');
+  if (uiLeft) {
+    for (const y of [Math.round(h * 0.25), Math.round(h * 0.5), Math.round(h * 0.75)]) {
+      for (let x = 1; x < Math.min(w * 0.35, 500); x++) {
+        const el = document.elementFromPoint(x, y);
+        if (!el || el === board || !uiLeft.contains(el) || el === uiLeft) break;
+        chromeLeft = Math.max(chromeLeft, x);
+      }
+    }
+    if (chromeLeft > 0) chromeLeft++;
+  }
+
+  // Scan from the top edge at several X positions in the canvas area (past left chrome).
+  const uiTop = document.getElementById('ui-top');
+  if (uiTop) {
+    for (const x of [Math.round(w * 0.4), Math.round(w * 0.5), Math.round(w * 0.6)]) {
+      for (let y = 1; y < Math.min(h * 0.35, 400); y++) {
+        const el = document.elementFromPoint(x, y);
+        if (!el || el === board || !uiTop.contains(el) || el === uiTop) break;
+        chromeTop = Math.max(chromeTop, y);
+      }
+    }
+    if (chromeTop > 0) chromeTop++;
+  }
 }
 
 // ── Bounds tracking ───────────────────────────────────────────
 
-function computeCanvasBounds() {
+function applyBounds() {
+  if (!sfContainer) return;
   const w = window.innerWidth;
   const h = window.innerHeight;
-  let left = 0, top = 0, right = w, bottom = h;
+  let right = w, bottom = h;
 
-  // #sidebar and #hotbar are the actual chrome elements — use them directly.
+  // Right and bottom can change (sidebar toggle, resize) — re-read them each time.
+  // Left and top are fixed from measureChrome() at activation.
   const sidebarR = document.getElementById('sidebar')?.getBoundingClientRect();
   if (sidebarR && sidebarR.left > w * 0.5 && sidebarR.width > 10) right = sidebarR.left;
 
   const hotbarR = document.getElementById('hotbar')?.getBoundingClientRect();
   if (hotbarR && hotbarR.top > h * 0.5) bottom = hotbarR.top;
 
-  // #ui-left and #ui-top are huge layout zones (not just the chrome strips).
-  // Scan their descendants for the actual narrow/short elements anchored to each edge.
-  const uiLeft = document.getElementById('ui-left');
-  if (uiLeft) {
-    for (const el of uiLeft.querySelectorAll('*')) {
-      const r = el.getBoundingClientRect();
-      if (r.left <= 2 && r.width > 20 && r.width < w * 0.15) left = Math.max(left, r.right);
-    }
-  }
-
-  const uiTop = document.getElementById('ui-top');
-  if (uiTop) {
-    for (const el of uiTop.querySelectorAll('*')) {
-      const r = el.getBoundingClientRect();
-      if (r.top <= 2 && r.height > 20 && r.height < h * 0.15) top = Math.max(top, r.bottom);
-    }
-  }
-
-  console.log('SceneForge | bounds:', { left, top, right, bottom });
-  return { left, top, width: Math.max(0, right - left), height: Math.max(0, bottom - top) };
-}
-
-function applyBounds() {
-  if (!sfContainer) return;
-  const { left, top, width, height } = computeCanvasBounds();
   Object.assign(sfContainer.style, {
-    left:   `${left}px`,
-    top:    `${top}px`,
-    width:  `${width}px`,
-    height: `${height}px`,
+    left:   `${chromeLeft}px`,
+    top:    `${chromeTop}px`,
+    width:  `${Math.max(0, right - chromeLeft)}px`,
+    height: `${Math.max(0, bottom - chromeTop)}px`,
   });
 }
 
@@ -99,7 +119,7 @@ function startBoundsTracking() {
   applyBounds();
 
   boundsObserver = new ResizeObserver(applyBounds);
-  for (const id of ['ui-left', 'ui-top', 'sidebar', 'hotbar']) {
+  for (const id of ['sidebar', 'hotbar', 'ui-left', 'ui-top']) {
     const el = document.getElementById(id);
     if (el) boundsObserver.observe(el);
   }

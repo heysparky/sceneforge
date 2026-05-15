@@ -62,10 +62,9 @@ function measureChrome() {
   chromeLeft = 0;
   chromeTop = 0;
 
-  // Every ApplicationV2 panel in Foundry v14 carries the CSS class "application".
-  // This includes scene controls, scene navigation, sidebar, hotbar — all of them.
-  // Check geometry to classify each one as left/top chrome.
-  for (const el of document.querySelectorAll('.application')) {
+  // Scan every element in the DOM — no class or ID assumptions.
+  // The geometry filters are narrow enough to catch only actual chrome panels.
+  for (const el of document.body.querySelectorAll('*')) {
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
 

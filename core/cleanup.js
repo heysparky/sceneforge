@@ -12,6 +12,7 @@ export async function cleanupStaleClaimsForScene(scene) {
   let dirty = false;
 
   for (const [actorId, claim] of Object.entries(claims)) {
+    if (!claim) continue;
     const userExists = !!game.users.get(claim.userId);
     const dupActor   = game.actors.get(claim.duplicateId);
     if (!userExists || !dupActor) {
@@ -19,7 +20,7 @@ export async function cleanupStaleClaimsForScene(scene) {
         try { await dupActor.delete(); }
         catch (err) { console.error('SceneForge | cleanup: failed to delete duplicate actor:', err); }
       }
-      delete claims[actorId];
+      claims[actorId] = null;
       dirty = true;
     }
   }
@@ -48,13 +49,14 @@ async function _removeClaimsByUser(scene, userId) {
   let dirty = false;
 
   for (const [actorId, claim] of Object.entries(claims)) {
+    if (!claim) continue;
     if (claim.userId !== userId) continue;
     const dup = game.actors.get(claim.duplicateId);
     if (dup) {
       try { await dup.delete(); }
       catch (err) { console.error('SceneForge | cleanup: failed to delete duplicate actor:', err); }
     }
-    delete claims[actorId];
+    claims[actorId] = null;
     dirty = true;
   }
 
@@ -68,8 +70,9 @@ async function _removeClaimsByDuplicate(scene, deletedActorId) {
   let dirty = false;
 
   for (const [actorId, claim] of Object.entries(claims)) {
+    if (!claim) continue;
     if (claim.duplicateId !== deletedActorId) continue;
-    delete claims[actorId];
+    claims[actorId] = null;
     dirty = true;
   }
 

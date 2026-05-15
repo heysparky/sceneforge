@@ -60,10 +60,7 @@ async function _release(scene, userId, actorId) {
   if (!claim || claim.userId !== userId) return;
 
   const duplicateId = claim.duplicateId;
-  delete claims[actorId];
-  // _v forces a detectable diff — Foundry's diffObject only walks the new
-  // object's keys and misses deleted keys, so removing a claim produces an
-  // empty diff and updateScene never fires without this counter.
+  claims[actorId] = null;
   await scene.setFlag('sceneforge', 'roster', { ...roster, claims, _v: Date.now() });
 
   const duplicate = game.actors.get(duplicateId);
@@ -84,7 +81,7 @@ export async function gmRelease(sceneId, actorId) {
   if (!claim) return;
 
   const duplicateId = claim.duplicateId;
-  delete claims[actorId];
+  claims[actorId] = null;
   await scene.setFlag('sceneforge', 'roster', { ...roster, claims, _v: Date.now() });
 
   const duplicate = game.actors.get(duplicateId);

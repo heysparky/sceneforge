@@ -76,6 +76,7 @@ export default class RosterApp {
       btn.addEventListener('click', e => {
         e.stopPropagation();
         const actorId = btn.dataset.actorId;
+        console.log('SceneForge | release click:', actorId, game.user.isGM ? 'GM' : 'player');
         if (game.user.isGM) {
           gmRelease(sceneId, actorId).catch(console.error);
         } else {

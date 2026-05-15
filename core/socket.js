@@ -12,9 +12,8 @@ export function emit(msg) {
 }
 
 async function _handleGM({ action, sceneId, senderId, payload }) {
-  console.log('SF | _handleGM received:', action, { sceneId, senderId, payload });
   const scene = game.scenes.get(sceneId);
-  if (!scene) { console.warn('SF | _handleGM: scene not found', sceneId); return; }
+  if (!scene) return;
   if (action === 'roster.claim')   await _claim(scene, senderId, payload.actorId);
   if (action === 'roster.release') await _release(scene, senderId, payload.actorId);
 }
@@ -51,25 +50,21 @@ async function _claim(scene, userId, actorId) {
   const duplicate = await Actor.create(data);
 
   const newClaims = { ...claims, [actorId]: { userId, duplicateId: duplicate.id } };
-  await scene.setFlag('sceneforge', 'roster', { ...roster, claims: newClaims });
+  await scene.setFlag('sceneforge', 'roster', { ...roster, claims: newClaims, _v: Date.now() });
 }
 
 async function _release(scene, userId, actorId) {
   const roster = scene.flags?.sceneforge?.roster ?? {};
   const claims = { ...(roster.claims ?? {}) };
   const claim  = claims[actorId];
-  console.log('SF | _release:', { actorId, userId, claim: JSON.stringify(claim) });
-  if (!claim) { console.warn('SF | _release: no claim found for', actorId); return; }
-  if (claim.userId !== userId) {
-    console.warn('SF | _release: userId mismatch — claim.userId:', claim.userId, 'senderId:', userId);
-    return;
-  }
+  if (!claim || claim.userId !== userId) return;
 
   const duplicateId = claim.duplicateId;
   delete claims[actorId];
-  console.log('SF | _release: calling setFlag');
-  await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
-  console.log('SF | _release: setFlag complete');
+  // _v forces a detectable diff — Foundry's diffObject only walks the new
+  // object's keys and misses deleted keys, so removing a claim produces an
+  // empty diff and updateScene never fires without this counter.
+  await scene.setFlag('sceneforge', 'roster', { ...roster, claims, _v: Date.now() });
 
   const duplicate = game.actors.get(duplicateId);
   if (duplicate) {
@@ -81,20 +76,16 @@ async function _release(scene, userId, actorId) {
 // Called directly on the GM client — bypasses the socket (GMs don't receive their own emits).
 // No userId ownership check: GM can force-release any claim.
 export async function gmRelease(sceneId, actorId) {
-  console.log('SF | gmRelease called:', { sceneId, actorId });
   const scene = game.scenes.get(sceneId);
-  if (!scene) { console.warn('SF | gmRelease: scene not found', sceneId); return; }
+  if (!scene) return;
   const roster = scene.flags?.sceneforge?.roster ?? {};
   const claims = { ...(roster.claims ?? {}) };
   const claim  = claims[actorId];
-  console.log('SF | gmRelease: claim=', JSON.stringify(claim), 'claims keys=', Object.keys(claims));
-  if (!claim) { console.warn('SF | gmRelease: no claim found for actorId:', actorId); return; }
+  if (!claim) return;
 
   const duplicateId = claim.duplicateId;
   delete claims[actorId];
-  console.log('SF | gmRelease: calling setFlag');
-  await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
-  console.log('SF | gmRelease: setFlag complete');
+  await scene.setFlag('sceneforge', 'roster', { ...roster, claims, _v: Date.now() });
 
   const duplicate = game.actors.get(duplicateId);
   if (duplicate) {

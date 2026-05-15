@@ -24,7 +24,7 @@ export async function cleanupStaleClaimsForScene(scene) {
     }
   }
 
-  if (dirty) await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
+  if (dirty) await scene.setFlag('sceneforge', 'roster', { ...roster, claims, _v: Date.now() });
 }
 
 async function _onDeleteUser(user) {
@@ -58,7 +58,7 @@ async function _removeClaimsByUser(scene, userId) {
     dirty = true;
   }
 
-  if (dirty) await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
+  if (dirty) await scene.setFlag('sceneforge', 'roster', { ...roster, claims, _v: Date.now() });
 }
 
 async function _removeClaimsByDuplicate(scene, deletedActorId) {
@@ -73,5 +73,5 @@ async function _removeClaimsByDuplicate(scene, deletedActorId) {
     dirty = true;
   }
 
-  if (dirty) await scene.setFlag('sceneforge', 'roster', { ...roster, claims });
+  if (dirty) await scene.setFlag('sceneforge', 'roster', { ...roster, claims, _v: Date.now() });
 }

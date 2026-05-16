@@ -1,22 +1,3 @@
 {
-  "SCENEFORGE.SceneCreator.ButtonLabel": "New SceneForge Scene",
-  "SCENEFORGE.SceneCreator.Title": "Create SceneForge Scene",
-  "SCENEFORGE.SceneCreator.NameLabel": "Scene Name",
-  "SCENEFORGE.SceneCreator.NamePlaceholder": "My Roster",
-  "SCENEFORGE.SceneCreator.TypeLabel": "Scene Type",
-  "SCENEFORGE.SceneCreator.Create": "Create",
-  "SCENEFORGE.SceneTypes.roster.Label": "Character Roster",
-  "SCENEFORGE.SceneTypes.roster.DefaultName": "Character Roster",
-  "SCENEFORGE.SceneTypes.merchant.Label": "Merchant",
-  "SCENEFORGE.SceneTypes.merchant.DefaultName": "Merchant",
-  "SCENEFORGE.Settings.Roster.Group": "Roster",
-  "SCENEFORGE.Settings.Roster.EnrollmentOpen.Name": "Enrollment Open",
-  "SCENEFORGE.Settings.Roster.EnrollmentOpen.Hint": "When enabled, players can claim characters from roster scenes.",
-  "SCENEFORGE.Settings.Roster.OtherPlayerPermission.Name": "Other-Player Permission",
-  "SCENEFORGE.Settings.Roster.OtherPlayerPermission.Hint": "Permission level granted to all non-owner, non-GM players after a character is claimed.",
-  "SCENEFORGE.Settings.Roster.OtherPlayerPermission.None": "None",
-  "SCENEFORGE.Settings.Roster.OtherPlayerPermission.Limited": "Limited",
-  "SCENEFORGE.Settings.Roster.OtherPlayerPermission.Observer": "Observer",
-  "SCENEFORGE.Settings.Roster.ShowClaimedBy.Name": "Show Claimer Name",
-  "SCENEFORGE.Settings.Roster.ShowClaimedBy.Hint": "Display the player's name on claimed character cards, rather than just showing the character as taken."
+  "SCENEFORGE": {}
 }

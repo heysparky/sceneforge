@@ -14,6 +14,6 @@
     { "lang": "en", "name": "English", "path": "lang/en.json" }
   ],
   "url": "https://github.com/heysparky/sceneforge",
-  "manifest": "https://github.com/heysparky/sceneforge/releases/latest/download/module.json",
+  "manifest": "https://raw.githubusercontent.com/heysparky/sceneforge/main/module.json",
   "download": "https://github.com/heysparky/sceneforge/releases/download/{{version}}/module.zip"
 }

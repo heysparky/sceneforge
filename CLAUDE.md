@@ -28,6 +28,12 @@ lang/
   en.json
 ```
 
+## Before release
+
+- Change `manifest` in `module.json` from the raw GitHub URL back to the release URL:
+  `https://github.com/heysparky/sceneforge/releases/latest/download/module.json`
+- Create a GitHub Release with `module.json` and a zipped build attached
+
 ## Socket envelope
 
 ```js

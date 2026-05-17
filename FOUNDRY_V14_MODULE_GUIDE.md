@@ -198,6 +198,14 @@ Hooks.once('ready', () => { });
 
 // Scene activated and canvas rendered
 Hooks.on('canvasReady', () => { });
+// ⚠️ v14 verified: canvasReady fires BEFORE ready on hard reload.
+// If you register a canvasReady handler inside ready, it will miss the
+// initial fire. Always guard with an immediate check:
+//
+//   export function init() {
+//     Hooks.on('canvasReady', handler);
+//     if (canvas?.ready) handler();  // already fired — call now
+//   }
 
 // Scene directory rendered — html is HTMLElement in v14 (not jQuery)
 Hooks.on('renderSceneDirectory', (_app, html) => {
@@ -411,3 +419,5 @@ Checklist:
 | `renderSceneDirectory` html treated as jQuery | Guard: `html.querySelector ? html : html[0]` |
 | `updateScene` not firing | Check diff is non-empty; use null-sentinel or `_v` bump |
 | GM client missing its own `updateScene` | Re-render locally after `await setFlag` |
+| `canvasReady` handler registered in `ready` misses hard-reload | `canvasReady` fires before `ready` in v14 — also call handler immediately if `canvas?.ready` |
+| Suppressing `#board` before `canvasReady` | Prevents PIXI from initialising; `canvasReady` never fires. Suppress only inside your `canvasReady` handler. |

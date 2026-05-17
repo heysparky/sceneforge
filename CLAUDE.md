@@ -21,12 +21,25 @@ Testing happens in a running Foundry v14 instance. Zero console errors is a hard
 ## File layout
 
 ```
-sceneforge.js       <- entry point: hook registration only
+sceneforge.js           <- entry point: hook registration only
+sceneforge.css          <- all styles
 core/
-  settings.js       <- game.settings registration
-  socket.js         <- GM-authority socket handler
+  settings.js           <- game.settings registration
+  socket.js             <- GM-authority socket handler (roster.claim / roster.release implemented)
+  registry.js           <- scene type registry + dynamic loader
+  renderer.js           <- canvasReady → mount/teardown SceneForge apps
+  handles.js            <- draggable edge handle injection for GMs
 lang/
   en.json
+scenes/
+  SceneForgeScene.js    <- ApplicationV2 base class for all scene types
+  picker/
+    SceneTypePicker.js  <- "Create Scene" dialog; wires roster config on creation
+    picker.html
+  roster/
+    RosterScene.js      <- skeleton (M2 next: _prepareContext + template)
+    RosterConfig.js     <- pickRosterTemplates() actor picker dialog
+    roster.html         <- placeholder (M2 next: full card grid)
 ```
 
 ## Before release

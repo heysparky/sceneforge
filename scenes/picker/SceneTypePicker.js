@@ -20,9 +20,16 @@ export class SceneCreator {
           label: 'Create',
           default: true,
           callback: (_e, _b, dialog) => {
-            const name = dialog.element.querySelector('input[name="scene-name"]')?.value.trim() ?? '';
-            const type = dialog.element.querySelector('input[name="type"]:checked')?.value ?? 'battlemap';
-            return name ? { name, type } : null;
+            try {
+              console.log('[SceneForge] picker callback | args:', { _e, _b, dialog });
+              const name = dialog.element.querySelector('input[name="scene-name"]')?.value.trim() ?? '';
+              const type = dialog.element.querySelector('input[name="type"]:checked')?.value ?? 'battlemap';
+              console.log('[SceneForge] picker callback | result:', { name, type });
+              return name ? { name, type } : null;
+            } catch (err) {
+              console.error('[SceneForge] picker callback threw:', err);
+              return null;
+            }
           },
         },
         { action: 'cancel', label: 'Cancel', callback: () => null },
@@ -30,7 +37,8 @@ export class SceneCreator {
       rejectClose: false,
     });
 
-    if (!result) return;
+    console.log('[SceneForge] DialogV2 result:', result, typeof result);
+    if (!result || typeof result !== 'object') return;
 
     const { name, type } = result;
 

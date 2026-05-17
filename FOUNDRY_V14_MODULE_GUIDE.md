@@ -100,19 +100,51 @@ class MyPanel extends HandlebarsApplicationMixin(ApplicationV2) {
 
 ```js
 const result = await DialogV2.wait({
-  window: { title: 'Confirm' },
-  content: '<p>Are you sure?</p>',
+  window: { title: 'My Dialog' },
+  content: '<input name="my-field" type="text">',
   buttons: [
-    { action: 'ok', label: 'OK', default: true, callback: (_e, _b, dialog) => dialog.element.querySelector('input')?.value },
+    {
+      action: 'ok',
+      label: 'OK',
+      default: true,
+      // ✅ Always return a real value — even if it might be empty.
+      // Validate AFTER the dialog closes, not inside the callback.
+      callback: (_e, _b, dialog) => ({
+        value: dialog.element.querySelector('input[name="my-field"]')?.value.trim() ?? '',
+      }),
+    },
+    // ✅ Always add callback: () => null on dismiss/cancel buttons.
     { action: 'cancel', label: 'Cancel', callback: () => null },
   ],
-  rejectClose: false,  // resolves null on Escape instead of throwing
+  rejectClose: false,  // resolves null on X / Escape instead of throwing
 });
-// PITFALL: buttons without a callback resolve to the action string (e.g. 'cancel'),
-// which is truthy — always add callback: () => null on dismiss/cancel buttons.
-// PITFALL: a callback that returns null/falsy also resolves to the action string, not null.
-// Always return a real value from the Create/OK callback; validate the data after the dialog closes.
+
+// ✅ Guard against null (cancel/close) AND action strings (see pitfalls below)
+if (!result || typeof result !== 'object') return;
+
+const { value } = result;
+if (!value) { ui.notifications.warn('Please enter a value.'); return; }
 ```
+
+**DialogV2 pitfalls — verified in v14:**
+
+- **Button with no callback** resolves to the action string (`'cancel'`, `'ok'`, …).
+  Action strings are truthy — `if (!result) return` does NOT catch them.
+  Always add `callback: () => null` on every dismiss/cancel button.
+
+- **OK/Create callback returning null or any falsy value** also resolves to the action string,
+  not `null`. Never return null from a data-collection callback; always return the object
+  (even if fields are empty) and validate after the dialog closes.
+
+- **`dialog.element.querySelector(…)`** works. The third callback parameter `(_e, _b, dialog)`
+  is the `DialogV2` ApplicationV2 instance; `dialog.element` is its root HTMLElement.
+  Do not replace this with `document.getElementById` — it works and is the correct pattern.
+
+- **Guard pattern** after `DialogV2.wait`:
+  ```js
+  if (!result || typeof result !== 'object') return;  // catches null AND action strings
+  ```
+  Note: `typeof null === 'object'` in JS, so `!result` must be checked first.
 
 ### Templates
 
@@ -193,23 +225,25 @@ game.i18n.localize('KEY')               // i18n lookup
 
 ## Module-level code and the Foundry API
 
-PITFALL: `foundry.applications.api` (and `game`, `canvas`, `ui`, etc.) are NOT safe to access
-at ES module evaluation time — only inside functions called from `init` or later hooks.
+`foundry.applications.api`, `game`, `canvas`, `ui`, and all other Foundry globals are
+**NOT safe to access at ES module evaluation time**. Only access them inside functions
+called from `init` or later hooks.
 
 ```js
-// WRONG — runs at import time, before Foundry populates its API
+// ❌ WRONG — runs at import time, before Foundry initialises its API
 const { DialogV2 } = foundry.applications.api;
 
-// CORRECT — runs when the function is called, after init/ready
+// ✅ CORRECT — runs when the function is called (after init/ready)
 export async function myFunction() {
   const { DialogV2 } = foundry.applications.api;
-  ...
 }
 ```
 
-A top-level access that throws causes the entire module chain to fail silently: the file
-that throws fails, every file that imports it fails, and your entry-point module never
-registers any hooks — with no obvious error in the console.
+**Why this is dangerous:** a top-level access that throws cascades silently —
+the offending file fails to evaluate, every file that imports it (transitively) also fails,
+and your entry-point module never registers any hooks. No obvious error appears in the
+console; Foundry just silently skips your module. The symptom is that none of your code
+runs and Foundry's native handlers take over (which may themselves error in confusing ways).
 
 ---
 
@@ -447,3 +481,7 @@ Checklist:
 | GM client missing its own `updateScene` | Re-render locally after `await setFlag` |
 | `canvasReady` handler registered in `ready` misses hard-reload | `canvasReady` fires before `ready` in v14 — also call handler immediately if `canvas?.ready` |
 | Suppressing `#board` before `canvasReady` | Prevents PIXI from initialising; `canvasReady` never fires. Suppress only inside your `canvasReady` handler. |
+| Top-level `foundry.*` / `game.*` access in a module file | Move inside a function — top-level access at import time silently kills the entire module chain |
+| DialogV2 button with no callback | Always add `callback: () => null` — no-callback buttons resolve to the action string (truthy) |
+| DialogV2 OK/Create callback returning `null` or falsy | Resolves to the action string, not `null` — always return an object; validate fields after the dialog closes |
+| `if (!result) return` after `DialogV2.wait` | Doesn't catch action strings — use `if (!result \|\| typeof result !== 'object') return` |

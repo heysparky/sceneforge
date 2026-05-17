@@ -32,6 +32,7 @@ export async function pickRosterTemplates(excludeIds = []) {
 
   const result = await DialogV2.wait({
     window: { title: 'Configure Roster' },
+    position: { width: 600 },
     content,
     buttons: [
       {

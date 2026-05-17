@@ -60,8 +60,8 @@ async function _mount(scene) {
 
 function _measureChrome() {
   const controlsStrip = document.querySelector('#scene-controls > *:first-child');
-  const inset = (controlsStrip?.getBoundingClientRect().width ?? 0) * 1.5;
-  return { top: inset, left: inset, right: inset, bottom: inset };
+  const w = controlsStrip?.getBoundingClientRect().width ?? 0;
+  return { top: w * 1.5, left: w * 4, right: w * 8, bottom: w * 1.5 };
 }
 
 function _applyBounds(app, chrome) {

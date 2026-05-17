@@ -262,3 +262,59 @@
   text-align: center;
   margin-top: 2em;
 }
+
+/* ── Roster Config Picker ── */
+
+.sf-actor-picker p {
+  margin: 0 0 0.5em;
+  color: var(--color-text-dark-secondary, #888);
+  font-size: 0.9em;
+}
+
+.sf-actor-pick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border, #444);
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.sf-actor-pick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.sf-actor-pick-row:hover {
+  background: var(--color-hover, rgba(255,255,255,0.05));
+}
+
+.sf-actor-pick-row input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.sf-actor-pick-row img {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--color-border, #444);
+}
+
+.sf-actor-pick-row span {
+  flex: 1;
+  font-size: 0.95em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

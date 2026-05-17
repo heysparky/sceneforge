@@ -110,6 +110,8 @@ const result = await DialogV2.wait({
 });
 // PITFALL: buttons without a callback resolve to the action string (e.g. 'cancel'),
 // which is truthy — always add callback: () => null on dismiss/cancel buttons.
+// PITFALL: a callback that returns null/falsy also resolves to the action string, not null.
+// Always return a real value from the Create/OK callback; validate the data after the dialog closes.
 ```
 
 ### Templates

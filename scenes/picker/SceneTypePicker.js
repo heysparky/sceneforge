@@ -22,7 +22,7 @@ export class SceneCreator {
           callback: (_e, _b, dialog) => {
             const name = dialog.element.querySelector('input[name="scene-name"]')?.value.trim() ?? '';
             const type = dialog.element.querySelector('input[name="type"]:checked')?.value ?? 'battlemap';
-            return name ? { name, type } : null;
+            return { name, type };
           },
         },
         { action: 'cancel', label: 'Cancel', callback: () => null },
@@ -30,9 +30,10 @@ export class SceneCreator {
       rejectClose: false,
     });
 
-    if (!result) return;
+    if (!result || typeof result !== 'object') return;
 
     const { name, type } = result;
+    if (!name) { ui.notifications.warn('Please enter a scene name.'); return; }
 
     if (type === 'battlemap') {
       await Scene.create({ name }, { renderSheet: true });

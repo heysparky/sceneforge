@@ -10,6 +10,7 @@ SceneForge is a Foundry VTT v14 module. See `FOUNDRY_V14_MODULE_GUIDE.md` for ve
 - No polling — all updates via Foundry hooks and sockets.
 - One source of truth — all scene state in `scene.flags.sceneforge`. One document write per state change.
 - GM is the authority — players send socket requests; GM client validates and writes.
+- SceneForge scenes occupy the inner canvas rectangle only — inset from all four chrome edges. Do not extend under `#scene-controls` (left), `#sidebar` (right), `#navigation` (top), or `#hotbar` (bottom).
 
 ## Development workflow
 

@@ -60,13 +60,14 @@ async function _mount(scene) {
 
 function _measureChrome() {
   const nav = document.getElementById('navigation');
+  const controls = document.getElementById('scene-controls');
   const sidebar = document.getElementById('sidebar');
   const hotbar = document.getElementById('hotbar');
   return {
     top: nav?.getBoundingClientRect().bottom ?? 0,
+    left: controls?.getBoundingClientRect().right ?? 0,
     right: sidebar ? window.innerWidth - sidebar.getBoundingClientRect().left : 0,
     bottom: hotbar ? window.innerHeight - hotbar.getBoundingClientRect().top : 0,
-    left: 0,
   };
 }
 

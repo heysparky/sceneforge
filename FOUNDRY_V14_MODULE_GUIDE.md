@@ -338,9 +338,17 @@ function teardown() {
 
 **Bounds tracking** (keeping your container inside Foundry's chrome):
 
-- Left/top chrome: measure once at activation by scanning all elements by geometry — no class/id assumptions, sidebar IDs vary by system
-- Right/bottom: read `#sidebar` and `#hotbar` bounding rects dynamically
-- Track changes via `ResizeObserver` on sidebar/hotbar + `collapseSidebar` hook + `window resize`
+SceneForge scenes occupy the inner canvas rectangle — the area not covered by any Foundry chrome. Measure all four edges before hiding `#board`:
+
+| Edge   | Element           | Measurement                                  |
+|--------|-------------------|----------------------------------------------|
+| top    | `#navigation`     | `getBoundingClientRect().bottom`             |
+| left   | `#scene-controls` | `getBoundingClientRect().right`              |
+| right  | `#sidebar`        | `window.innerWidth - getBoundingClientRect().left` |
+| bottom | `#hotbar`         | `window.innerHeight - getBoundingClientRect().top` |
+
+- Measure once at activation (chrome is live when `canvasReady` fires)
+- For dynamic updates: `ResizeObserver` on `#sidebar` and `#hotbar`, listen to `collapseSidebar` hook and `window resize`
 - Teardown: `observer.disconnect()`, `Hooks.off('collapseSidebar', fn)`, `window.removeEventListener('resize', fn)`
 
 ---

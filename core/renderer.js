@@ -59,19 +59,9 @@ async function _mount(scene) {
 }
 
 function _measureChrome() {
-  const nav = document.getElementById('navigation');
-  // Use the first child of #scene-controls to measure only the narrow icon strip,
-  // not the expanded sub-tools panel which extends further into the canvas.
   const controlsStrip = document.querySelector('#scene-controls > *:first-child');
-  const sidebar = document.getElementById('sidebar');
-  const hotbar = document.getElementById('hotbar');
-  const hotbarH = hotbar ? window.innerHeight - hotbar.getBoundingClientRect().top : 0;
-  return {
-    top: (nav?.getBoundingClientRect().bottom ?? 0) + Math.round(hotbarH / 2),
-    left: (controlsStrip?.getBoundingClientRect().right ?? 0) * 5.5,
-    right: sidebar ? window.innerWidth - sidebar.getBoundingClientRect().left : 0,
-    bottom: hotbarH,
-  };
+  const inset = (controlsStrip?.getBoundingClientRect().width ?? 0) * 1.5;
+  return { top: inset, left: inset, right: inset, bottom: inset };
 }
 
 function _applyBounds(app, chrome) {

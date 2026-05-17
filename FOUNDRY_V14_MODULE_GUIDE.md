@@ -189,6 +189,28 @@ game.i18n.localize('KEY')               // i18n lookup
 
 ---
 
+## Module-level code and the Foundry API
+
+PITFALL: `foundry.applications.api` (and `game`, `canvas`, `ui`, etc.) are NOT safe to access
+at ES module evaluation time — only inside functions called from `init` or later hooks.
+
+```js
+// WRONG — runs at import time, before Foundry populates its API
+const { DialogV2 } = foundry.applications.api;
+
+// CORRECT — runs when the function is called, after init/ready
+export async function myFunction() {
+  const { DialogV2 } = foundry.applications.api;
+  ...
+}
+```
+
+A top-level access that throws causes the entire module chain to fail silently: the file
+that throws fails, every file that imports it fails, and your entry-point module never
+registers any hooks — with no obvious error in the console.
+
+---
+
 ## Hooks — Lifecycle and Conventions
 
 ```js

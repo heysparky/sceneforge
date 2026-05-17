@@ -1,11 +1,10 @@
-const { DialogV2 } = foundry.applications.api;
-
 /**
  * Opens a modal actor picker and returns the selected actor IDs.
  * @param {string[]} excludeIds - Actor IDs already on the roster (will not appear in the list).
  * @returns {Promise<string[]>} Selected actor IDs, or [] if the GM cancelled/skipped.
  */
 export async function pickRosterTemplates(excludeIds = []) {
+  const { DialogV2 } = foundry.applications.api;
   const excluded = new Set(excludeIds);
   const actors = game.actors
     .filter(a => !excluded.has(a.id))

@@ -6,6 +6,11 @@ let _currentSceneId = null;
 let _teardownHandles = null;
 
 export function initRenderer() {
+  // canvasInit fires before the canvas draws — suppress immediately on hard
+  // reload so the gray grid never appears for SceneForge scenes.
+  Hooks.on('canvasInit', canvas => {
+    if (canvas.scene?.flags?.sceneforge?.type) _suppress();
+  });
   Hooks.on('canvasReady', _onCanvasReady);
   Hooks.on('updateScene', _onUpdateScene);
   Hooks.on('sceneforge:dataChanged', _onDataChanged);
@@ -43,13 +48,15 @@ async function _mount(scene) {
   const type = scene?.flags?.sceneforge?.type;
   if (!type) return;
 
+  // Suppress before the async import so the canvas doesn't flash while loading.
+  _suppress();
+
   const SceneClass = await loadType(type);
   if (!SceneClass) {
     console.warn(`SceneForge | Unknown scene type: "${type}"`);
+    _restore();
     return;
   }
-
-  _suppress();
   _currentApp = new SceneClass(scene);
   await _currentApp.render({ force: true });
   _applyBounds(_currentApp);

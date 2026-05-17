@@ -4,18 +4,15 @@ import { injectHandles } from './handles.js';
 let _currentApp = null;
 let _currentSceneId = null;
 let _teardownHandles = null;
-let _splash = null;
 
 export function initRenderer() {
-  // On hard reload, show a solid splash overlay to cover the gray PIXI grid
-  // while canvasReady fires and the SceneForge app loads. We do NOT suppress
-  // #board here — doing so prevents PIXI from initialising and canvasReady
-  // from firing. The splash is removed once _mount completes.
-  if (game.scenes?.viewed?.flags?.sceneforge?.type) _showSplash();
-
   Hooks.on('canvasReady', _onCanvasReady);
   Hooks.on('updateScene', _onUpdateScene);
   Hooks.on('sceneforge:dataChanged', _onDataChanged);
+
+  // In v14, canvasReady can fire before ready. If the canvas is already
+  // initialised by the time we register, mount immediately.
+  if (canvas?.ready) _onCanvasReady().catch(console.error);
 }
 
 async function _onCanvasReady() {
@@ -50,7 +47,6 @@ async function _mount(scene) {
 
   if (!type) {
     _restore();
-    _hideSplash();
     return;
   }
 
@@ -60,7 +56,6 @@ async function _mount(scene) {
   if (!SceneClass) {
     console.warn(`SceneForge | Unknown scene type: "${type}"`);
     _restore();
-    _hideSplash();
     return;
   }
 
@@ -73,25 +68,6 @@ async function _mount(scene) {
   }
 
   _currentSceneId = scene.id;
-  _hideSplash();
-}
-
-function _showSplash() {
-  if (_splash) return;
-  _splash = document.createElement('div');
-  Object.assign(_splash.style, {
-    position: 'fixed',
-    inset: '0',
-    background: 'var(--color-bg, #1a1a2e)',
-    zIndex: '10000',
-    pointerEvents: 'none',
-  });
-  document.body.appendChild(_splash);
-}
-
-function _hideSplash() {
-  _splash?.remove();
-  _splash = null;
 }
 
 function _getBounds() {

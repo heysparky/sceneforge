@@ -25,7 +25,7 @@ export class SceneCreator {
             return name ? { name, type } : null;
           },
         },
-        { action: 'cancel', label: 'Cancel' },
+        { action: 'cancel', label: 'Cancel', callback: () => null },
       ],
       rejectClose: false,
     });

@@ -104,10 +104,12 @@ const result = await DialogV2.wait({
   content: '<p>Are you sure?</p>',
   buttons: [
     { action: 'ok', label: 'OK', default: true, callback: (_e, _b, dialog) => dialog.element.querySelector('input')?.value },
-    { action: 'cancel', label: 'Cancel' },
+    { action: 'cancel', label: 'Cancel', callback: () => null },
   ],
   rejectClose: false,  // resolves null on Escape instead of throwing
 });
+// PITFALL: buttons without a callback resolve to the action string (e.g. 'cancel'),
+// which is truthy — always add callback: () => null on dismiss/cancel buttons.
 ```
 
 ### Templates

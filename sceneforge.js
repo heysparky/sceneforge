@@ -45,7 +45,7 @@ function _interceptSceneCreate() {
 
     // Foundry v14 uses data-action="createDocument" on the create button.
     // Clone the node to strip Foundry's delegated listener, then replace it.
-    const original = el.querySelector('[data-action="createDocument"]');
+    const original = el.querySelector('[data-action="createEntry"]');
     if (!original) {
       console.warn('SceneForge | Could not find Create Scene button — selector may need updating for this Foundry version.');
       return;

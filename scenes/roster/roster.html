@@ -1,0 +1,55 @@
+<div class="sceneforge-roster">
+  <header class="sf-roster-header">
+    <h2>{{scene.name}} — Roster</h2>
+    {{#if isGM}}
+    <div class="sf-gm-bar">
+      <button type="button" class="sf-add-template">
+        <i class="fas fa-plus"></i> Add Template
+      </button>
+      <button type="button" class="sf-reset-all">
+        <i class="fas fa-rotate-left"></i> Reset All
+      </button>
+    </div>
+    {{/if}}
+  </header>
+
+  <div class="sf-roster-grid">
+    {{#each templates}}
+    <div class="sf-actor-card{{#if claimed}} sf-claimed{{/if}}{{#if isMine}} sf-mine{{/if}}">
+      <img class="sf-actor-portrait" src="{{img}}" alt="{{name}}">
+      <div class="sf-actor-info">
+        <strong class="sf-actor-name">{{name}}</strong>
+        <span class="sf-claim-status {{#if claimed}}{{#if isMine}}sf-mine-label{{else}}sf-taken-label{{/if}}{{else}}sf-open-label{{/if}}">
+          {{#if claimed}}
+            {{#if isMine}}Your character{{else}}Claimed — {{claimerName}}{{/if}}
+          {{else}}
+            Available
+          {{/if}}
+        </span>
+      </div>
+      <div class="sf-actor-actions">
+        {{#if canClaim}}
+        <button type="button" class="sf-claim" data-actor-id="{{id}}">Claim</button>
+        {{/if}}
+        {{#if canRelease}}
+        <button type="button" class="sf-release" data-actor-id="{{id}}">Release</button>
+        {{/if}}
+        {{#if @root.isGM}}
+        {{#if claimed}}
+        <button type="button" class="sf-reset-claim" data-actor-id="{{id}}" title="Reset this claim">
+          <i class="fas fa-rotate-left"></i>
+        </button>
+        {{/if}}
+        <button type="button" class="sf-remove-template" data-actor-id="{{id}}" title="Remove from roster">
+          <i class="fas fa-times"></i>
+        </button>
+        {{/if}}
+      </div>
+    </div>
+    {{else}}
+    <p class="sf-empty-state">
+      {{#if isGM}}No template actors added yet. Click "Add Template" to begin.{{else}}No characters are available.{{/if}}
+    </p>
+    {{/each}}
+  </div>
+</div>

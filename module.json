@@ -9,7 +9,7 @@
   },
   "authors": [{ "name": "Karen McMullan" }],
   "esmodules": ["sceneforge.js"],
-  "styles": [],
+  "styles": ["sceneforge.css"],
   "languages": [
     { "lang": "en", "name": "English", "path": "lang/en.json" }
   ],

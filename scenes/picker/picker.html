@@ -1,0 +1,21 @@
+<form class="sceneforge-picker-form">
+  <div class="sf-picker-grid">
+    {{#each types}}
+    <label class="sf-type-option{{#unless available}} sf-unavailable{{/unless}}" title="{{label}}{{#unless available}} (Coming Soon){{/unless}}">
+      <input type="radio" name="type" value="{{key}}"
+        {{#unless available}}disabled{{/unless}}
+        {{#if selected}}checked{{/if}}>
+      <i class="fas {{icon}}"></i>
+      <span class="sf-type-label">{{label}}</span>
+      {{#unless available}}<span class="sf-coming-soon">Coming Soon</span>{{/unless}}
+    </label>
+    {{/each}}
+
+    <label class="sf-type-option sf-type-none" title="Remove SceneForge type">
+      <input type="radio" name="type" value=""
+        {{#unless currentType}}checked{{/unless}}>
+      <i class="fas fa-ban"></i>
+      <span class="sf-type-label">None</span>
+    </label>
+  </div>
+</form>

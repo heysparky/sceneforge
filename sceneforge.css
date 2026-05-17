@@ -1,0 +1,221 @@
+/* ── SceneForge base ── */
+
+.sceneforge-scene-app {
+  background: var(--color-bg, #1a1a2e);
+  overflow-y: auto;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* ── Scene Directory button ── */
+
+.sceneforge-dir-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  margin-left: 0.25em;
+  color: var(--color-text-dark-secondary, #888);
+  flex-shrink: 0;
+}
+
+.sceneforge-dir-btn.sf-active {
+  color: var(--color-warm-4, #c9a227);
+}
+
+.sceneforge-dir-btn:hover {
+  color: var(--color-text-primary, #f0f0e0);
+}
+
+/* ── Scene Type Picker ── */
+
+.sceneforge-picker-form {
+  padding: 0.5em 0;
+}
+
+.sf-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5em;
+}
+
+.sf-type-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0.75em 0.5em;
+  border: 1px solid var(--color-border, #444);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  text-align: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sf-type-option input[type="radio"] {
+  display: none;
+}
+
+.sf-type-option:has(input:checked) {
+  border-color: var(--color-warm-4, #c9a227);
+  background: var(--color-warm-1, rgba(201,162,39,0.1));
+}
+
+.sf-type-option:not(.sf-unavailable):hover {
+  background: var(--color-hover, rgba(255,255,255,0.05));
+}
+
+.sf-type-option.sf-unavailable {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sf-type-option i {
+  font-size: 1.5em;
+}
+
+.sf-type-label {
+  font-weight: 600;
+}
+
+.sf-coming-soon {
+  font-size: 0.75em;
+  color: var(--color-text-dark-secondary, #888);
+  font-style: italic;
+}
+
+/* ── Roster ── */
+
+.sceneforge-roster {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1em 1.5em;
+  color: var(--color-text-primary, #f0f0e0);
+  font-family: var(--font-primary, serif);
+}
+
+.sf-roster-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1em;
+  border-bottom: 1px solid var(--color-border, #444);
+  padding-bottom: 0.5em;
+}
+
+.sf-roster-header h2 {
+  margin: 0;
+  font-size: 1.4em;
+}
+
+.sf-gm-bar {
+  display: flex;
+  gap: 0.5em;
+}
+
+.sf-gm-bar button {
+  font-size: 0.85em;
+  padding: 0.3em 0.75em;
+  cursor: pointer;
+}
+
+.sf-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1em;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sf-actor-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.75em;
+  border: 1px solid var(--color-border, #444);
+  border-radius: 6px;
+  background: var(--color-bg-option, rgba(255,255,255,0.04));
+  text-align: center;
+  position: relative;
+}
+
+.sf-actor-card.sf-claimed {
+  border-color: var(--color-text-dark-secondary, #888);
+  opacity: 0.75;
+}
+
+.sf-actor-card.sf-mine {
+  border-color: var(--color-warm-4, #c9a227);
+  opacity: 1;
+}
+
+.sf-actor-portrait {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid var(--color-border, #444);
+}
+
+.sf-mine .sf-actor-portrait {
+  border-color: var(--color-warm-4, #c9a227);
+}
+
+.sf-actor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.sf-actor-name {
+  font-size: 0.95em;
+}
+
+.sf-claim-status {
+  font-size: 0.75em;
+}
+
+.sf-open-label { color: var(--color-level-success, #6cae75); }
+.sf-mine-label { color: var(--color-warm-4, #c9a227); }
+.sf-taken-label { color: var(--color-text-dark-secondary, #888); }
+
+.sf-actor-actions {
+  display: flex;
+  gap: 0.4em;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.sf-actor-actions button {
+  font-size: 0.8em;
+  padding: 0.25em 0.6em;
+  cursor: pointer;
+}
+
+.sf-reset-claim,
+.sf-remove-template {
+  background: transparent;
+  border: 1px solid var(--color-border, #444);
+  color: var(--color-text-dark-secondary, #888);
+  border-radius: 3px;
+  cursor: pointer;
+  padding: 0.2em 0.4em;
+}
+
+.sf-remove-template:hover {
+  border-color: var(--color-level-error, #c24141);
+  color: var(--color-level-error, #c24141);
+}
+
+.sf-empty-state {
+  grid-column: 1 / -1;
+  color: var(--color-text-dark-secondary, #888);
+  font-style: italic;
+  text-align: center;
+  margin-top: 2em;
+}

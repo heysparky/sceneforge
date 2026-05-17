@@ -12,7 +12,7 @@ SceneForge is a Foundry VTT v14 module. See `FOUNDRY_V14_MODULE_GUIDE.md` for ve
 - GM is the authority — players send socket requests; GM client validates and writes.
 - SceneForge scenes occupy the inner canvas rectangle only — inset from all four chrome edges:
   - **top**: `#navigation` bottom + half the hotbar height (visual breathing room)
-  - **left**: `#scene-controls > *:first-child` right edge — use the first child, not `#scene-controls` itself, which includes the expanded sub-tools panel
+  - **left**: `#scene-controls > *:first-child` right edge × 4 — multiplied to provide sufficient clearance from the controls panel
   - **right**: `window.innerWidth` − `#sidebar` left
   - **bottom**: `window.innerHeight` − `#hotbar` top
 

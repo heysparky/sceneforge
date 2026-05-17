@@ -19,9 +19,9 @@ export class SceneCreator {
           action: 'create',
           label: 'Create',
           default: true,
-          callback: () => {
-            const name = document.getElementById('sf-scene-name')?.value.trim() ?? '';
-            const type = document.querySelector('.sceneforge-creator-form input[name="type"]:checked')?.value ?? 'battlemap';
+          callback: (_e, _b, dialog) => {
+            const name = dialog.element.querySelector('input[name="scene-name"]')?.value.trim() ?? '';
+            const type = dialog.element.querySelector('input[name="type"]:checked')?.value ?? 'battlemap';
             return name ? { name, type } : null;
           },
         },

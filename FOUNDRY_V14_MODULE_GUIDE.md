@@ -103,14 +103,7 @@ const result = await DialogV2.wait({
   window: { title: 'Confirm' },
   content: '<p>Are you sure?</p>',
   buttons: [
-    {
-      action: 'ok', label: 'OK', default: true,
-      // PITFALL: do NOT rely on the `dialog` third param — if it's not the ApplicationV2
-      // instance the callback throws silently and DialogV2 resolves to the action string
-      // ('ok'), which is truthy and bypasses null guards. Query the DOM directly instead;
-      // dialogs are modal so IDs and unique class selectors are unambiguous.
-      callback: () => document.getElementById('my-input')?.value,
-    },
+    { action: 'ok', label: 'OK', default: true, callback: (_e, _b, dialog) => dialog.element.querySelector('input')?.value },
     { action: 'cancel', label: 'Cancel', callback: () => null },
   ],
   rejectClose: false,  // resolves null on Escape instead of throwing

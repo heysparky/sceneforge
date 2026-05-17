@@ -6,11 +6,10 @@ let _currentSceneId = null;
 let _teardownHandles = null;
 
 export function initRenderer() {
-  // canvasInit fires before the canvas draws — suppress immediately on hard
-  // reload so the gray grid never appears for SceneForge scenes.
-  Hooks.on('canvasInit', canvas => {
-    if (canvas.scene?.flags?.sceneforge?.type) _suppress();
-  });
+  // Suppress immediately at ready-time if the viewed scene is a SceneForge
+  // type, before the canvas has a chance to draw the gray grid.
+  if (game.scenes?.viewed?.flags?.sceneforge?.type) _suppress();
+
   Hooks.on('canvasReady', _onCanvasReady);
   Hooks.on('updateScene', _onUpdateScene);
   Hooks.on('sceneforge:dataChanged', _onDataChanged);

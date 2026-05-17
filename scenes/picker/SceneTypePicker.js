@@ -1,4 +1,5 @@
 import { getAll } from '../../core/registry.js';
+import { pickRosterTemplates } from '../roster/RosterConfig.js';
 
 export class SceneCreator {
   static async open() {
@@ -36,7 +37,13 @@ export class SceneCreator {
     if (type === 'battlemap') {
       await Scene.create({ name }, { renderSheet: true });
     } else {
-      await Scene.create({ name, flags: { sceneforge: { type } } });
+      const scene = await Scene.create({ name, flags: { sceneforge: { type } } });
+      if (type === 'roster') await _configureRoster(scene);
     }
   }
+}
+
+async function _configureRoster(scene) {
+  const selectedIds = await pickRosterTemplates();
+  await scene.setFlag('sceneforge', 'roster', { templates: selectedIds, claims: {} });
 }

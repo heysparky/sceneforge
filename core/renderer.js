@@ -68,7 +68,7 @@ function _measureChrome() {
   const hotbarH = hotbar ? window.innerHeight - hotbar.getBoundingClientRect().top : 0;
   return {
     top: (nav?.getBoundingClientRect().bottom ?? 0) + Math.round(hotbarH / 2),
-    left: (controlsStrip?.getBoundingClientRect().right ?? 0) * 4,
+    left: (controlsStrip?.getBoundingClientRect().right ?? 0) * 5.5,
     right: sidebar ? window.innerWidth - sidebar.getBoundingClientRect().left : 0,
     bottom: hotbarH,
   };

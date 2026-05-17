@@ -10,7 +10,7 @@ SceneForge is a Foundry VTT v14 module. See `FOUNDRY_V14_MODULE_GUIDE.md` for ve
 - No polling — all updates via Foundry hooks and sockets.
 - One source of truth — all scene state in `scene.flags.sceneforge`. One document write per state change.
 - GM is the authority — players send socket requests; GM client validates and writes.
-- SceneForge scenes occupy the inner canvas rectangle only — inset by a multiple of the scene controls strip width (`#scene-controls > *:first-child` `.width`): top × 1.5, left × 4, right × 8, bottom × 1.5.
+- SceneForge scenes occupy an adjustable inner canvas rectangle. Bounds are stored as percentages in the `sceneforge.sceneBounds` client setting (default: 25% inset on all sides). GMs can drag the edge handles to reposition — a toggle button in the top-left corner of the scene reveals them.
 
 ## Development workflow
 

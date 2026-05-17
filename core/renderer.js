@@ -1,7 +1,9 @@
 import { loadType } from './registry.js';
+import { injectHandles } from './handles.js';
 
 let _currentApp = null;
 let _currentSceneId = null;
+let _teardownHandles = null;
 
 export function initRenderer() {
   Hooks.on('canvasReady', _onCanvasReady);
@@ -33,10 +35,8 @@ function _onDataChanged(sceneId) {
 }
 
 async function _mount(scene) {
-  if (_currentApp) {
-    await _currentApp.close();
-    _currentApp = null;
-  }
+  if (_teardownHandles) { _teardownHandles(); _teardownHandles = null; }
+  if (_currentApp) { await _currentApp.close(); _currentApp = null; }
   _restore();
   _currentSceneId = null;
 
@@ -49,33 +49,44 @@ async function _mount(scene) {
     return;
   }
 
-  const chrome = _measureChrome();
   _suppress();
-
   _currentApp = new SceneClass(scene);
   await _currentApp.render({ force: true });
-  _applyBounds(_currentApp, chrome);
+  _applyBounds(_currentApp);
+
+  if (game.user.isGM) {
+    _teardownHandles = injectHandles(_currentApp.element);
+  }
+
   _currentSceneId = scene.id;
 }
 
-function _measureChrome() {
-  const controlsStrip = document.querySelector('#scene-controls > *:first-child');
-  const w = controlsStrip?.getBoundingClientRect().width ?? 0;
-  return { top: w * 1.5, left: w * 4, right: w * 8, bottom: w * 1.5 };
+// Bounds are stored as percentages of viewport dimensions so they scale with
+// window resizes. Default: 25% inset on all sides.
+function _getBounds() {
+  const b = game.settings.get('sceneforge', 'sceneBounds')
+    ?? { top: 25, left: 25, right: 25, bottom: 25 };
+  return {
+    top:    (b.top    / 100) * window.innerHeight,
+    left:   (b.left   / 100) * window.innerWidth,
+    right:  (b.right  / 100) * window.innerWidth,
+    bottom: (b.bottom / 100) * window.innerHeight,
+  };
 }
 
-function _applyBounds(app, chrome) {
+function _applyBounds(app) {
   const el = app.element;
   if (!el) return;
+  const b = _getBounds();
   Object.assign(el.style, {
-    position: 'fixed',
-    top: `${chrome.top}px`,
-    left: `${chrome.left}px`,
-    right: `${chrome.right}px`,
-    bottom: `${chrome.bottom}px`,
-    margin: '0',
+    position:  'fixed',
+    top:       `${b.top}px`,
+    left:      `${b.left}px`,
+    right:     `${b.right}px`,
+    bottom:    `${b.bottom}px`,
+    margin:    '0',
     maxHeight: 'none',
-    zIndex: '80',
+    zIndex:    '80',
   });
 }
 

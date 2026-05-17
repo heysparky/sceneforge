@@ -9,6 +9,43 @@
 }
 
 
+/* ── Layout handles (GM only) ── */
+
+.sf-layout-toggle {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--color-border, #444);
+  color: var(--color-text-dark-secondary, #888);
+  border-radius: 3px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 0.75em;
+  line-height: 1;
+}
+
+.sf-layout-toggle:hover,
+.sf-layout-toggle.sf-active {
+  color: var(--color-warm-4, #c9a227);
+  border-color: var(--color-warm-4, #c9a227);
+}
+
+.sf-handle {
+  position: absolute;
+  z-index: 10;
+  background: rgba(201, 162, 39, 0.35);
+  transition: background 0.15s;
+}
+
+.sf-handle:hover { background: rgba(201, 162, 39, 0.65); }
+
+.sf-handle-top    { top: 0;    left: 0;  right: 0;    height: 6px; cursor: ns-resize; }
+.sf-handle-bottom { bottom: 0; left: 0;  right: 0;    height: 6px; cursor: ns-resize; }
+.sf-handle-left   { left: 0;   top: 6px; bottom: 6px; width: 6px;  cursor: ew-resize; }
+.sf-handle-right  { right: 0;  top: 6px; bottom: 6px; width: 6px;  cursor: ew-resize; }
+
 /* ── Scene Creator ── */
 
 .sceneforge-creator-form {

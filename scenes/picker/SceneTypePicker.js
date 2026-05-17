@@ -1,38 +1,42 @@
 import { getAll } from '../../core/registry.js';
 
-export class SceneTypePicker {
-  static async open(scene) {
+export class SceneCreator {
+  static async open() {
     const { DialogV2 } = foundry.applications.api;
-    const currentType = scene.flags?.sceneforge?.type ?? '';
-    const types = getAll().map(t => ({ ...t, selected: t.key === currentType }));
+    const types = getAll();
 
     const content = await foundry.applications.handlebars.renderTemplate(
       'modules/sceneforge/scenes/picker/picker.html',
-      { types, currentType }
+      { types }
     );
 
-    const selected = await DialogV2.wait({
-      window: { title: 'SceneForge Scene Type' },
+    const result = await DialogV2.wait({
+      window: { title: 'Create Scene' },
       content,
       buttons: [
         {
-          action: 'set',
-          label: 'Set Type',
+          action: 'create',
+          label: 'Create',
           default: true,
-          callback: (_e, _b, dialog) =>
-            dialog.element.querySelector('input[name="type"]:checked')?.value ?? null,
+          callback: (_e, _b, dialog) => {
+            const name = dialog.element.querySelector('input[name="scene-name"]')?.value.trim() ?? '';
+            const type = dialog.element.querySelector('input[name="type"]:checked')?.value ?? 'battlemap';
+            return name ? { name, type } : null;
+          },
         },
         { action: 'cancel', label: 'Cancel' },
       ],
       rejectClose: false,
     });
 
-    if (selected === null) return;
+    if (!result) return;
 
-    if (selected === '') {
-      await scene.update({ 'flags.sceneforge.-=type': null });
-    } else if (selected !== currentType) {
-      await scene.setFlag('sceneforge', 'type', selected);
+    const { name, type } = result;
+
+    if (type === 'battlemap') {
+      await Scene.create({ name }, { renderSheet: true });
+    } else {
+      await Scene.create({ name, flags: { sceneforge: { type } } });
     }
   }
 }

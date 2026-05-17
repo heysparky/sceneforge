@@ -2,7 +2,7 @@ import { registerSettings } from './core/settings.js';
 import { initSocket } from './core/socket.js';
 import { registerType } from './core/registry.js';
 import { initRenderer } from './core/renderer.js';
-import { SceneTypePicker } from './scenes/picker/SceneTypePicker.js';
+import { SceneCreator } from './scenes/picker/SceneTypePicker.js';
 
 Hooks.once('init', () => {
   registerSettings();
@@ -12,7 +12,7 @@ Hooks.once('init', () => {
 Hooks.once('ready', () => {
   initSocket();
   initRenderer();
-  _addSceneDirectoryButton();
+  _interceptSceneCreate();
 });
 
 function _registerSceneTypes() {
@@ -38,24 +38,25 @@ function _registerSceneTypes() {
   );
 }
 
-function _addSceneDirectoryButton() {
+function _interceptSceneCreate() {
   Hooks.on('renderSceneDirectory', (_app, html) => {
     if (!game.user.isGM) return;
     const el = html.querySelector ? html : html[0];
-    el.querySelectorAll('[data-document-id]').forEach(entry => {
-      const scene = game.scenes.get(entry.dataset.documentId);
-      if (!scene) return;
-      const type = scene.flags?.sceneforge?.type;
-      const btn = document.createElement('a');
-      btn.className = 'sceneforge-dir-btn' + (type ? ' sf-active' : '');
-      btn.title = type ? `SceneForge: ${type}` : 'Set SceneForge Type';
-      btn.innerHTML = '<i class="fa-solid fa-masks-theater"></i>';
-      btn.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        SceneTypePicker.open(scene);
-      });
-      entry.querySelector('.document-name')?.after(btn);
+
+    // Foundry v14 uses data-action="createDocument" on the create button.
+    // Clone the node to strip Foundry's delegated listener, then replace it.
+    const original = el.querySelector('[data-action="createDocument"]');
+    if (!original) {
+      console.warn('SceneForge | Could not find Create Scene button — selector may need updating for this Foundry version.');
+      return;
+    }
+
+    const btn = original.cloneNode(true);
+    original.replaceWith(btn);
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      SceneCreator.open();
     });
   });
 }

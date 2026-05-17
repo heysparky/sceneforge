@@ -1,21 +1,24 @@
-<form class="sceneforge-picker-form">
+<form class="sceneforge-creator-form">
+  <div class="sf-scene-name-row">
+    <label for="sf-scene-name">Name</label>
+    <input id="sf-scene-name" type="text" name="scene-name" placeholder="Scene Name" autofocus>
+  </div>
+
   <div class="sf-picker-grid">
+    <label class="sf-type-option" title="Standard battle map scene">
+      <input type="radio" name="type" value="battlemap" checked>
+      <i class="fas fa-map"></i>
+      <span class="sf-type-label">Battlemap</span>
+    </label>
+
     {{#each types}}
     <label class="sf-type-option{{#unless available}} sf-unavailable{{/unless}}" title="{{label}}{{#unless available}} (Coming Soon){{/unless}}">
       <input type="radio" name="type" value="{{key}}"
-        {{#unless available}}disabled{{/unless}}
-        {{#if selected}}checked{{/if}}>
+        {{#unless available}}disabled{{/unless}}>
       <i class="fas {{icon}}"></i>
       <span class="sf-type-label">{{label}}</span>
       {{#unless available}}<span class="sf-coming-soon">Coming Soon</span>{{/unless}}
     </label>
     {{/each}}
-
-    <label class="sf-type-option sf-type-none" title="Remove SceneForge type">
-      <input type="radio" name="type" value=""
-        {{#unless currentType}}checked{{/unless}}>
-      <i class="fas fa-ban"></i>
-      <span class="sf-type-label">None</span>
-    </label>
   </div>
 </form>

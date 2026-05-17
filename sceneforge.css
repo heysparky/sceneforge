@@ -8,31 +8,27 @@
   box-shadow: none;
 }
 
-/* ── Scene Directory button ── */
 
-.sceneforge-dir-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5em;
-  height: 1.5em;
-  margin-left: 0.25em;
-  color: var(--color-text-dark-secondary, #888);
-  flex-shrink: 0;
-}
+/* ── Scene Creator ── */
 
-.sceneforge-dir-btn.sf-active {
-  color: var(--color-warm-4, #c9a227);
-}
-
-.sceneforge-dir-btn:hover {
-  color: var(--color-text-primary, #f0f0e0);
-}
-
-/* ── Scene Type Picker ── */
-
-.sceneforge-picker-form {
+.sceneforge-creator-form {
   padding: 0.5em 0;
+}
+
+.sf-scene-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.75em;
+}
+
+.sf-scene-name-row label {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.sf-scene-name-row input {
+  flex: 1;
 }
 
 .sf-picker-grid {
@@ -88,6 +84,16 @@
 }
 
 /* ── Roster ── */
+
+.sceneforge-roster.sf-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-dark-secondary, #888);
+  font-size: 1.5em;
+  font-style: italic;
+}
 
 .sceneforge-roster {
   display: flex;

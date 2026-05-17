@@ -41,13 +41,15 @@ function _onDataChanged(sceneId) {
 async function _mount(scene) {
   if (_teardownHandles) { _teardownHandles(); _teardownHandles = null; }
   if (_currentApp) { await _currentApp.close(); _currentApp = null; }
-  _restore();
   _currentSceneId = null;
 
   const type = scene?.flags?.sceneforge?.type;
-  if (!type) return;
 
-  // Suppress before the async import so the canvas doesn't flash while loading.
+  if (!type) {
+    _restore();
+    return;
+  }
+
   _suppress();
 
   const SceneClass = await loadType(type);
@@ -56,6 +58,7 @@ async function _mount(scene) {
     _restore();
     return;
   }
+
   _currentApp = new SceneClass(scene);
   await _currentApp.render({ force: true });
   _applyBounds(_currentApp);

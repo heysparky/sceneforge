@@ -2,6 +2,7 @@ const CHANNEL = 'module.sceneforge';
 
 export function initSocket() {
   game.socket.on(CHANNEL, msg => {
+    console.log('[SF socket] received', msg, 'isGM:', game.user.isGM);
     if (!game.user.isGM) return;
     _handleGM(msg).catch(console.error);
   });
@@ -12,15 +13,17 @@ export function emit(msg) {
 }
 
 async function _handleGM({ action, actorId, userId }) {
+  console.log('[SF _handleGM]', action, actorId, userId);
   if (action === 'claim')   await applyClaim(actorId, userId);
   if (action === 'release') await applyRelease(actorId, userId);
 }
 
 export async function applyClaim(actorId, userId) {
+  console.log('[SF applyClaim] start', actorId, userId);
   const template = game.actors.get(actorId);
-  if (!template) return;
-  if (template.getFlag('sceneforge', 'locked')) return;
-  if (template.getFlag('sceneforge', 'claimedBy')) return; // race guard
+  if (!template) { console.log('[SF applyClaim] no template'); return; }
+  if (template.getFlag('sceneforge', 'locked')) { console.log('[SF applyClaim] locked'); return; }
+  if (template.getFlag('sceneforge', 'claimedBy')) { console.log('[SF applyClaim] already claimed'); return; }
 
   // One-per-player: release any character this user already holds
   for (const actor of game.actors) {
@@ -39,7 +42,9 @@ export async function applyClaim(actorId, userId) {
     [userId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER,
   };
 
+  console.log('[SF applyClaim] creating clone for', userId);
   const clone = await Actor.create(data);
+  console.log('[SF applyClaim] clone result:', clone?.name ?? 'NULL');
   if (!clone) return;
 
   await template.setFlag('sceneforge', 'claimedBy', userId);

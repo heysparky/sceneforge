@@ -2,7 +2,7 @@ const CHANNEL = 'module.sceneforge';
 
 export function initSocket() {
   game.socket.on(CHANNEL, msg => {
-    if (!game.users.activeGM?.isSelf) return;
+    if (!game.user.isGM) return;
     _handleGM(msg).catch(console.error);
   });
 }

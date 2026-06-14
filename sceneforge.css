@@ -164,7 +164,7 @@
 /* horizontal scroller */
 .sf-roster__viewport { position: relative; flex: 1; overflow: hidden; }
 .sf-roster__scroller {
-  display: flex; gap: 14px; overflow-x: auto; overflow-y: visible;
+  display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; overflow-y: visible;
   padding: 2px 2px 12px; scroll-snap-type: x proximity;
   height: 100%;
 }

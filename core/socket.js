@@ -2,8 +2,8 @@ const CHANNEL = 'module.sceneforge';
 
 export function initSocket() {
   game.socket.on(CHANNEL, msg => {
-    if (game.user.isGM) handleGM(msg).catch(console.error);
-    else handlePlayer(msg);
+    if (!game.users.activeGM?.isSelf) return;
+    _handleGM(msg).catch(console.error);
   });
 }
 
@@ -11,62 +11,59 @@ export function emit(msg) {
   game.socket.emit(CHANNEL, msg);
 }
 
-async function handleGM({ action, sceneId, senderId, payload }) {
-  const scene = game.scenes.get(sceneId);
-  if (!scene) return;
-
-  if (action === 'sceneforge.roster.claim') {
-    await _rosterClaim(scene, senderId, payload);
-  } else if (action === 'sceneforge.roster.release') {
-    await _rosterRelease(scene, senderId, payload);
-  }
+async function _handleGM({ action, actorId, userId }) {
+  if (action === 'claim')   await applyClaim(actorId, userId);
+  if (action === 'release') await applyRelease(actorId, userId);
 }
 
-function handlePlayer(_msg) {
-  // GM broadcasts are handled via updateScene hook — no explicit player handler needed yet
-}
-
-async function _rosterClaim(scene, userId, { actorId }) {
-  const roster = scene.flags?.sceneforge?.roster;
-  if (!roster) return;
-
-  const templates = roster.templates ?? [];
-  const claims = roster.claims ?? {};
-
-  if (!templates.includes(actorId)) return;
-  if (claims[actorId]) return; // already claimed
-  if (Object.values(claims).some(c => c?.userId === userId)) return; // player already has a claim
-
+export async function applyClaim(actorId, userId) {
   const template = game.actors.get(actorId);
   if (!template) return;
+  if (template.getFlag('sceneforge', 'locked')) return;
+  if (template.getFlag('sceneforge', 'claimedBy')) return; // race guard
 
+  // One-per-player: release any character this user already holds
+  for (const actor of game.actors) {
+    if (actor.getFlag('sceneforge', 'claimedBy') === userId) {
+      await applyRelease(actor.id, userId);
+    }
+  }
+
+  // Clone the template, owned by the claiming player
   const data = template.toObject();
   delete data._id;
+  const claimer = game.users.get(userId);
+  data.name = `${data.name} (${claimer?.name ?? 'Player'})`;
   data.ownership = {
     default: CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE,
     [userId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER,
   };
-  const claimerName = game.users.get(userId)?.name ?? 'Player';
-  data.name = `${data.name} (${claimerName})`;
 
   const clone = await Actor.create(data);
   if (!clone) return;
 
-  const newClaims = { ...claims, [actorId]: { userId, cloneId: clone.id } };
-  await scene.setFlag('sceneforge', 'roster', { ...roster, claims: newClaims });
-  Hooks.callAll('sceneforge:dataChanged', scene.id);
+  await template.setFlag('sceneforge', 'claimedBy', userId);
+  await template.setFlag('sceneforge', 'cloneId', clone.id);
+
+  // Notify the GM how many players are still waiting
+  const claimedUserIds = new Set(
+    game.actors.map(a => a.getFlag('sceneforge', 'claimedBy')).filter(Boolean)
+  );
+  const activePlayers = game.users.filter(u => u.active && !u.isGM);
+  const remaining = activePlayers.filter(u => !claimedUserIds.has(u.id)).length;
+  ui.notifications.info(
+    `${claimer?.name ?? 'Player'} selected ${template.name}. ${remaining} player(s) still need to claim a character.`
+  );
 }
 
-async function _rosterRelease(scene, userId, { actorId }) {
-  const roster = scene.flags?.sceneforge?.roster;
-  if (!roster) return;
+export async function applyRelease(actorId, userId) {
+  const template = game.actors.get(actorId);
+  if (!template) return;
+  if (template.getFlag('sceneforge', 'claimedBy') !== userId) return;
 
-  const claim = roster.claims?.[actorId] ?? null;
-  if (!claim || claim.userId !== userId) return; // not their claim
+  const cloneId = template.getFlag('sceneforge', 'cloneId');
+  if (cloneId) await game.actors.get(cloneId)?.delete();
 
-  if (claim.cloneId) await game.actors.get(claim.cloneId)?.delete();
-
-  const newClaims = { ...roster.claims, [actorId]: null };
-  await scene.setFlag('sceneforge', 'roster', { ...roster, claims: newClaims });
-  Hooks.callAll('sceneforge:dataChanged', scene.id);
+  await template.unsetFlag('sceneforge', 'claimedBy');
+  await template.unsetFlag('sceneforge', 'cloneId');
 }

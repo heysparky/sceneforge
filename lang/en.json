@@ -1,3 +1,23 @@
 {
-  "SCENEFORGE": {}
+  "SCENEFORGE.Roster.Title": "SceneForge · Character Roster",
+  "SCENEFORGE.Roster.Heading": "Choose Your Character",
+  "SCENEFORGE.Roster.Subtitle": "Hover a portrait to read their dossier, then claim one to lock it in.",
+  "SCENEFORGE.Roster.Party": "Party",
+  "SCENEFORGE.Roster.SkillHint": "everyone starts at",
+
+  "SCENEFORGE.Status.Open": "Open",
+  "SCENEFORGE.Status.You": "You",
+  "SCENEFORGE.Status.Taken": "Taken",
+  "SCENEFORGE.Status.GMOnly": "GM only",
+
+  "SCENEFORGE.Claim": "Claim",
+  "SCENEFORGE.Release": "Release",
+  "SCENEFORGE.Lock": "Lock",
+  "SCENEFORGE.Unlock": "Unlock",
+  "SCENEFORGE.LockTip": "Lock or unlock this character for players",
+  "SCENEFORGE.Carrying": "Carrying",
+  "SCENEFORGE.CarryingNothing": "Carrying: nothing",
+  "SCENEFORGE.BeginSession": "Begin Session",
+  "SCENEFORGE.AssignCharacters": "Assign Characters",
+  "SCENEFORGE.Ready": "Ready"
 }

@@ -9,6 +9,7 @@ export function initRenderer() {
   Hooks.on('canvasReady', _onCanvasReady);
   Hooks.on('updateScene', _onUpdateScene);
   Hooks.on('sceneforge:dataChanged', _onDataChanged);
+  Hooks.on('updateActor', () => { if (_currentApp?.rendered) _currentApp.render(); });
 
   // In v14, canvasReady can fire before ready. If the canvas is already
   // initialised by the time we register, mount immediately.

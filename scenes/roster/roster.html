@@ -1,3 +1,93 @@
-<div class="sceneforge-roster sf-placeholder">
-  <p>Roster here</p>
-</div>
+<section class="sf-roster">
+
+  <header class="sf-roster__head">
+    <h1 class="sf-roster__title">{{localize "SCENEFORGE.Roster.Heading"}}</h1>
+    <span class="sf-roster__count">{{localize "SCENEFORGE.Roster.Party"}} · {{characters.length}}</span>
+  </header>
+  <p class="sf-roster__sub">{{localize "SCENEFORGE.Roster.Subtitle"}}</p>
+
+  <div class="sf-roster__viewport">
+    <div class="sf-roster__scroller">
+      {{#each characters as |c|}}
+      <article class="sf-tile sf-tile--{{c.status}}" data-actor-id="{{c.id}}" style="--ring: {{c.ringColor}};">
+
+        <div class="sf-tile__frame">
+          <img class="sf-tile__img" src="{{c.img}}" alt="{{c.name}}">
+
+          <span class="sf-badge sf-badge--{{c.status}}">
+            <span class="sf-badge__dot"></span>
+            {{#if (eq c.status "taken")}}{{c.claimedByName}}{{else}}{{c.statusLabel}}{{/if}}
+          </span>
+
+          <div class="sf-tile__plate">
+            <span class="sf-tile__dot"></span>
+            <span class="sf-tile__name">{{c.name}}</span>
+            {{#if c.role}}<span class="sf-tile__role">{{c.role}}</span>{{/if}}
+          </div>
+
+          <div class="sf-tile__dossier">
+            <p class="sf-dossier__bio">{{c.bio}}</p>
+
+            {{#if c.specialties.length}}
+            <div class="sf-dossier__tags">
+              {{#each c.specialties}}<span class="sf-tag">{{this}}</span>{{/each}}
+            </div>
+            {{/if}}
+
+            <div class="sf-dossier__skill">Do Anything · {{c.dice}} · {{c.xp}} XP</div>
+
+            <div class="sf-dossier__inv">
+              {{#if c.inventory.length}}
+                {{localize "SCENEFORGE.Carrying"}}: {{#each c.inventory}}{{this.name}} ×{{this.quantity}}{{#unless @last}}, {{/unless}}{{/each}}
+              {{else}}
+                {{localize "SCENEFORGE.CarryingNothing"}}
+              {{/if}}
+            </div>
+
+            {{#if c.canClaim}}
+              <button type="button" class="sf-claim sf-claim--open" data-action="claim">{{localize "SCENEFORGE.Claim"}}</button>
+            {{else if c.canRelease}}
+              <button type="button" class="sf-claim sf-claim--mine" data-action="release">{{localize "SCENEFORGE.Release"}}</button>
+            {{else if (eq c.status "taken")}}
+              <button type="button" class="sf-claim sf-claim--taken" disabled>{{c.claimedByName}}</button>
+            {{else}}
+              <button type="button" class="sf-claim sf-claim--locked" disabled>{{localize "SCENEFORGE.Status.GMOnly"}}</button>
+            {{/if}}
+          </div>
+
+          {{#if @root.isGM}}
+          <button type="button" class="sf-lock" data-action="toggleLock"
+                  data-tooltip="{{localize 'SCENEFORGE.LockTip'}}">
+            {{#if (eq c.status "locked")}}{{localize "SCENEFORGE.Unlock"}}{{else}}{{localize "SCENEFORGE.Lock"}}{{/if}}
+          </button>
+          {{/if}}
+        </div>
+
+      </article>
+      {{/each}}
+    </div>
+    <div class="sf-roster__fade" aria-hidden="true"></div>
+  </div>
+
+  <footer class="sf-roster__foot">
+    <span class="sf-roster__hint">Roll for Shoes · {{localize "SCENEFORGE.Roster.SkillHint"}} <b>Do Anything 1d6</b></span>
+    {{#if isGM}}
+    <span class="sf-roster__actions">
+      {{#if allClaimed}}
+      <button type="button" class="sf-btn sf-btn--accent" data-action="beginSession">{{localize "SCENEFORGE.BeginSession"}}</button>
+      {{else}}
+      <button type="button" class="sf-btn sf-btn--ghost" data-action="assignCharacters">{{localize "SCENEFORGE.AssignCharacters"}}</button>
+      {{/if}}
+    </span>
+    {{else}}
+    <span class="sf-roster__actions">
+      {{#if iHaveClaimed}}
+      <button type="button" class="sf-btn sf-btn--accent" data-action="ready">{{localize "SCENEFORGE.Ready"}}</button>
+      {{else}}
+      <button type="button" class="sf-btn sf-btn--ghost" disabled>{{localize "SCENEFORGE.BeginSession"}}</button>
+      {{/if}}
+    </span>
+    {{/if}}
+  </footer>
+
+</section>

@@ -47,4 +47,12 @@ export class SceneCreator {
 async function _configureRoster(scene) {
   const selectedIds = await pickRosterTemplates();
   await scene.setFlag('sceneforge', 'roster', { templates: selectedIds, claims: {} });
+  await _grantObserver(selectedIds);
+}
+
+async function _grantObserver(actorIds) {
+  if (!actorIds.length) return;
+  await Actor.updateDocuments(
+    actorIds.map(id => ({ _id: id, 'ownership.default': CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER }))
+  );
 }

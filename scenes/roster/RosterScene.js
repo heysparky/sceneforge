@@ -118,6 +118,9 @@ export default class RosterScene extends SceneForgeScene {
     const added = await pickRosterTemplates(current);
     if (!added.length) return;
     await scene.update({ 'flags.sceneforge.roster.templates': [...current, ...added] });
+    await Actor.updateDocuments(
+      added.map(id => ({ _id: id, 'ownership.default': CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER }))
+    );
   }
 
   static #onBeginSession() {

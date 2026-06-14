@@ -22,4 +22,6 @@ export class SceneForgeScene extends HandlebarsApplicationMixin(ApplicationV2) {
       isGM: game.user.isGM,
     };
   }
+
+  async addItems() {}
 }

@@ -73,6 +73,7 @@
     <span class="sf-roster__hint">Roll for Shoes · {{localize "SCENEFORGE.Roster.SkillHint"}} <b>Do Anything 1d6</b></span>
     {{#if isGM}}
     <span class="sf-roster__actions">
+      <button type="button" class="sf-btn sf-btn--ghost" data-action="addItems">{{localize "SCENEFORGE.AddCharacters"}}</button>
       {{#if allClaimed}}
       <button type="button" class="sf-btn sf-btn--accent" data-action="beginSession">{{localize "SCENEFORGE.BeginSession"}}</button>
       {{else}}

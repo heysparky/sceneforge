@@ -1,5 +1,6 @@
 import { SceneForgeScene } from '../SceneForgeScene.js';
 import { emit, applyClaim, applyRelease } from '../../core/socket.js';
+import { pickRosterTemplates } from './RosterConfig.js';
 
 export default class RosterScene extends SceneForgeScene {
   static TYPE = 'roster';
@@ -8,6 +9,7 @@ export default class RosterScene extends SceneForgeScene {
     id: 'sceneforge-roster',
     classes: ['sceneforge-scene-app', 'sceneforge', 'sceneforge-roster'],
     actions: {
+      addItems:         RosterScene.#onAddItems,
       claim:            RosterScene.#onClaim,
       release:          RosterScene.#onRelease,
       toggleLock:       RosterScene.#onToggleLock,
@@ -107,6 +109,15 @@ export default class RosterScene extends SceneForgeScene {
     const actor = game.actors.get(actorId);
     if (!actor) return;
     await actor.setFlag('sceneforge', 'locked', !actor.getFlag('sceneforge', 'locked'));
+  }
+
+  static async #onAddItems(_e, _target) {
+    if (!game.user.isGM) return;
+    const scene = this._scene;
+    const current = scene.flags?.sceneforge?.roster?.templates ?? [];
+    const added = await pickRosterTemplates(current);
+    if (!added.length) return;
+    await scene.update({ 'flags.sceneforge.roster.templates': [...current, ...added] });
   }
 
   static #onBeginSession() {

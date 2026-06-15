@@ -126,6 +126,10 @@ async function _pickRosterFolders() {
         opt.textContent = folder.name;
         select.appendChild(opt);
         select.value = folder.id;
+
+        if (selectName === 'sourceFolder' && !game.actors.some(a => a.folder?.id === folder.id)) {
+          ui.notifications.info(`"${folder.name}" is empty — add template actors to it in the Actors sidebar before continuing.`);
+        }
       });
     });
   });

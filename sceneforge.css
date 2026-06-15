@@ -467,7 +467,20 @@
   color: var(--color-text-subtle, #8f8b7e);
 }
 
-/* ── Token Placer HUD ── */
+/* ── Token Placer ── */
+
+.sf-placer-ghost {
+  position: fixed;
+  width: 52px;
+  height: 52px;
+  pointer-events: none;
+  z-index: 99998;
+  background: center / cover no-repeat;
+  border-radius: 50%;
+  opacity: 0.75;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+}
 
 #sceneforge-placer-hud {
   position: fixed;

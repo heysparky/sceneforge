@@ -1,6 +1,6 @@
 let _queue = [];
 let _targetSceneId = null;
-let _ghost = null;
+let _ghostEl = null;
 let _hud = null;
 let _moveFn = null;
 let _downFn = null;
@@ -20,55 +20,47 @@ export function init() {
   });
 }
 
-async function _startPlacement() {
+function _startPlacement() {
   if (_placing || !_queue.length) return;
-  if (!canvas?.ready || !canvas?.tokens) return;
+  if (!canvas?.ready) return;
 
   const actorId = _queue[0];
   const actor = game.actors.get(actorId);
-  if (!actor) { _advance(); return; }
+  if (!actor) { _queue.shift(); _startPlacement(); return; }
 
   _placing = true;
 
-  const src = actor.prototypeToken.texture.src;
-  const texture = await PIXI.Assets.load(src).catch(() => null);
-  if (!texture) { _placing = false; _advance(); return; }
+  const imgSrc = actor.prototypeToken.texture.src ?? actor.img;
 
-  const size = canvas.grid.size;
-
-  _ghost = new PIXI.Sprite(texture);
-  _ghost.width = size;
-  _ghost.height = size;
-  _ghost.alpha = 0.5;
-  _ghost.anchor.set(0);
-  _ghost.eventMode = 'none';
-  _ghost.zIndex = 9999;
-  canvas.tokens.addChild(_ghost);
-  canvas.tokens.sortableChildren = true;
+  _ghostEl = document.createElement('div');
+  _ghostEl.className = 'sf-placer-ghost';
+  _ghostEl.style.backgroundImage = `url('${imgSrc}')`;
+  document.body.appendChild(_ghostEl);
 
   _hud = document.createElement('div');
   _hud.id = 'sceneforge-placer-hud';
   _hud.innerHTML = _hudHTML(actor, _queue.length);
   document.body.appendChild(_hud);
 
-  const gridSize = canvas.grid.size;
+  const canvasEl = canvas.app.canvas;
 
   _moveFn = (e) => {
-    if (!_ghost) return;
-    const local = canvas.tokens.toLocal(e.global);
-    const sx = Math.floor(local.x / gridSize) * gridSize;
-    const sy = Math.floor(local.y / gridSize) * gridSize;
-    _ghost.position.set(sx, sy);
+    if (_ghostEl) {
+      _ghostEl.style.left = e.clientX + 'px';
+      _ghostEl.style.top = e.clientY + 'px';
+    }
   };
 
   _downFn = async (e) => {
     if (e.button !== 0) return;
-    e.stopPropagation();
-    const local = canvas.tokens.toLocal(e.global);
-    const sx = Math.floor(local.x / gridSize) * gridSize;
-    const sy = Math.floor(local.y / gridSize) * gridSize;
+    e.stopImmediatePropagation();
+    e.preventDefault();
+    const world = _domToWorld(e.clientX, e.clientY);
+    const size = canvas.grid.size;
+    const x = Math.floor(world.x / size) * size;
+    const y = Math.floor(world.y / size) * size;
     _cleanup();
-    await _placeToken(actor, sx, sy);
+    await _placeToken(actor, x, y);
     _advance();
   };
 
@@ -76,9 +68,17 @@ async function _startPlacement() {
     if (e.key === 'Escape') _cancel();
   };
 
-  canvas.stage.on('pointermove', _moveFn);
-  canvas.stage.on('pointerdown', _downFn);
+  canvasEl.addEventListener('mousemove', _moveFn);
+  canvasEl.addEventListener('mousedown', _downFn, { capture: true });
   document.addEventListener('keydown', _keyFn);
+}
+
+function _domToWorld(clientX, clientY) {
+  const canvasEl = canvas.app.canvas;
+  const rect = canvasEl.getBoundingClientRect();
+  const px = (clientX - rect.left) * (canvas.app.renderer.width / rect.width);
+  const py = (clientY - rect.top) * (canvas.app.renderer.height / rect.height);
+  return canvas.stage.toLocal({ x: px, y: py });
 }
 
 async function _placeToken(actor, x, y) {
@@ -105,19 +105,16 @@ function _cancel() {
 }
 
 function _cleanup() {
-  if (_ghost) {
-    canvas.tokens?.removeChild(_ghost);
-    _ghost.destroy();
-    _ghost = null;
-  }
+  if (_ghostEl) { _ghostEl.remove(); _ghostEl = null; }
   if (_hud) { _hud.remove(); _hud = null; }
-  if (_moveFn) { canvas.stage?.off('pointermove', _moveFn); _moveFn = null; }
-  if (_downFn) { canvas.stage?.off('pointerdown', _downFn); _downFn = null; }
+  const canvasEl = canvas.app?.canvas;
+  if (_moveFn) { canvasEl?.removeEventListener('mousemove', _moveFn); _moveFn = null; }
+  if (_downFn) { canvasEl?.removeEventListener('mousedown', _downFn, { capture: true }); _downFn = null; }
   if (_keyFn) { document.removeEventListener('keydown', _keyFn); _keyFn = null; }
 }
 
 function _hudHTML(actor, remaining) {
-  const img = actor.prototypeToken.texture.src;
+  const img = actor.prototypeToken.texture.src ?? actor.img;
   const name = actor.name;
   const hint = remaining > 1
     ? `${remaining} remaining · Click to place · Escape to cancel`

@@ -31,7 +31,7 @@ async function _startPlacement() {
   _placing = true;
 
   const src = actor.prototypeToken.texture.src;
-  const texture = await loadTexture(src).catch(() => null);
+  const texture = await foundry.canvas.loadTexture(src).catch(() => null);
   if (!texture) { _placing = false; _advance(); return; }
 
   const size = canvas.grid.size;
@@ -51,10 +51,12 @@ async function _startPlacement() {
   _hud.innerHTML = _hudHTML(actor, _queue.length);
   document.body.appendChild(_hud);
 
+  const snapMode = { mode: CONST.GRID_SNAPPING_MODES.TOP_LEFT_CORNER };
+
   _moveFn = (e) => {
     if (!_ghost) return;
     const local = canvas.tokens.toLocal(e.global);
-    const snapped = canvas.grid.getSnappedPoint(local);
+    const snapped = canvas.grid.getSnappedPoint(local, snapMode);
     _ghost.position.set(snapped.x, snapped.y);
   };
 
@@ -62,7 +64,7 @@ async function _startPlacement() {
     if (e.button !== 0) return;
     e.stopPropagation();
     const local = canvas.tokens.toLocal(e.global);
-    const snapped = canvas.grid.getSnappedPoint(local);
+    const snapped = canvas.grid.getSnappedPoint(local, snapMode);
     _cleanup();
     await _placeToken(actor, snapped.x, snapped.y);
     _advance();

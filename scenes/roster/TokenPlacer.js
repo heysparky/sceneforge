@@ -31,7 +31,7 @@ async function _startPlacement() {
   _placing = true;
 
   const src = actor.prototypeToken.texture.src;
-  const texture = await foundry.canvas.loadTexture(src).catch(() => null);
+  const texture = await PIXI.Assets.load(src).catch(() => null);
   if (!texture) { _placing = false; _advance(); return; }
 
   const size = canvas.grid.size;
@@ -51,22 +51,24 @@ async function _startPlacement() {
   _hud.innerHTML = _hudHTML(actor, _queue.length);
   document.body.appendChild(_hud);
 
-  const snapMode = { mode: CONST.GRID_SNAPPING_MODES.TOP_LEFT_CORNER };
+  const gridSize = canvas.grid.size;
 
   _moveFn = (e) => {
     if (!_ghost) return;
     const local = canvas.tokens.toLocal(e.global);
-    const snapped = canvas.grid.getSnappedPoint(local, snapMode);
-    _ghost.position.set(snapped.x, snapped.y);
+    const sx = Math.floor(local.x / gridSize) * gridSize;
+    const sy = Math.floor(local.y / gridSize) * gridSize;
+    _ghost.position.set(sx, sy);
   };
 
   _downFn = async (e) => {
     if (e.button !== 0) return;
     e.stopPropagation();
     const local = canvas.tokens.toLocal(e.global);
-    const snapped = canvas.grid.getSnappedPoint(local, snapMode);
+    const sx = Math.floor(local.x / gridSize) * gridSize;
+    const sy = Math.floor(local.y / gridSize) * gridSize;
     _cleanup();
-    await _placeToken(actor, snapped.x, snapped.y);
+    await _placeToken(actor, sx, sy);
     _advance();
   };
 

@@ -90,13 +90,9 @@ export default class RosterScene extends SceneForgeScene {
 
   static async #onClaim(_e, target) {
     const actorId = RosterScene.#actorIdFrom(target);
-    console.log('[SF #onClaim] actorId:', actorId, 'isGM:', game.user.isGM);
     if (!actorId) return;
-    if (game.user.isGM) await applyClaim(actorId, game.user.id);
-    else {
-      console.log('[SF #onClaim] emitting claim for', actorId);
-      emit({ action: 'claim', actorId, userId: game.user.id });
-    }
+    if (game.user.isGM) await applyClaim(actorId, game.user.id, this._scene.id);
+    else emit({ action: 'claim', actorId, userId: game.user.id, sceneId: this._scene.id });
   }
 
   static async #onRelease(_e, target) {

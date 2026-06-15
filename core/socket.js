@@ -13,13 +13,13 @@ export function emit(msg) {
   game.socket.emit(CHANNEL, msg);
 }
 
-async function _handleGM({ action, actorId, userId }) {
+async function _handleGM({ action, actorId, userId, sceneId }) {
   console.log('[SF _handleGM]', action, actorId, userId);
-  if (action === 'claim')   await applyClaim(actorId, userId);
+  if (action === 'claim')   await applyClaim(actorId, userId, sceneId);
   if (action === 'release') await applyRelease(actorId, userId);
 }
 
-export async function applyClaim(actorId, userId) {
+export async function applyClaim(actorId, userId, sceneId) {
   console.log('[SF applyClaim] start', actorId, userId);
   const template = game.actors.get(actorId);
   if (!template) { console.log('[SF applyClaim] no template'); return; }
@@ -37,11 +37,14 @@ export async function applyClaim(actorId, userId) {
   const data = template.toObject();
   delete data._id;
   const claimer = game.users.get(userId);
-  data.name = `${data.name} (${claimer?.name ?? 'Player'})`;
   data.ownership = {
     default: CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE,
     [userId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER,
   };
+
+  const scene = game.scenes.get(sceneId);
+  const destFolder = scene?.flags?.sceneforge?.roster?.destFolder ?? null;
+  if (destFolder) data.folder = destFolder;
 
   console.log('[SF applyClaim] creating clone for', userId);
   const clone = await Actor.create(data);

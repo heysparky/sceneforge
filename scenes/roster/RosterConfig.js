@@ -3,12 +3,12 @@
  * @param {string[]} excludeIds - Actor IDs already on the roster (will not appear in the list).
  * @returns {Promise<string[]>} Selected actor IDs, or [] if the GM cancelled/skipped.
  */
-export async function pickRosterTemplates(excludeIds = []) {
+export async function pickRosterTemplates(excludeIds = [], folderId = null) {
   const { DialogV2 } = foundry.applications.api;
   const excluded = new Set(excludeIds);
-  const actors = game.actors
-    .filter(a => !excluded.has(a.id))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  let actors = game.actors.filter(a => !excluded.has(a.id));
+  if (folderId) actors = actors.filter(a => a.folder?.id === folderId);
+  actors = actors.sort((a, b) => a.name.localeCompare(b.name));
 
   if (!actors.length) {
     ui.notifications.info('No actors available to add to the roster.');

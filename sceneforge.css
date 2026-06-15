@@ -178,13 +178,12 @@
 }
 .sf-roster__fade--left {
   left: 0;
-  background: linear-gradient(to right, var(--color-cool-5, #0b0a13), transparent);
+  background: linear-gradient(to right, var(--color-bg, #1a1a2e), transparent);
   border-radius: 7px 0 0 7px;
-  opacity: 0;
 }
 .sf-roster__fade--right {
   right: 0;
-  background: linear-gradient(to left, var(--color-cool-5, #0b0a13), transparent);
+  background: linear-gradient(to left, var(--color-bg, #1a1a2e), transparent);
   border-radius: 0 7px 7px 0;
 }
 .sf-roster__fade--hidden { opacity: 0; }

@@ -10,7 +10,7 @@ SceneForge is a Foundry VTT v14 module. See `FOUNDRY_V14_MODULE_GUIDE.md` for ve
 - No polling — all updates via Foundry hooks and sockets.
 - One source of truth — all scene state in `scene.flags.sceneforge`. One document write per state change.
 - GM is the authority — players send socket requests; GM client validates and writes.
-- SceneForge scenes occupy an adjustable inner canvas rectangle. Bounds are stored as percentages in the `sceneforge.sceneBounds` client setting (default: 25% inset on all sides). GMs can drag the edge handles to reposition — a toggle button in the top-left corner of the scene reveals them.
+- SceneForge scenes occupy an adjustable inner canvas rectangle. Bounds are stored as percentages in `scene.flags.sceneforge.sceneBounds` (default: 25% inset on all sides). GMs can drag the edge handles to reposition — a toggle button in the top-left corner of the scene reveals them. Writing to the scene flag broadcasts the new bounds to all clients via `updateScene`.
 
 ## Development workflow
 
@@ -24,7 +24,7 @@ Testing happens in a running Foundry v14 instance. Zero console errors is a hard
 sceneforge.js           <- entry point: hook registration only
 sceneforge.css          <- all styles
 core/
-  settings.js           <- game.settings registration
+  settings.js           <- game.settings registration (currently empty — sceneBounds moved to scene flag)
   socket.js             <- GM-authority socket handler (claim / release implemented)
   registry.js           <- scene type registry + dynamic loader
   renderer.js           <- canvasReady → mount/teardown SceneForge apps
@@ -34,7 +34,7 @@ lang/
 scenes/
   SceneForgeScene.js    <- ApplicationV2 base class for all scene types
   picker/
-    SceneTypePicker.js  <- "Create Scene" dialog; two-step roster config (folders → actors)
+    SceneTypePicker.js  <- "Create Scene" dialog; pre-fills name from type label; two-step roster config (folders → actors); ＋ buttons create Actor folders inline
     picker.html
   roster/
     RosterScene.js      <- full M2 UI: tile grid, claim/release/lock, live sync
@@ -42,9 +42,15 @@ scenes/
     roster.html         <- tile grid template
 ```
 
-## Roster scene data model
+## Scene data model
 
-`scene.flags.sceneforge.roster`:
+`scene.flags.sceneforge.sceneBounds` (all scene types):
+```js
+{ top: number, left: number, right: number, bottom: number }  // percentages of viewport
+```
+Written by GM drag handles; read by `renderer.js _getBounds()` on every `_applyBounds` call.
+
+`scene.flags.sceneforge.roster` (roster scenes):
 ```js
 {
   templates:    string[],   // actor IDs on the roster

@@ -9,7 +9,11 @@ export function initRenderer() {
   Hooks.on('canvasReady', _onCanvasReady);
   Hooks.on('updateScene', _onUpdateScene);
   Hooks.on('sceneforge:dataChanged', _onDataChanged);
-  Hooks.on('updateActor', () => { if (_currentApp?.rendered) _currentApp.render(); });
+  Hooks.on('updateActor', async () => {
+    if (!_currentApp?.rendered) return;
+    await _currentApp.render();
+    _applyBounds(_currentApp);
+  });
 
   // In v14, canvasReady can fire before ready. If the canvas is already
   // initialised by the time we register, mount immediately.
@@ -30,13 +34,15 @@ async function _onUpdateScene(scene, diff) {
   if (newType !== currentType) {
     await _mount(scene);
   } else {
-    _currentApp?.render({ force: true });
+    await _currentApp?.render({ force: true });
+    if (_currentApp) _applyBounds(_currentApp);
   }
 }
 
-function _onDataChanged(sceneId) {
+async function _onDataChanged(sceneId) {
   if (sceneId !== game.scenes.viewed?.id) return;
-  _currentApp?.render({ force: true });
+  await _currentApp?.render({ force: true });
+  if (_currentApp) _applyBounds(_currentApp);
 }
 
 async function _mount(scene) {

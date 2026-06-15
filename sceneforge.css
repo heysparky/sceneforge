@@ -278,9 +278,17 @@
   flex-shrink: 0;
 }
 .sf-roster__actions { margin-left: auto; display: flex; gap: 8px; }
+.sf-roster__actions--player { margin-left: 0; flex: 1; justify-content: center; }
+.sf-roster__actions--player .sf-btn { padding: 14px 48px; font-size: 17px; }
 .sf-btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; font: 600 13px var(--font-body, "Signika", sans-serif); }
 .sf-btn--ghost  { background: transparent; color: var(--color-text-primary, #d8d6cc); border: 1px solid var(--color-border, #302831); }
 .sf-btn--accent { background: var(--color-warm-1, #ee9b3a); color: var(--color-cool-5, #0b0a13); border: 1px solid var(--color-warm-1, #ee9b3a); font-weight: 700; }
+
+/* ready mode — dim non-claimed tiles */
+.sf-roster--ready .sf-tile:not(.sf-tile--mine) {
+  opacity: 0.18; filter: grayscale(0.8); pointer-events: none;
+  transition: opacity .35s ease, filter .35s ease;
+}
 
 /* locked tiles read slightly recessed */
 .sf-tile--locked .sf-tile__img { filter: grayscale(.4) brightness(.8); }

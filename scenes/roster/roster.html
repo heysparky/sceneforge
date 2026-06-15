@@ -1,4 +1,4 @@
-<section class="sf-roster">
+<section class="sf-roster{{#if isReady}} sf-roster--ready{{/if}}">
 
   <header class="sf-roster__head">
     <h1 class="sf-roster__title">{{localize "SCENEFORGE.Roster.Heading"}}</h1>
@@ -84,9 +84,9 @@
       {{/if}}
     </span>
     {{else}}
-    <span class="sf-roster__actions">
+    <span class="sf-roster__actions sf-roster__actions--player">
       {{#if iHaveClaimed}}
-      <button type="button" class="sf-btn {{#if isReady}}sf-btn--ghost{{else}}sf-btn--accent{{/if}}" data-action="ready">
+      <button type="button" class="sf-btn sf-btn--accent" data-action="ready">
         {{#if isReady}}{{localize "SCENEFORGE.Choose"}}{{else}}{{localize "SCENEFORGE.Ready"}}{{/if}}
       </button>
       {{else}}

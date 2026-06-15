@@ -115,6 +115,12 @@ export default class RosterScene extends SceneForgeScene {
     await actor.setFlag('sceneforge', 'locked', !actor.getFlag('sceneforge', 'locked'));
   }
 
+  _onRender(context, _options) {
+    if (!context.isReady) return;
+    const mineTile = this.element.querySelector('.sf-tile--mine');
+    mineTile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+
   static async #onAddItems(_e, _target) {
     if (!game.user.isGM) return;
     const scene = this._scene;

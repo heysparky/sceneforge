@@ -71,14 +71,14 @@ async function _mount(scene) {
   _applyBounds(_currentApp);
 
   if (game.user.isGM) {
-    _teardownHandles = injectHandles(_currentApp.element);
+    _teardownHandles = injectHandles(_currentApp.element, scene);
   }
 
   _currentSceneId = scene.id;
 }
 
 function _getBounds() {
-  const b = game.settings.get('sceneforge', 'sceneBounds')
+  const b = game.scenes.viewed?.flags?.sceneforge?.sceneBounds
     ?? { top: 25, left: 25, right: 25, bottom: 25 };
   return {
     top:    (b.top    / 100) * window.innerHeight,

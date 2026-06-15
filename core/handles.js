@@ -1,8 +1,8 @@
 let _layoutMode = false;
 
-export function injectHandles(el) {
+export function injectHandles(el, scene) {
   const toggle = _createToggle(el);
-  const handles = ['top', 'right', 'bottom', 'left'].map(side => _createHandle(el, side));
+  const handles = ['top', 'right', 'bottom', 'left'].map(side => _createHandle(el, side, scene));
 
   _setVisible(handles, false);
 
@@ -34,7 +34,7 @@ function _createToggle(parent) {
   return btn;
 }
 
-function _createHandle(parent, side) {
+function _createHandle(parent, side, scene) {
   const el = document.createElement('div');
   el.className = `sf-handle sf-handle-${side}`;
   parent.appendChild(el);
@@ -61,7 +61,7 @@ function _createHandle(parent, side) {
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
       const r = parent.getBoundingClientRect();
-      await game.settings.set('sceneforge', 'sceneBounds', {
+      await scene.setFlag('sceneforge', 'sceneBounds', {
         top:    (r.top                           / window.innerHeight) * 100,
         left:   (r.left                          / window.innerWidth)  * 100,
         right:  ((window.innerWidth  - r.right)  / window.innerWidth)  * 100,

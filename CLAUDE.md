@@ -25,7 +25,7 @@ sceneforge.js           <- entry point: hook registration only
 sceneforge.css          <- all styles
 core/
   settings.js           <- game.settings registration
-  socket.js             <- GM-authority socket handler (roster.claim / roster.release implemented)
+  socket.js             <- GM-authority socket handler (claim / release implemented)
   registry.js           <- scene type registry + dynamic loader
   renderer.js           <- canvasReady → mount/teardown SceneForge apps
   handles.js            <- draggable edge handle injection for GMs
@@ -34,13 +34,30 @@ lang/
 scenes/
   SceneForgeScene.js    <- ApplicationV2 base class for all scene types
   picker/
-    SceneTypePicker.js  <- "Create Scene" dialog; wires roster config on creation
+    SceneTypePicker.js  <- "Create Scene" dialog; two-step roster config (folders → actors)
     picker.html
   roster/
-    RosterScene.js      <- skeleton (M2 next: _prepareContext + template)
-    RosterConfig.js     <- pickRosterTemplates() actor picker dialog
-    roster.html         <- placeholder (M2 next: full card grid)
+    RosterScene.js      <- full M2 UI: tile grid, claim/release/lock, live sync
+    RosterConfig.js     <- pickRosterTemplates(excludeIds, folderId) actor picker dialog
+    roster.html         <- tile grid template
 ```
+
+## Roster scene data model
+
+`scene.flags.sceneforge.roster`:
+```js
+{
+  templates:    string[],   // actor IDs on the roster
+  sourceFolder: string|null, // Actor folder ID templates were drawn from
+  destFolder:   string|null, // Actor folder ID where player clones are placed on claim
+}
+```
+
+Per-template flags (on the Actor document itself):
+- `sceneforge.claimedBy` — userId of the claiming player (null = unclaimed)
+- `sceneforge.cloneId`   — id of the player's cloned actor
+- `sceneforge.locked`    — GM-only lock (boolean)
+- `sceneforge.role`, `sceneforge.specialties` — display metadata
 
 ## Before release
 
@@ -53,3 +70,7 @@ scenes/
 ```js
 { action: 'namespace.verb', sceneId, senderId: game.user.id, payload: {} }
 ```
+
+Current implemented actions: `claim`, `release` (no namespace prefix — kept flat for simplicity).
+
+**Critical:** `module.json` must declare `"socket": true` or the Foundry server silently drops all emissions. Requires a full server restart (not just F5) to take effect after changing module.json.

@@ -284,10 +284,14 @@
 .sf-btn--ghost  { background: transparent; color: var(--color-text-primary, #d8d6cc); border: 1px solid var(--color-border, #302831); }
 .sf-btn--accent { background: var(--color-warm-1, #ee9b3a); color: var(--color-cool-5, #0b0a13); border: 1px solid var(--color-warm-1, #ee9b3a); font-weight: 700; }
 
-/* ready mode — dim non-claimed tiles */
+/* ready mode — dim non-claimed tiles and suppress all hover dossiers */
 .sf-roster--ready .sf-tile:not(.sf-tile--mine) {
   opacity: 0.18; filter: grayscale(0.8); pointer-events: none;
   transition: opacity .35s ease, filter .35s ease;
+}
+.sf-roster--ready .sf-tile:hover .sf-tile__dossier,
+.sf-roster--ready .sf-tile:focus-within .sf-tile__dossier {
+  opacity: 0; pointer-events: none; transform: translateY(8px);
 }
 
 /* locked tiles read slightly recessed */

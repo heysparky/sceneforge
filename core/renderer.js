@@ -4,15 +4,21 @@ import { injectHandles } from './handles.js';
 let _currentApp = null;
 let _currentSceneId = null;
 let _teardownHandles = null;
+let _actorUpdateQueued = false;
 
 export function initRenderer() {
   Hooks.on('canvasReady', _onCanvasReady);
   Hooks.on('updateScene', _onUpdateScene);
   Hooks.on('sceneforge:dataChanged', _onDataChanged);
-  Hooks.on('updateActor', async () => {
-    if (!_currentApp?.rendered) return;
-    await _currentApp.render();
-    _applyBounds(_currentApp);
+  Hooks.on('updateActor', () => {
+    if (!_currentApp?.rendered || _actorUpdateQueued) return;
+    _actorUpdateQueued = true;
+    requestAnimationFrame(async () => {
+      _actorUpdateQueued = false;
+      if (!_currentApp?.rendered) return;
+      await _currentApp.render();
+      _applyBounds(_currentApp);
+    });
   });
 
   // In v14, canvasReady can fire before ready. If the canvas is already

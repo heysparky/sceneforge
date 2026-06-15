@@ -12,7 +12,7 @@
       <article class="sf-tile sf-tile--{{c.status}}" data-actor-id="{{c.id}}" style="--ring: {{c.ringColor}};">
 
         <div class="sf-tile__frame">
-          <img class="sf-tile__img" src="{{c.img}}" alt="{{c.name}}">
+          <img class="sf-tile__img" src="{{c.img}}" alt="{{c.name}}" data-action="openSheet" style="cursor:pointer;">
 
           <span class="sf-badge sf-badge--{{c.status}}">
             <span class="sf-badge__dot"></span>
@@ -26,7 +26,7 @@
           </div>
 
           <div class="sf-tile__dossier">
-            <p class="sf-dossier__bio">{{c.bio}}</p>
+            {{#if c.bio}}<p class="sf-dossier__bio">{{c.bio}}</p>{{/if}}
 
             {{#if c.specialties.length}}
             <div class="sf-dossier__tags">
@@ -34,15 +34,7 @@
             </div>
             {{/if}}
 
-            <div class="sf-dossier__skill">Do Anything · {{c.dice}} · {{c.xp}} XP</div>
-
-            <div class="sf-dossier__inv">
-              {{#if c.inventory.length}}
-                {{localize "SCENEFORGE.Carrying"}}: {{#each c.inventory}}{{this.name}} ×{{this.quantity}}{{#unless @last}}, {{/unless}}{{/each}}
-              {{else}}
-                {{localize "SCENEFORGE.CarryingNothing"}}
-              {{/if}}
-            </div>
+            <div class="sf-dossier__xp">{{c.xp}} XP</div>
 
             {{#if c.canAssign}}
               <button type="button" class="sf-claim sf-claim--open" data-action="assign">{{localize "SCENEFORGE.Assign"}}</button>

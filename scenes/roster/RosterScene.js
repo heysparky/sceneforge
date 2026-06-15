@@ -18,6 +18,7 @@ export default class RosterScene extends SceneForgeScene {
       assign:       RosterScene.#onAssign,
       beginSession: RosterScene.#onBeginSession,
       ready:        RosterScene.#onReady,
+      openSheet:    RosterScene.#onOpenSheet,
     },
   };
 
@@ -50,9 +51,6 @@ export default class RosterScene extends SceneForgeScene {
     const claimedBy = actor.getFlag('sceneforge', 'claimedBy') ?? null;
     const locked    = actor.getFlag('sceneforge', 'locked') ?? false;
 
-    const root  = actor.system.skills?.find(s => s.id === 'root');
-    const level = root?.level ?? 1;
-
     let status;
     if (locked)                  status = 'locked';
     else if (claimedBy === user.id) status = 'mine';
@@ -64,12 +62,10 @@ export default class RosterScene extends SceneForgeScene {
       name:          actor.name,
       img:           actor.img,
       ringColor:     actor.prototypeToken?.ring?.colors?.ring ?? '#ffffff',
-      role:          actor.getFlag('sceneforge', 'role') ?? '',
-      specialties:   actor.getFlag('sceneforge', 'specialties') ?? [],
-      bio:           actor.system.biography ?? '',
-      dice:          `${level}d6`,
-      xp:            actor.system.xp ?? 0,
-      inventory:     actor.system.inventory ?? [],
+      role:        actor.getFlag('sceneforge', 'role') ?? '',
+      specialties: actor.getFlag('sceneforge', 'specialties') ?? [],
+      bio:         actor.system.biography ?? '',
+      xp:          actor.system.xp ?? 0,
       status,
       statusLabel:   RosterScene.#statusLabel(status),
       claimedByName: claimedBy ? (game.users.get(claimedBy)?.name ?? '?') : null,
@@ -131,6 +127,11 @@ export default class RosterScene extends SceneForgeScene {
     await Actor.updateDocuments(
       added.map(id => ({ _id: id, 'ownership.default': CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER }))
     );
+  }
+
+  static #onOpenSheet(_e, target) {
+    const actorId = RosterScene.#actorIdFrom(target);
+    game.actors.get(actorId)?.sheet.render(true);
   }
 
   static async #onAssign(_e, target) {

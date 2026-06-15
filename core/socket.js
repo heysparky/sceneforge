@@ -51,8 +51,10 @@ export async function applyClaim(actorId, userId, sceneId) {
   console.log('[SF applyClaim] clone result:', clone?.name ?? 'NULL');
   if (!clone) return;
 
-  await template.setFlag('sceneforge', 'claimedBy', userId);
-  await template.setFlag('sceneforge', 'cloneId', clone.id);
+  await template.update({
+    'flags.sceneforge.claimedBy': userId,
+    'flags.sceneforge.cloneId':   clone.id,
+  });
 
   // Notify the GM how many players are still waiting
   const claimedUserIds = new Set(
@@ -73,6 +75,8 @@ export async function applyRelease(actorId, userId) {
   const cloneId = template.getFlag('sceneforge', 'cloneId');
   if (cloneId) await game.actors.get(cloneId)?.delete();
 
-  await template.unsetFlag('sceneforge', 'claimedBy');
-  await template.unsetFlag('sceneforge', 'cloneId');
+  await template.update({
+    'flags.sceneforge.claimedBy': null,
+    'flags.sceneforge.cloneId':   null,
+  });
 }

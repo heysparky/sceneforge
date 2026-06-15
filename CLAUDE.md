@@ -65,6 +65,14 @@ Per-template flags (on the Actor document itself):
 - `sceneforge.locked`    — GM-only lock (boolean)
 - `sceneforge.role`, `sceneforge.specialties` — display metadata
 
+Roster tile dossier fields (system-agnostic defaults):
+- `actor.system.xp` — always shown (defaults to 0)
+- `actor.system.biography` — shown only if non-empty
+- `sceneforge.role` flag — shown only if set
+- `sceneforge.specialties` flag — shown only if non-empty array
+
+To add system-specific fields (dice, inventory, etc.) or customize what the dossier shows, edit `#toViewModel` in `scenes/roster/RosterScene.js` and the dossier block in `scenes/roster/roster.html`.
+
 ## Before release
 
 - Change `manifest` in `module.json` from the raw GitHub URL back to the release URL:

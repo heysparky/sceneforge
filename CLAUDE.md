@@ -25,9 +25,9 @@ sceneforge.js           <- entry point: hook registration only
 sceneforge.css          <- all styles
 core/
   settings.js           <- game.settings registration (currently empty — sceneBounds moved to scene flag)
-  socket.js             <- GM-authority socket handler (claim / release implemented)
+  socket.js             <- GM-authority socket handler (claim / release / color sync)
   registry.js           <- scene type registry + dynamic loader
-  renderer.js           <- canvasReady → mount/teardown SceneForge apps
+  renderer.js           <- canvasReady → mount/teardown SceneForge apps; resize listener
   handles.js            <- draggable edge handle injection for GMs
 lang/
   en.json
@@ -39,6 +39,9 @@ scenes/
   roster/
     RosterScene.js      <- full M2 UI: tile grid, claim/release/lock, live sync
     RosterConfig.js     <- pickRosterTemplates(excludeIds, folderId) actor picker dialog
+    RosterCharManager.js <- "Edit Characters" ApplicationV2 dialog: reorder, remove, add
+    RosterCharEdit.js   <- per-character dossier editor (DialogV2)
+    charManager.html    <- character manager list template
     roster.html         <- tile grid template
 ```
 
@@ -64,14 +67,24 @@ Per-template flags (on the Actor document itself):
 - `sceneforge.cloneId`   — id of the player's cloned actor
 - `sceneforge.locked`    — GM-only lock (boolean)
 - `sceneforge.role`, `sceneforge.specialties` — display metadata
+- `sceneforge.dossier`   — GM-configured dossier fields (see below)
 
-Roster tile dossier fields (system-agnostic defaults):
-- `actor.system.xp` — always shown (defaults to 0)
-- `actor.system.biography` — shown only if non-empty
-- `sceneforge.role` flag — shown only if set
-- `sceneforge.specialties` flag — shown only if non-empty array
+Roster tile dossier — configured per-character via "Edit Characters → Dossier":
+```js
+actor.flags.sceneforge.dossier = {
+  showConcept: bool, concept: string,     // character concept / archetype
+  showLevel:   bool, level:  string,
+  showXp:      bool, xp:     string,      // defaults true; falls back to actor.system.xp
+  showBackground: bool, background: string, // falls back to actor.system.biography
+  showQuote:   bool, quote:  string,
+  custom: string,                          // always shown if non-empty (no toggle)
+}
+```
+`sceneforge.role` and `sceneforge.specialties` remain as legacy display metadata alongside the dossier system.
 
-To add system-specific fields (dice, inventory, etc.) or customize what the dossier shows, edit `#toViewModel` in `scenes/roster/RosterScene.js` and the dossier block in `scenes/roster/roster.html`.
+On claim: GM sets `user.color` to the character's token ring color so Dice So Nice picks it up.
+
+To add system-specific fields or customize the dossier, edit `#toViewModel` in `scenes/roster/RosterScene.js` and the dossier block in `scenes/roster/roster.html`.
 
 ## Before release
 

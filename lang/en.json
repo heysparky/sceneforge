@@ -3,7 +3,6 @@
   "SCENEFORGE.Roster.Heading": "Choose Your Character",
   "SCENEFORGE.Roster.Subtitle": "Hover a portrait to read their dossier, then claim one to lock it in.",
   "SCENEFORGE.Roster.Party": "Party",
-  "SCENEFORGE.Roster.SkillHint": "everyone starts at",
 
   "SCENEFORGE.Status.Open": "Open",
   "SCENEFORGE.Status.You": "You",
@@ -12,6 +11,7 @@
 
   "SCENEFORGE.Claim": "Claim",
   "SCENEFORGE.Release": "Release",
+  "SCENEFORGE.Assign": "Assign",
   "SCENEFORGE.Lock": "Lock",
   "SCENEFORGE.Unlock": "Unlock",
   "SCENEFORGE.LockTip": "Lock or unlock this character for players",
@@ -19,6 +19,6 @@
   "SCENEFORGE.CarryingNothing": "Carrying: nothing",
   "SCENEFORGE.AddCharacters": "Add Characters",
   "SCENEFORGE.BeginSession": "Begin Session",
-  "SCENEFORGE.AssignCharacters": "Assign Characters",
-  "SCENEFORGE.Ready": "Ready"
+  "SCENEFORGE.Ready": "Ready",
+  "SCENEFORGE.Choose": "Choose"
 }

@@ -44,14 +44,20 @@
               {{/if}}
             </div>
 
-            {{#if c.canClaim}}
+            {{#if c.canAssign}}
+              <button type="button" class="sf-claim sf-claim--open" data-action="assign">{{localize "SCENEFORGE.Assign"}}</button>
+            {{else if c.canClaim}}
               <button type="button" class="sf-claim sf-claim--open" data-action="claim">{{localize "SCENEFORGE.Claim"}}</button>
             {{else if c.canRelease}}
               <button type="button" class="sf-claim sf-claim--mine" data-action="release">{{localize "SCENEFORGE.Release"}}</button>
             {{else if (eq c.status "taken")}}
               <button type="button" class="sf-claim sf-claim--taken" disabled>{{c.claimedByName}}</button>
-            {{else}}
+            {{else if (eq c.status "locked")}}
               <button type="button" class="sf-claim sf-claim--locked" disabled>{{localize "SCENEFORGE.Status.GMOnly"}}</button>
+            {{else if (eq c.status "mine")}}
+              <button type="button" class="sf-claim sf-claim--mine" disabled>{{localize "SCENEFORGE.Status.You"}}</button>
+            {{else}}
+              <button type="button" class="sf-claim sf-claim--open" disabled>{{localize "SCENEFORGE.Status.Open"}}</button>
             {{/if}}
           </div>
 
@@ -70,20 +76,19 @@
   </div>
 
   <footer class="sf-roster__foot">
-    <span class="sf-roster__hint">Roll for Shoes · {{localize "SCENEFORGE.Roster.SkillHint"}} <b>Do Anything 1d6</b></span>
     {{#if isGM}}
     <span class="sf-roster__actions">
       <button type="button" class="sf-btn sf-btn--ghost" data-action="addItems">{{localize "SCENEFORGE.AddCharacters"}}</button>
       {{#if allClaimed}}
       <button type="button" class="sf-btn sf-btn--accent" data-action="beginSession">{{localize "SCENEFORGE.BeginSession"}}</button>
-      {{else}}
-      <button type="button" class="sf-btn sf-btn--ghost" data-action="assignCharacters">{{localize "SCENEFORGE.AssignCharacters"}}</button>
       {{/if}}
     </span>
     {{else}}
     <span class="sf-roster__actions">
       {{#if iHaveClaimed}}
-      <button type="button" class="sf-btn sf-btn--accent" data-action="ready">{{localize "SCENEFORGE.Ready"}}</button>
+      <button type="button" class="sf-btn {{#if isReady}}sf-btn--ghost{{else}}sf-btn--accent{{/if}}" data-action="ready">
+        {{#if isReady}}{{localize "SCENEFORGE.Choose"}}{{else}}{{localize "SCENEFORGE.Ready"}}{{/if}}
+      </button>
       {{else}}
       <button type="button" class="sf-btn sf-btn--ghost" disabled>{{localize "SCENEFORGE.BeginSession"}}</button>
       {{/if}}

@@ -53,10 +53,10 @@ function _startPlacement() {
     if (e.button !== 0) return;
     e.stopImmediatePropagation();
     e.preventDefault();
-    const world = _domToWorld(e.clientX, e.clientY);
+    const pos = canvas.mousePosition;
     const size = canvas.grid.size;
-    const x = Math.floor(world.x / size) * size;
-    const y = Math.floor(world.y / size) * size;
+    const x = Math.floor(pos.x / size) * size;
+    const y = Math.floor(pos.y / size) * size;
     _cleanup();
     await _placeToken(actor, x, y);
     _advance();
@@ -71,21 +71,11 @@ function _startPlacement() {
   document.addEventListener('keydown', _keyFn);
 }
 
-function _domToWorld(clientX, clientY) {
-  const canvasEl = canvas.app?.canvas ?? document.querySelector('#board canvas');
-  if (!canvasEl) return { x: 0, y: 0 };
-  const rect = canvasEl.getBoundingClientRect();
-  const scaleX = canvasEl.width / rect.width;
-  const scaleY = canvasEl.height / rect.height;
-  const px = (clientX - rect.left) * scaleX;
-  const py = (clientY - rect.top) * scaleY;
-  return canvas.stage.toLocal({ x: px, y: py });
-}
-
 async function _placeToken(actor, x, y) {
   const data = actor.prototypeToken.toObject();
   delete data._id;
-  await canvas.scene.createEmbeddedDocuments('Token', [{ ...data, actorId: actor.id, x, y }]);
+  await canvas.scene.createEmbeddedDocuments('Token', [{ ...data, actorId: actor.id, x, y }])
+    .catch(err => console.error('SceneForge | TokenPlacer place failed:', err));
 }
 
 function _advance() {

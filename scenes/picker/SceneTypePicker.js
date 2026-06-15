@@ -6,10 +6,27 @@ export class SceneCreator {
     const { DialogV2 } = foundry.applications.api;
     const types = getAll();
 
+    const typeLabelMap = { battlemap: 'Battlemap' };
+    for (const t of types) typeLabelMap[t.key] = t.label;
+    const defaultName = 'Battlemap';
+
     const content = await foundry.applications.handlebars.renderTemplate(
       'modules/sceneforge/scenes/picker/picker.html',
-      { types }
+      { types, defaultName }
     );
+
+    Hooks.once('renderDialogV2', (_app, element) => {
+      const nameInput = element.querySelector('input[name="scene-name"]');
+      if (!nameInput) return;
+      let autoName = defaultName;
+      element.querySelectorAll('input[name="type"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+          const label = typeLabelMap[radio.value] ?? radio.value;
+          if (nameInput.value === autoName) nameInput.value = label;
+          autoName = label;
+        });
+      });
+    });
 
     const result = await DialogV2.wait({
       window: { title: 'Create Scene' },
@@ -58,13 +75,60 @@ async function _pickRosterFolders() {
   const content = `
     <div class="form-group stacked">
       <label>Source folder <span class="units">(template actors)</span></label>
-      <select name="sourceFolder">${noneOpt}${options}</select>
+      <div style="display:flex;gap:0.5em;align-items:center;">
+        <select name="sourceFolder" style="flex:1;">${noneOpt}${options}</select>
+        <button type="button" data-create-folder="sourceFolder" title="Create new folder">＋</button>
+      </div>
     </div>
     <div class="form-group stacked">
       <label>Destination folder <span class="units">(player copies — leave blank to auto-create "Roster")</span></label>
-      <select name="destFolder">${noneOpt}${options}</select>
+      <div style="display:flex;gap:0.5em;align-items:center;">
+        <select name="destFolder" style="flex:1;">${noneOpt}${options}</select>
+        <button type="button" data-create-folder="destFolder" title="Create new folder">＋</button>
+      </div>
     </div>
   `;
+
+  Hooks.once('renderDialogV2', (_app, element) => {
+    if (!element.querySelector('[data-create-folder]')) return;
+    element.querySelectorAll('button[data-create-folder]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const selectName = btn.dataset.createFolder;
+        const select = element.querySelector(`[name="${selectName}"]`);
+
+        const { DialogV2: DV2 } = foundry.applications.api;
+        const promptResult = await DV2.wait({
+          window: { title: 'New Actor Folder' },
+          content: '<div class="form-group"><input name="folder-name" type="text" placeholder="Folder name" autofocus></div>',
+          buttons: [
+            {
+              action: 'create',
+              label: 'Create',
+              default: true,
+              callback: (_e, _b, d) => ({
+                name: d.element.querySelector('[name="folder-name"]')?.value.trim() ?? '',
+              }),
+            },
+            { action: 'cancel', label: 'Cancel', callback: () => null },
+          ],
+          rejectClose: false,
+        });
+
+        if (!promptResult || typeof promptResult !== 'object') return;
+        const { name: folderName } = promptResult;
+        if (!folderName) { ui.notifications.warn('Please enter a folder name.'); return; }
+
+        const folder = await Folder.create({ name: folderName, type: 'Actor' });
+        if (!folder) return;
+
+        const opt = document.createElement('option');
+        opt.value = folder.id;
+        opt.textContent = folder.name;
+        select.appendChild(opt);
+        select.value = folder.id;
+      });
+    });
+  });
 
   const result = await DialogV2.wait({
     window: { title: 'Configure Roster — Folders' },

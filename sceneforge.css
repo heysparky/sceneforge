@@ -173,10 +173,21 @@
   background: var(--color-border, var(--color-cool-4, #302831)); border-radius: 4px;
 }
 .sf-roster__fade {
-  position: absolute; top: 0; bottom: 12px; right: 0; width: 48px; pointer-events: none;
-  background: linear-gradient(to right, transparent, var(--color-cool-5, #0b0a13));
+  position: absolute; top: 0; bottom: 12px; width: 48px; pointer-events: none;
+  transition: opacity .18s ease;
+}
+.sf-roster__fade--left {
+  left: 0;
+  background: linear-gradient(to right, var(--color-cool-5, #0b0a13), transparent);
+  border-radius: 7px 0 0 7px;
+  opacity: 0;
+}
+.sf-roster__fade--right {
+  right: 0;
+  background: linear-gradient(to left, var(--color-cool-5, #0b0a13), transparent);
   border-radius: 0 7px 7px 0;
 }
+.sf-roster__fade--hidden { opacity: 0; }
 
 /* tile */
 .sf-tile { position: relative; flex: 0 0 190px; scroll-snap-align: start; }

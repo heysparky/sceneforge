@@ -6,6 +6,7 @@ export default class RosterScene extends SceneForgeScene {
   static TYPE = 'roster';
 
   #isReady = false;
+  #_ro = null;
 
   static DEFAULT_OPTIONS = {
     id: 'sceneforge-roster',
@@ -112,9 +113,35 @@ export default class RosterScene extends SceneForgeScene {
   }
 
   _onRender(context, _options) {
+    this.#initFade();
     if (!context.isReady) return;
     const mineTile = this.element.querySelector('.sf-tile--mine');
     mineTile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+
+  #initFade() {
+    const scroller = this.element.querySelector('.sf-roster__scroller');
+    const fadeL = this.element.querySelector('.sf-roster__fade--left');
+    const fadeR = this.element.querySelector('.sf-roster__fade--right');
+    if (!scroller || !fadeL || !fadeR) return;
+
+    const measure = () => {
+      const atStart = scroller.scrollLeft <= 1;
+      const atEnd = scroller.scrollLeft >= scroller.scrollWidth - scroller.clientWidth - 1;
+      fadeL.classList.toggle('sf-roster__fade--hidden', atStart);
+      fadeR.classList.toggle('sf-roster__fade--hidden', atEnd);
+    };
+
+    if (this.#_ro) this.#_ro.disconnect();
+    scroller.onscroll = measure;
+    this.#_ro = new ResizeObserver(measure);
+    this.#_ro.observe(scroller);
+    measure();
+  }
+
+  async close(options) {
+    if (this.#_ro) { this.#_ro.disconnect(); this.#_ro = null; }
+    return super.close(options);
   }
 
   static async #onAddItems(_e, _target) {

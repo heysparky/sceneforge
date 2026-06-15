@@ -126,7 +126,7 @@ export default class RosterScene extends SceneForgeScene {
     if (!scroller || !fadeL || !fadeR) return;
 
     const measure = () => {
-      const atStart = scroller.scrollLeft <= 1;
+      const atStart = scroller.scrollLeft <= 4;
       const atEnd = scroller.scrollLeft >= scroller.scrollWidth - scroller.clientWidth - 1;
       fadeL.classList.toggle('sf-roster__fade--hidden', atStart);
       fadeR.classList.toggle('sf-roster__fade--hidden', atEnd);

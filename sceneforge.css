@@ -261,6 +261,9 @@
 .sf-dossier__skill { font: 600 11px var(--font-body, "Signika", sans-serif); color: var(--color-text-primary, #d8d6cc); }
 .sf-dossier__inv { margin-top: auto; font: 400 10px var(--font-body, "Signika", sans-serif); color: var(--color-text-subtle, #8f8b7e); }
 
+/* below-tile action area */
+.sf-tile__actions { margin-top: 8px; }
+
 /* claim button states */
 .sf-claim {
   width: 100%; padding: 9px; border-radius: 4px; cursor: pointer;

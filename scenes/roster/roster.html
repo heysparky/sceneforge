@@ -35,22 +35,6 @@
             {{/if}}
 
             <div class="sf-dossier__xp">{{c.xp}} XP</div>
-
-            {{#if c.canAssign}}
-              <button type="button" class="sf-claim sf-claim--open" data-action="assign">{{localize "SCENEFORGE.Assign"}}</button>
-            {{else if c.canClaim}}
-              <button type="button" class="sf-claim sf-claim--open" data-action="claim">{{localize "SCENEFORGE.Claim"}}</button>
-            {{else if c.canRelease}}
-              <button type="button" class="sf-claim sf-claim--mine" data-action="release">{{localize "SCENEFORGE.Release"}}</button>
-            {{else if (eq c.status "taken")}}
-              <button type="button" class="sf-claim sf-claim--taken" disabled>{{c.claimedByName}}</button>
-            {{else if (eq c.status "locked")}}
-              <button type="button" class="sf-claim sf-claim--locked" disabled>{{localize "SCENEFORGE.Status.GMOnly"}}</button>
-            {{else if (eq c.status "mine")}}
-              <button type="button" class="sf-claim sf-claim--mine" disabled>{{localize "SCENEFORGE.Status.You"}}</button>
-            {{else}}
-              <button type="button" class="sf-claim sf-claim--open" disabled>{{localize "SCENEFORGE.Status.Open"}}</button>
-            {{/if}}
           </div>
 
           {{#if @root.isGM}}
@@ -58,6 +42,24 @@
                   data-tooltip="{{localize 'SCENEFORGE.LockTip'}}">
             {{#if (eq c.status "locked")}}{{localize "SCENEFORGE.Unlock"}}{{else}}{{localize "SCENEFORGE.Lock"}}{{/if}}
           </button>
+          {{/if}}
+        </div>
+
+        <div class="sf-tile__actions">
+          {{#if c.canAssign}}
+            <button type="button" class="sf-claim sf-claim--open" data-action="assign">{{localize "SCENEFORGE.Assign"}}</button>
+          {{else if c.canClaim}}
+            <button type="button" class="sf-claim sf-claim--open" data-action="claim">{{localize "SCENEFORGE.Claim"}}</button>
+          {{else if c.canRelease}}
+            <button type="button" class="sf-claim sf-claim--mine" data-action="release">{{localize "SCENEFORGE.Release"}}</button>
+          {{else if (eq c.status "taken")}}
+            <button type="button" class="sf-claim sf-claim--taken" disabled>{{c.claimedByName}}</button>
+          {{else if (eq c.status "locked")}}
+            <button type="button" class="sf-claim sf-claim--locked" disabled>{{localize "SCENEFORGE.Status.GMOnly"}}</button>
+          {{else if (eq c.status "mine")}}
+            <button type="button" class="sf-claim sf-claim--mine" disabled>{{localize "SCENEFORGE.Status.You"}}</button>
+          {{else}}
+            <button type="button" class="sf-claim sf-claim--open" disabled>{{localize "SCENEFORGE.Status.Open"}}</button>
           {{/if}}
         </div>
 

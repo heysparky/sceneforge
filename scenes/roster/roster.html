@@ -26,15 +26,18 @@
           </div>
 
           <div class="sf-tile__dossier">
-            {{#if c.bio}}<p class="sf-dossier__bio">{{c.bio}}</p>{{/if}}
+            {{#if c.dClass}}<div class="sf-dossier__field"><span class="sf-dossier__label">Class</span> {{c.dClass}}</div>{{/if}}
+            {{#if c.dLevel}}<div class="sf-dossier__field"><span class="sf-dossier__label">Level</span> {{c.dLevel}}</div>{{/if}}
+            {{#if c.dXp}}<div class="sf-dossier__field"><span class="sf-dossier__label">XP</span> {{c.dXp}}</div>{{/if}}
+            {{#if c.dBackground}}<p class="sf-dossier__bio">{{c.dBackground}}</p>{{/if}}
+            {{#if c.dQuote}}<p class="sf-dossier__quote">{{c.dQuote}}</p>{{/if}}
+            {{#if c.dCustom}}<p class="sf-dossier__bio">{{c.dCustom}}</p>{{/if}}
 
             {{#if c.specialties.length}}
             <div class="sf-dossier__tags">
               {{#each c.specialties}}<span class="sf-tag">{{this}}</span>{{/each}}
             </div>
             {{/if}}
-
-            <div class="sf-dossier__xp">{{c.xp}} XP</div>
           </div>
 
           {{#if @root.isGM}}
@@ -73,7 +76,7 @@
   <footer class="sf-roster__foot">
     {{#if isGM}}
     <span class="sf-roster__actions">
-      <button type="button" class="sf-btn sf-btn--ghost" data-action="addItems">{{localize "SCENEFORGE.AddCharacters"}}</button>
+      <button type="button" class="sf-btn sf-btn--ghost" data-action="editCharacters">{{localize "SCENEFORGE.EditCharacters"}}</button>
       {{#if allClaimed}}
       <button type="button" class="sf-btn sf-btn--accent" data-action="beginSession">{{localize "SCENEFORGE.BeginSession"}}</button>
       {{/if}}

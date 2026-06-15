@@ -1,6 +1,6 @@
 import { SceneForgeScene } from '../SceneForgeScene.js';
 import { emit, applyClaim, applyRelease } from '../../core/socket.js';
-import { pickRosterTemplates } from './RosterConfig.js';
+import { RosterCharManager } from './RosterCharManager.js';
 
 export default class RosterScene extends SceneForgeScene {
   static TYPE = 'roster';
@@ -12,7 +12,7 @@ export default class RosterScene extends SceneForgeScene {
     id: 'sceneforge-roster',
     classes: ['sceneforge-scene-app', 'sceneforge', 'sceneforge-roster'],
     actions: {
-      addItems:     RosterScene.#onAddItems,
+      editCharacters: RosterScene.#onEditCharacters,
       claim:        RosterScene.#onClaim,
       release:      RosterScene.#onRelease,
       toggleLock:   RosterScene.#onToggleLock,
@@ -51,28 +51,37 @@ export default class RosterScene extends SceneForgeScene {
   #toViewModel(actor, user) {
     const claimedBy = actor.getFlag('sceneforge', 'claimedBy') ?? null;
     const locked    = actor.getFlag('sceneforge', 'locked') ?? false;
+    const d         = actor.getFlag('sceneforge', 'dossier') ?? {};
 
     let status;
-    if (locked)                  status = 'locked';
+    if (locked)                     status = 'locked';
     else if (claimedBy === user.id) status = 'mine';
-    else if (claimedBy)          status = 'taken';
-    else                         status = 'open';
+    else if (claimedBy)             status = 'taken';
+    else                            status = 'open';
+
+    const xpVal = d.xp ? Number(d.xp) : (actor.system?.xp ?? 0);
 
     return {
       id:            actor.id,
       name:          actor.name,
       img:           actor.img,
       ringColor:     actor.prototypeToken?.ring?.colors?.ring ?? '#ffffff',
-      role:        actor.getFlag('sceneforge', 'role') ?? '',
-      specialties: actor.getFlag('sceneforge', 'specialties') ?? [],
-      bio:         actor.system.biography ?? '',
-      xp:          actor.system.xp ?? 0,
+      role:          actor.getFlag('sceneforge', 'role') ?? '',
+      specialties:   actor.getFlag('sceneforge', 'specialties') ?? [],
       status,
       statusLabel:   RosterScene.#statusLabel(status),
       claimedByName: claimedBy ? (game.users.get(claimedBy)?.name ?? '?') : null,
-      canAssign:  status === 'open'  &&  user.isGM,
-      canClaim:   status === 'open'  && !user.isGM && !this.#isReady,
-      canRelease: status === 'mine'  && !user.isGM && !this.#isReady,
+      canAssign:     status === 'open'  &&  user.isGM,
+      canClaim:      status === 'open'  && !user.isGM && !this.#isReady,
+      canRelease:    status === 'mine'  && !user.isGM && !this.#isReady,
+      // dossier fields — null means "don't render"
+      dClass:      d.showClass      && d.class                              ? d.class                              : null,
+      dLevel:      d.showLevel      && d.level                              ? d.level                              : null,
+      dXp:         d.showXp !== false                                       ? String(xpVal)                        : null,
+      dBackground: d.showBackground && (d.background || actor.system?.biography)
+                     ? (d.background || actor.system?.biography)           : null,
+      dQuote:      d.showQuote      && d.quote                              ? d.quote                              : null,
+      dCustom:     d.custom                                                 ? d.custom                             : null,
     };
   }
 
@@ -144,16 +153,9 @@ export default class RosterScene extends SceneForgeScene {
     return super.close(options);
   }
 
-  static async #onAddItems(_e, _target) {
+  static #onEditCharacters(_e, _target) {
     if (!game.user.isGM) return;
-    const scene = this._scene;
-    const current = scene.flags?.sceneforge?.roster?.templates ?? [];
-    const added = await pickRosterTemplates(current);
-    if (!added.length) return;
-    await scene.update({ 'flags.sceneforge.roster.templates': [...current, ...added] });
-    await Actor.updateDocuments(
-      added.map(id => ({ _id: id, 'ownership.default': CONST.DOCUMENT_OWNERSHIP_LEVELS.OBSERVER }))
-    );
+    new RosterCharManager(this._scene).render(true);
   }
 
   static #onOpenSheet(_e, target) {

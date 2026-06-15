@@ -1,0 +1,28 @@
+<div class="sf-char-manager">
+  <div class="sf-char-list" id="sf-char-list">
+    {{#each characters}}
+    <div class="sf-char-row" data-actor-id="{{id}}">
+      <div class="sf-char-row__move">
+        <button type="button" class="sf-icon-btn" data-action="moveUp" title="Move up">↑</button>
+        <button type="button" class="sf-icon-btn" data-action="moveDown" title="Move down">↓</button>
+      </div>
+      <img class="sf-char-row__img" src="{{img}}" alt="{{name}}">
+      <span class="sf-char-row__name">{{name}}</span>
+      <div class="sf-char-row__btns">
+        <button type="button" class="sf-btn sf-btn--ghost sf-btn--sm" data-action="editDossier">Dossier</button>
+        <button type="button" class="sf-icon-btn sf-icon-btn--remove" data-action="remove" title="Remove">✕</button>
+      </div>
+    </div>
+    {{/each}}
+    {{#unless characters.length}}
+    <p class="sf-char-manager__empty">No characters yet.</p>
+    {{/unless}}
+  </div>
+  <footer class="sf-char-manager__foot">
+    <button type="button" class="sf-btn sf-btn--ghost" data-action="addMore">+ Add Characters</button>
+    <span class="sf-char-manager__foot-right">
+      <button type="button" class="sf-btn sf-btn--ghost" data-action="cancelManager">Cancel</button>
+      <button type="button" class="sf-btn sf-btn--accent" data-action="saveManager">Save</button>
+    </span>
+  </footer>
+</div>

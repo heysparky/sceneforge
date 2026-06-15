@@ -17,7 +17,7 @@
   "SCENEFORGE.LockTip": "Lock or unlock this character for players",
   "SCENEFORGE.Carrying": "Carrying",
   "SCENEFORGE.CarryingNothing": "Carrying: nothing",
-  "SCENEFORGE.AddCharacters": "Add Characters",
+  "SCENEFORGE.EditCharacters": "Edit Characters",
   "SCENEFORGE.BeginSession": "Begin Session",
   "SCENEFORGE.Ready": "Ready",
   "SCENEFORGE.Choose": "Release"

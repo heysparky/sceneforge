@@ -210,6 +210,60 @@ game.user.isGM                          // boolean
 game.i18n.localize('KEY')               // i18n lookup
 ```
 
+### Canvas Interaction (Custom Placement Modes, Ghost Cursors)
+
+**World-space cursor position — use `canvas.mousePosition`**
+Foundry keeps this updated on every mousemove. Use it in click handlers instead of converting DOM coords yourself.
+```js
+window.addEventListener('mousedown', (e) => {
+  if (e.button !== 0) return;
+  const { x, y } = canvas.mousePosition; // already in world space
+  const size = canvas.grid.size;
+  const sx = Math.floor(x / size) * size;
+  const sy = Math.floor(y / size) * size;
+  canvas.scene.createEmbeddedDocuments('Token', [{ ...tokenData, x: sx, y: sy }]);
+}, { capture: true });
+```
+
+**Event listeners — use DOM events on `window`, not PIXI stage**
+`canvas.stage.on()` / `.off()` is unreliable in PIXI v8 (internal bound copies may not match the original reference). Use `window.addEventListener` with `{ capture: true }` to intercept canvas clicks before Foundry's handlers.
+```js
+window.addEventListener('mousemove', moveFn);
+window.addEventListener('mousedown', downFn, { capture: true });
+// cleanup — must pass same options object to removeEventListener
+window.removeEventListener('mousemove', moveFn);
+window.removeEventListener('mousedown', downFn, { capture: true });
+```
+
+**Texture loading — use `PIXI.Assets.load()`**
+`loadTexture` (global) is deprecated. `foundry.canvas.loadTexture` still triggers the deprecation warning in v14.361. Use PIXI directly:
+```js
+const texture = await PIXI.Assets.load(src).catch(() => null);
+```
+
+**Grid snapping — use manual math, not `getSnappedPoint`**
+`canvas.grid.getSnappedPoint(point, options)` requires a `{mode}` second argument with no default, and `CONST.GRID_SNAPPING_MODES` may be absent in some builds. Simpler and more reliable:
+```js
+const size = canvas.grid.size;
+const sx = Math.floor(x / size) * size;
+const sy = Math.floor(y / size) * size;
+```
+
+**Ghost cursors — use HTML elements, not PIXI sprites**
+PIXI.Assets caches textures aggressively; a PIXI sprite ghost can show a stale texture from a previous call. An HTML `div` with `background-image` always reflects the current value:
+```js
+const ghost = document.createElement('div');
+ghost.style.cssText = 'position:fixed;width:52px;height:52px;pointer-events:none;z-index:99999;border-radius:50%;background:center/cover no-repeat;opacity:0.75;transform:translate(-50%,-50%)';
+ghost.style.backgroundImage = `url('${actor.prototypeToken.texture.src}')`;
+document.body.appendChild(ghost);
+// position on mousemove:
+window.addEventListener('mousemove', e => { ghost.style.left = e.clientX+'px'; ghost.style.top = e.clientY+'px'; });
+// cleanup:
+ghost.remove();
+```
+
+**`canvas.app.canvas` may be undefined** — do not rely on it to find the canvas DOM element. Use `canvas.mousePosition` for coordinates instead.
+
 ---
 
 ## v14 API — What Is Deprecated (Never Use)

@@ -87,7 +87,7 @@ export default class RosterScene extends SceneForgeScene {
 
   static #statusLabel(status) {
     return {
-      open:   game.i18n.localize('SCENEFORGE.Status.Open'),
+      open:   game.i18n.localize('SCENEFORGE.Status.Available'),
       mine:   game.i18n.localize('SCENEFORGE.Status.You'),
       taken:  game.i18n.localize('SCENEFORGE.Status.Taken'),
       locked: game.i18n.localize('SCENEFORGE.Status.GMOnly'),

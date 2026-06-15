@@ -20,7 +20,7 @@ export async function editCharacterDossier(actor) {
   };
 
   const content = `<div class="sf-dossier-edit">
-    ${row('class',      'Class',      'text',     '')}
+    ${row('concept',    'Concept',    'text',     '')}
     ${row('level',      'Level',      'text',     '')}
     ${row('xp',         'XP',         'number',   String(actor.system?.xp ?? ''), true)}
     ${row('background', 'Background', 'textarea', actor.system?.biography ?? '')}
@@ -47,8 +47,8 @@ export async function editCharacterDossier(actor) {
         callback: (_e, _b, dialog) => {
           const el = dialog.element;
           return {
-            showClass:      checked(el, 'showClass'),
-            class:          value(el, 'class'),
+            showConcept:    checked(el, 'showConcept'),
+            concept:        value(el, 'concept'),
             showLevel:      checked(el, 'showLevel'),
             level:          value(el, 'level'),
             showXp:         checked(el, 'showXp'),

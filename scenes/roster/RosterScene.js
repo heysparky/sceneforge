@@ -75,7 +75,7 @@ export default class RosterScene extends SceneForgeScene {
       canClaim:      status === 'open'  && !user.isGM && !this.#isReady,
       canRelease:    status === 'mine'  && !user.isGM && !this.#isReady,
       // dossier fields — null means "don't render"
-      dClass:      d.showClass      && d.class                              ? d.class                              : null,
+      dConcept:    d.showConcept    && d.concept                            ? d.concept                            : null,
       dLevel:      d.showLevel      && d.level                              ? d.level                              : null,
       dXp:         d.showXp !== false                                       ? String(xpVal)                        : null,
       dBackground: d.showBackground && (d.background || actor.system?.biography)

@@ -45,10 +45,14 @@ export async function applyClaim(actorId, userId, sceneId) {
   const clone = await Actor.create(data);
   if (!clone) return;
 
-  await template.update({
-    'flags.sceneforge.claimedBy': userId,
-    'flags.sceneforge.cloneId':   clone.id,
-  });
+  const ringColor = template.prototypeToken?.ring?.colors?.ring ?? null;
+  await Promise.all([
+    template.update({
+      'flags.sceneforge.claimedBy': userId,
+      'flags.sceneforge.cloneId':   clone.id,
+    }),
+    ringColor && claimer ? claimer.update({ color: ringColor }) : Promise.resolve(),
+  ]);
 
   // Notify the GM how many players are still waiting
   const claimedUserIds = new Set(

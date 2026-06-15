@@ -20,6 +20,9 @@ export function initRenderer() {
       _applyBounds(_currentApp);
     });
   });
+  window.addEventListener('resize', () => {
+    if (_currentApp?.rendered) _applyBounds(_currentApp);
+  });
 
   // In v14, canvasReady can fire before ready. If the canvas is already
   // initialised by the time we register, mount immediately.
@@ -41,14 +44,14 @@ async function _onUpdateScene(scene, diff) {
     await _mount(scene);
   } else {
     await _currentApp?.render({ force: true });
-    if (_currentApp) _applyBounds(_currentApp);
+    if (_currentApp) _applyBoundsSafe(_currentApp);
   }
 }
 
 async function _onDataChanged(sceneId) {
   if (sceneId !== game.scenes.viewed?.id) return;
   await _currentApp?.render({ force: true });
-  if (_currentApp) _applyBounds(_currentApp);
+  if (_currentApp) _applyBoundsSafe(_currentApp);
 }
 
 async function _mount(scene) {
@@ -74,7 +77,7 @@ async function _mount(scene) {
 
   _currentApp = new SceneClass(scene);
   await _currentApp.render({ force: true });
-  _applyBounds(_currentApp);
+  _applyBoundsSafe(_currentApp);
 
   if (game.user.isGM) {
     _teardownHandles = injectHandles(_currentApp.element, scene);
@@ -108,6 +111,11 @@ function _applyBounds(app) {
     maxHeight: 'none',
     zIndex:    '80',
   });
+}
+
+function _applyBoundsSafe(app) {
+  _applyBounds(app);
+  requestAnimationFrame(() => { if (app === _currentApp && app.rendered) _applyBounds(app); });
 }
 
 function _suppress() {

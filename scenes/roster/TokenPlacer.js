@@ -42,8 +42,6 @@ function _startPlacement() {
   _hud.innerHTML = _hudHTML(actor, _queue.length);
   document.body.appendChild(_hud);
 
-  const canvasEl = canvas.app.canvas;
-
   _moveFn = (e) => {
     if (_ghostEl) {
       _ghostEl.style.left = e.clientX + 'px';
@@ -68,16 +66,19 @@ function _startPlacement() {
     if (e.key === 'Escape') _cancel();
   };
 
-  canvasEl.addEventListener('mousemove', _moveFn);
-  canvasEl.addEventListener('mousedown', _downFn, { capture: true });
+  window.addEventListener('mousemove', _moveFn);
+  window.addEventListener('mousedown', _downFn, { capture: true });
   document.addEventListener('keydown', _keyFn);
 }
 
 function _domToWorld(clientX, clientY) {
-  const canvasEl = canvas.app.canvas;
+  const canvasEl = canvas.app?.canvas ?? document.querySelector('#board canvas');
+  if (!canvasEl) return { x: 0, y: 0 };
   const rect = canvasEl.getBoundingClientRect();
-  const px = (clientX - rect.left) * (canvas.app.renderer.width / rect.width);
-  const py = (clientY - rect.top) * (canvas.app.renderer.height / rect.height);
+  const scaleX = canvasEl.width / rect.width;
+  const scaleY = canvasEl.height / rect.height;
+  const px = (clientX - rect.left) * scaleX;
+  const py = (clientY - rect.top) * scaleY;
   return canvas.stage.toLocal({ x: px, y: py });
 }
 
@@ -107,9 +108,8 @@ function _cancel() {
 function _cleanup() {
   if (_ghostEl) { _ghostEl.remove(); _ghostEl = null; }
   if (_hud) { _hud.remove(); _hud = null; }
-  const canvasEl = canvas.app?.canvas;
-  if (_moveFn) { canvasEl?.removeEventListener('mousemove', _moveFn); _moveFn = null; }
-  if (_downFn) { canvasEl?.removeEventListener('mousedown', _downFn, { capture: true }); _downFn = null; }
+  if (_moveFn) { window.removeEventListener('mousemove', _moveFn); _moveFn = null; }
+  if (_downFn) { window.removeEventListener('mousedown', _downFn, { capture: true }); _downFn = null; }
   if (_keyFn) { document.removeEventListener('keydown', _keyFn); _keyFn = null; }
 }
 

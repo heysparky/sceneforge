@@ -3,6 +3,7 @@ import { initSocket } from './core/socket.js';
 import { registerType } from './core/registry.js';
 import { initRenderer } from './core/renderer.js';
 import { SceneCreator } from './scenes/picker/SceneTypePicker.js';
+import { init as initTokenPlacer } from './scenes/roster/TokenPlacer.js';
 
 Hooks.once('init', () => {
   registerSettings();
@@ -12,6 +13,7 @@ Hooks.once('init', () => {
 Hooks.once('ready', () => {
   initSocket();
   initRenderer();
+  initTokenPlacer();
   _interceptSceneCreate();
 });
 

@@ -1,6 +1,7 @@
 import { SceneForgeScene } from '../SceneForgeScene.js';
 import { emit, applyClaim, applyRelease } from '../../core/socket.js';
 import { RosterCharManager } from './RosterCharManager.js';
+import { setPending } from './TokenPlacer.js';
 
 export default class RosterScene extends SceneForgeScene {
   static TYPE = 'roster';
@@ -209,6 +210,11 @@ export default class RosterScene extends SceneForgeScene {
       rejectClose: false,
     });
     if (!result || typeof result !== 'string') return;
+    const roster = this._scene.flags?.sceneforge?.roster ?? {};
+    const cloneIds = (roster.templates ?? [])
+      .map(id => game.actors.get(id)?.getFlag('sceneforge', 'cloneId'))
+      .filter(Boolean);
+    if (cloneIds.length) setPending(cloneIds, result);
     await game.scenes.get(result)?.view();
   }
 

@@ -466,3 +466,45 @@
   font: 400 italic 12px var(--font-body, "Signika", sans-serif);
   color: var(--color-text-subtle, #8f8b7e);
 }
+
+/* ── Token Placer HUD ── */
+
+#sceneforge-placer-hud {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid var(--color-border, #555);
+  border-radius: 6px;
+  padding: 0.5rem 0.85rem 0.5rem 0.5rem;
+  pointer-events: none;
+}
+
+#sceneforge-placer-hud img {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-border, #555);
+  flex-shrink: 0;
+}
+
+.sf-placer-hud__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sf-placer-hud__name {
+  font: 600 14px var(--font-body, "Signika", sans-serif);
+  color: var(--color-text-primary, #d8d6cc);
+}
+
+.sf-placer-hud__hint {
+  font: 400 11px var(--font-body, "Signika", sans-serif);
+  color: var(--color-text-subtle, #8f8b7e);
+}

@@ -183,8 +183,19 @@ export default class RosterScene extends SceneForgeScene {
     await game.scenes.get(result)?.view();
   }
 
-  static #onReady() {
-    this.#isReady = !this.#isReady;
-    Hooks.callAll('sceneforge:dataChanged', this._scene.id);
+  static async #onReady() {
+    if (this.#isReady) {
+      const templates = this._scene.flags?.sceneforge?.roster?.templates ?? [];
+      const actorId = templates.find(id =>
+        game.actors.get(id)?.getFlag('sceneforge', 'claimedBy') === game.user.id
+      );
+      if (!actorId) return;
+      this.#isReady = false;
+      if (game.user.isGM) await applyRelease(actorId, game.user.id);
+      else emit({ action: 'release', actorId, userId: game.user.id });
+    } else {
+      this.#isReady = true;
+      Hooks.callAll('sceneforge:dataChanged', this._scene.id);
+    }
   }
 }

@@ -1,6 +1,7 @@
 const CHANNEL = 'module.sceneforge';
 
 export function initSocket() {
+  console.log('[SF initSocket] registering listener on', CHANNEL);
   game.socket.on(CHANNEL, msg => {
     console.log('[SF socket] received', msg, 'isGM:', game.user.isGM);
     if (!game.user.isGM) return;

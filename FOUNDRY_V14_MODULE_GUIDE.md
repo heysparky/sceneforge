@@ -30,6 +30,7 @@ Intended as a foundation document for any new module — feed it to Claude Code 
   "esmodules": ["your-module.js"],
   "styles": ["your-module.css"],
   "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }],
+  "socket": true,
   "url": "https://github.com/you/your-module",
   "manifest": "https://github.com/you/your-module/releases/latest/download/module.json",
   "download": "https://github.com/you/your-module/releases/download/{{version}}/module.zip"
@@ -37,6 +38,7 @@ Intended as a foundation document for any new module — feed it to Claude Code 
 ```
 
 - `id` must be lowercase and hyphenated — this is your namespace everywhere
+- `"socket": true` is **required** if the module uses `game.socket`. Without it the Foundry server silently drops all socket emissions — client-side `on` registers fine and `emit` completes without error, but messages never reach other clients. Requires a full server restart to take effect.
 - Do NOT use `/latest` in `manifest` URL when submitting to the official package directory; use a versioned release URL
 - `esmodules` is the v14 way to declare JS entry points (not `scripts`)
 
@@ -480,6 +482,7 @@ Checklist:
 | `updateScene` not firing | Check diff is non-empty; use null-sentinel or `_v` bump |
 | GM client missing its own `updateScene` | Re-render locally after `await setFlag` |
 | `canvasReady` handler registered in `ready` misses hard-reload | `canvasReady` fires before `ready` in v14 — also call handler immediately if `canvas?.ready` |
+| `game.socket.emit` silently dropped, GM never receives messages | Add `"socket": true` to `module.json` and restart the Foundry server |
 | Suppressing `#board` before `canvasReady` | Prevents PIXI from initialising; `canvasReady` never fires. Suppress only inside your `canvasReady` handler. |
 | Top-level `foundry.*` / `game.*` access in a module file | Move inside a function — top-level access at import time silently kills the entire module chain |
 | DialogV2 button with no callback | Always add `callback: () => null` — no-callback buttons resolve to the action string (truthy) |

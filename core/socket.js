@@ -46,12 +46,15 @@ export async function applyClaim(actorId, userId, sceneId) {
   if (!clone) return;
 
   const ringColor = template.prototypeToken?.ring?.colors?.ring ?? null;
+  const userUpdates = { character: clone.id };
+  if (ringColor) userUpdates.color = ringColor;
+
   await Promise.all([
     template.update({
       'flags.sceneforge.claimedBy': userId,
       'flags.sceneforge.cloneId':   clone.id,
     }),
-    ringColor && claimer ? claimer.update({ color: ringColor }) : Promise.resolve(),
+    claimer ? claimer.update(userUpdates) : Promise.resolve(),
   ]);
 
   // Notify the GM how many players are still waiting
@@ -73,8 +76,11 @@ export async function applyRelease(actorId, userId) {
   const cloneId = template.getFlag('sceneforge', 'cloneId');
   if (cloneId) await game.actors.get(cloneId)?.delete();
 
-  await template.update({
-    'flags.sceneforge.claimedBy': null,
-    'flags.sceneforge.cloneId':   null,
-  });
+  await Promise.all([
+    template.update({
+      'flags.sceneforge.claimedBy': null,
+      'flags.sceneforge.cloneId':   null,
+    }),
+    game.users.get(userId)?.update({ character: null }),
+  ]);
 }

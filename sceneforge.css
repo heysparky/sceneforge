@@ -478,7 +478,6 @@
   background: center / cover no-repeat;
   border-radius: 50%;
   opacity: 0.75;
-  border: 2px solid rgba(255, 255, 255, 0.5);
   transform: translate(-50%, -50%);
 }
 

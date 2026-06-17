@@ -269,7 +269,7 @@
   width: 100%; padding: 9px; border-radius: 4px; cursor: pointer;
   font: 600 14px var(--font-body, "Signika", sans-serif); letter-spacing: .02em;
 }
-.sf-claim--open   { background: var(--color-warm-1, #ee9b3a); color: var(--color-cool-5, #0b0a13); border: 1px solid var(--color-warm-1, #be7c2e); }
+.sf-claim--open   { --color-warm-1: #be7c2e; background: var(--color-warm-1); color: var(--color-cool-5, #0b0a13); border: 1px solid var(--color-warm-1); }
 .sf-claim--mine   { background: transparent; color: var(--color-warm-1, #ee9b3a); border: 1.5px solid var(--color-warm-1, #ee9b3a); }
 .sf-claim--taken  { background: var(--color-cool-4, #221d2b); color: var(--color-text-subtle, #8f8b7e); border: 1px solid var(--color-border, #302831); cursor: default; }
 .sf-claim--locked { background: transparent; color: var(--sf-status-locked); border: 1.5px dashed var(--sf-status-locked); cursor: not-allowed; }

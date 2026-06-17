@@ -34,7 +34,7 @@ function _startPlacement() {
 
   _ghostEl = document.createElement('div');
   _ghostEl.className = 'sf-placer-ghost';
-  _ghostEl.style.backgroundImage = `url('${imgSrc}')`;
+  _ghostEl.style.cssText = `background-image: url('${imgSrc}'); width: 96px; height: 96px;`;
   document.body.appendChild(_ghostEl);
 
   _hud = document.createElement('div');

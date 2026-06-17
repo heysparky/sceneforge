@@ -25,9 +25,9 @@ sceneforge.js           <- entry point: hook registration only
 sceneforge.css          <- all styles
 core/
   settings.js           <- game.settings registration (currently empty — sceneBounds moved to scene flag)
-  socket.js             <- GM-authority socket handler (claim / release / color sync)
+  socket.js             <- GM-authority socket handler (claim / release / color sync / user.character sync)
   registry.js           <- scene type registry + dynamic loader
-  renderer.js           <- canvasReady → mount/teardown SceneForge apps; resize listener
+  renderer.js           <- canvasReady → mount/teardown SceneForge apps; resize listener; enforces 460px min height
   handles.js            <- draggable edge handle injection for GMs
 lang/
   en.json
@@ -41,6 +41,7 @@ scenes/
     RosterConfig.js     <- pickRosterTemplates(excludeIds, folderId) actor picker dialog
     RosterCharManager.js <- "Edit Characters" ApplicationV2 dialog: reorder, remove, add
     RosterCharEdit.js   <- per-character dossier editor (DialogV2)
+    TokenPlacer.js      <- cursor-stack token placement; ghost cursor; prompts GM to activate scene after last token
     charManager.html    <- character manager list template
     roster.html         <- tile grid template
 ```
@@ -82,7 +83,8 @@ actor.flags.sceneforge.dossier = {
 ```
 `sceneforge.role` and `sceneforge.specialties` remain as legacy display metadata alongside the dossier system.
 
-On claim: GM sets `user.color` to the character's token ring color so Dice So Nice picks it up.
+On claim: GM sets `user.color` to the character's token ring color (Dice So Nice) and `user.character` to the clone actor ID (shows in Player Configuration).
+On release/kick: `user.character` is cleared to null.
 
 To add system-specific fields or customize the dossier, edit `#toViewModel` in `scenes/roster/RosterScene.js` and the dossier block in `scenes/roster/roster.html`.
 

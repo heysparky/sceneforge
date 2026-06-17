@@ -201,6 +201,33 @@ await actor.update({
 
 Never modify GM-role users' ownership entries.
 
+### User Character Assignment
+
+```js
+// Assign an actor as the user's character (shows in Player Configuration dialog)
+const user = game.users.get(userId);
+await user.update({ character: actor.id });
+
+// Clear the assignment
+await user.update({ character: null });
+```
+
+This is distinct from actor ownership — it sets who the player "is" in Foundry's UI, not just what they can access.
+
+### Scene Navigation and Activation
+
+```js
+// Move only the current client to view a scene (does not affect other clients)
+await game.scenes.get(sceneId)?.view();
+
+// Activate a scene — sets it as the active scene AND moves ALL connected clients to view it
+await canvas.scene?.activate();
+// or
+await game.scenes.get(sceneId)?.activate();
+```
+
+`activate()` is the "push everyone to this scene" call. Use it when the GM is ready to start a session.
+
 ### Useful Utilities
 
 ```js
@@ -253,13 +280,24 @@ const sy = Math.floor(y / size) * size;
 PIXI.Assets caches textures aggressively; a PIXI sprite ghost can show a stale texture from a previous call. An HTML `div` with `background-image` always reflects the current value:
 ```js
 const ghost = document.createElement('div');
-ghost.style.cssText = 'position:fixed;width:52px;height:52px;pointer-events:none;z-index:99999;border-radius:50%;background:center/cover no-repeat;opacity:0.75;transform:translate(-50%,-50%)';
+// Set ALL layout properties inline — Foundry's global CSS can override module stylesheet rules
+// for plain divs appended to document.body. Inline styles always win.
+ghost.style.cssText = 'position:fixed;width:96px;height:96px;pointer-events:none;z-index:99999;border-radius:50%;background:center/cover no-repeat;opacity:0.75;transform:translate(-50%,-50%)';
 ghost.style.backgroundImage = `url('${actor.prototypeToken.texture.src}')`;
 document.body.appendChild(ghost);
 // position on mousemove:
 window.addEventListener('mousemove', e => { ghost.style.left = e.clientX+'px'; ghost.style.top = e.clientY+'px'; });
 // cleanup:
 ghost.remove();
+```
+
+**CSS pitfall: module stylesheet rules may lose to Foundry's global reset on dynamic elements**
+Setting `width`/`height` via a CSS class on a `div` appended to `document.body` may have no effect — Foundry's stylesheet can override it. Always set critical layout properties as inline styles on dynamically created elements.
+
+**CSS pitfall: changing a CSS variable's fallback value has no effect when the variable is defined**
+`var(--color-warm-1, #ee9b3a)` — if Foundry defines `--color-warm-1` (it does), the fallback `#ee9b3a` is never used. To override the color within a scoped rule, re-declare the variable:
+```css
+.sf-claim--open { --color-warm-1: #be7c2e; background: var(--color-warm-1); }
 ```
 
 **`canvas.app.canvas` may be undefined** — do not rely on it to find the canvas DOM element. Use `canvas.mousePosition` for coordinates instead.
@@ -542,3 +580,5 @@ Checklist:
 | DialogV2 button with no callback | Always add `callback: () => null` — no-callback buttons resolve to the action string (truthy) |
 | DialogV2 OK/Create callback returning `null` or falsy | Resolves to the action string, not `null` — always return an object; validate fields after the dialog closes |
 | `if (!result) return` after `DialogV2.wait` | Doesn't catch action strings — use `if (!result \|\| typeof result !== 'object') return` |
+| CSS class `width`/`height` ignored on dynamic `div` | Foundry's global CSS can override module stylesheet rules on elements appended to `document.body` — set layout via inline `style.cssText` instead |
+| Changing CSS variable fallback has no effect | If Foundry defines the variable (e.g. `--color-warm-1`), the fallback is never reached — re-declare the variable inside the scoped rule |

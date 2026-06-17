@@ -471,8 +471,8 @@
 
 .sf-placer-ghost {
   position: fixed;
-  width: 52px;
-  height: 52px;
+  width: 96px;
+  height: 96px;
   pointer-events: none;
   z-index: 99998;
   background: center / cover no-repeat;

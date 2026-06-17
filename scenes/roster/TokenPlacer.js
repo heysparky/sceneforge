@@ -85,7 +85,21 @@ function _advance() {
     _startPlacement();
   } else {
     _targetSceneId = null;
+    _promptActivate();
   }
+}
+
+async function _promptActivate() {
+  const result = await foundry.applications.api.DialogV2.wait({
+    window: { title: 'Begin Session' },
+    content: '<p>All tokens placed. Activate this scene for all players?</p>',
+    buttons: [
+      { action: 'activate', label: 'Activate Scene', default: true, callback: () => true },
+      { action: 'cancel',   label: 'Not Yet',        callback: () => null },
+    ],
+    rejectClose: false,
+  });
+  if (result) await canvas.scene?.activate();
 }
 
 function _cancel() {

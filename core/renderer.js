@@ -97,16 +97,22 @@ function _getBounds() {
   };
 }
 
+const MIN_APP_HEIGHT = 460;
+
 function _applyBounds(app) {
   const el = app.element;
   if (!el) return;
   const b = _getBounds();
+  const rawHeight = window.innerHeight - b.top - b.bottom;
+  const bottom = rawHeight < MIN_APP_HEIGHT
+    ? Math.max(0, window.innerHeight - b.top - MIN_APP_HEIGHT)
+    : b.bottom;
   Object.assign(el.style, {
     position:  'fixed',
     top:       `${b.top}px`,
     left:      `${b.left}px`,
     right:     `${b.right}px`,
-    bottom:    `${b.bottom}px`,
+    bottom:    `${bottom}px`,
     margin:    '0',
     maxHeight: 'none',
     zIndex:    '80',

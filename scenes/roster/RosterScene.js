@@ -16,6 +16,7 @@ export default class RosterScene extends SceneForgeScene {
       editCharacters: RosterScene.#onEditCharacters,
       claim:        RosterScene.#onClaim,
       release:      RosterScene.#onRelease,
+      kick:         RosterScene.#onKick,
       toggleLock:   RosterScene.#onToggleLock,
       assign:       RosterScene.#onAssign,
       beginSession: RosterScene.#onBeginSession,
@@ -73,6 +74,7 @@ export default class RosterScene extends SceneForgeScene {
       statusLabel:   RosterScene.#statusLabel(status),
       claimedByName: claimedBy ? (game.users.get(claimedBy)?.name ?? '?') : null,
       canAssign:     status === 'open'  &&  user.isGM,
+      canKick:       status === 'taken' &&  user.isGM,
       canClaim:      status === 'open'  && !user.isGM && !this.#isReady,
       canRelease:    status === 'mine'  && !user.isGM && !this.#isReady,
       // dossier fields — null means "don't render"
@@ -111,6 +113,16 @@ export default class RosterScene extends SceneForgeScene {
     if (!actorId) return;
     if (game.user.isGM) await applyRelease(actorId, game.user.id);
     else emit({ action: 'release', actorId, userId: game.user.id });
+  }
+
+  static async #onKick(_e, target) {
+    if (!game.user.isGM) return;
+    const actorId = RosterScene.#actorIdFrom(target);
+    if (!actorId) return;
+    const actor = game.actors.get(actorId);
+    const claimedBy = actor?.getFlag('sceneforge', 'claimedBy');
+    if (!claimedBy) return;
+    await applyRelease(actorId, claimedBy);
   }
 
   static async #onToggleLock(_e, target) {

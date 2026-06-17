@@ -12,6 +12,7 @@
   "SCENEFORGE.Claim": "Claim",
   "SCENEFORGE.Release": "Release",
   "SCENEFORGE.Assign": "Assign",
+  "SCENEFORGE.Kick": "Kick",
   "SCENEFORGE.Lock": "Lock",
   "SCENEFORGE.Unlock": "Unlock",
   "SCENEFORGE.LockTip": "Lock or unlock this character for players",

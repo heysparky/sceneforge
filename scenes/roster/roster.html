@@ -55,6 +55,8 @@
             <button type="button" class="sf-claim sf-claim--open" data-action="claim">{{localize "SCENEFORGE.Claim"}}</button>
           {{else if c.canRelease}}
             <button type="button" class="sf-claim sf-claim--mine" data-action="release">{{localize "SCENEFORGE.Release"}}</button>
+          {{else if c.canKick}}
+            <button type="button" class="sf-claim sf-claim--taken" data-action="kick">{{localize "SCENEFORGE.Kick"}} {{c.claimedByName}}</button>
           {{else if (eq c.status "taken")}}
             <button type="button" class="sf-claim sf-claim--taken" disabled>{{c.claimedByName}}</button>
           {{else if (eq c.status "locked")}}

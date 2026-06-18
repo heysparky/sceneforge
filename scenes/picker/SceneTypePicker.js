@@ -162,6 +162,12 @@ async function _configureRoster(scene) {
 
   const { sourceFolder, destFolder } = folders;
 
+  if (sourceFolder && destFolder && sourceFolder === destFolder) {
+    ui.notifications.error('Source folder and destination folder cannot be the same. Please reconfigure the scene.');
+    await scene.delete();
+    return;
+  }
+
   let resolvedDest = destFolder;
   if (!resolvedDest) {
     let folder = game.folders.find(f => f.type === 'Actor' && f.name === 'Roster');

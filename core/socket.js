@@ -32,6 +32,10 @@ export async function applyClaim(actorId, userId, sceneId) {
   // Clone the template, owned by the claiming player
   const data = template.toObject();
   delete data._id;
+  data.flags = data.flags ?? {};
+  data.flags.sceneforge = data.flags.sceneforge ?? {};
+  data.flags.sceneforge.isClone = true;
+  delete data.flags.sceneforge.dossier;
   const claimer = game.users.get(userId);
   data.ownership = {
     default: CONST.DOCUMENT_OWNERSHIP_LEVELS.NONE,

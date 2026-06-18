@@ -1,6 +1,6 @@
-export async function editCharacterDossier(actor) {
+export async function editCharacterDossier(actor, scene) {
   const { DialogV2 } = foundry.applications.api;
-  const d = actor.getFlag('sceneforge', 'dossier') ?? {};
+  const d = scene?.flags?.sceneforge?.roster?.dossiers?.[actor.id] ?? {};
 
   const val   = (key, fallback = '') => d[key] !== undefined ? d[key] : fallback;
   const chk   = (key, def = false)  => (d[key] !== undefined ? d[key] : def) ? 'checked' : '';
@@ -67,5 +67,5 @@ export async function editCharacterDossier(actor) {
   });
 
   if (!result || typeof result !== 'object') return;
-  await actor.setFlag('sceneforge', 'dossier', result);
+  await scene.update({ ['flags.sceneforge.roster.dossiers.' + actor.id]: result });
 }

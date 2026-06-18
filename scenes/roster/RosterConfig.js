@@ -6,7 +6,7 @@
 export async function pickRosterTemplates(excludeIds = [], folderId = null) {
   const { DialogV2 } = foundry.applications.api;
   const excluded = new Set(excludeIds);
-  let actors = game.actors.filter(a => !excluded.has(a.id));
+  let actors = game.actors.filter(a => !excluded.has(a.id) && !a.getFlag('sceneforge', 'isClone'));
   if (folderId) actors = actors.filter(a => a.folder?.id === folderId);
   actors = actors.sort((a, b) => a.name.localeCompare(b.name));
 

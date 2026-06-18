@@ -7,7 +7,7 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
   static DEFAULT_OPTIONS = {
     id: 'sceneforge-char-manager',
     classes: ['sceneforge-char-manager'],
-    window: { title: 'Edit Characters', resizable: false },
+    window: { title: 'Edit Scene', resizable: false },
     position: { width: 480 },
     actions: {
       moveUp:        RosterCharManager.#onMoveUp,
@@ -26,19 +26,30 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
 
   #scene = null;
   #templates = [];
+  #sourceFolder = null;
+  #destFolder   = null;
 
   constructor(scene, options = {}) {
     super(options);
     this.#scene = scene;
-    this.#templates = [...(scene.flags?.sceneforge?.roster?.templates ?? [])];
+    this.#templates     = [...(scene.flags?.sceneforge?.roster?.templates    ?? [])];
+    this.#sourceFolder  = scene.flags?.sceneforge?.roster?.sourceFolder ?? null;
+    this.#destFolder    = scene.flags?.sceneforge?.roster?.destFolder   ?? null;
   }
 
   async _prepareContext(_options) {
+    const allFolders = game.folders
+      .filter(f => f.type === 'Actor')
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(f => ({ id: f.id, name: f.name }));
     return {
       characters: this.#templates
         .map(id => game.actors.get(id))
         .filter(Boolean)
         .map(a => ({ id: a.id, name: a.name, img: a.img })),
+      allFolders,
+      sourceFolder: this.#sourceFolder ?? '',
+      destFolder:   this.#destFolder   ?? '',
     };
   }
 
@@ -73,7 +84,8 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
   }
 
   static async #onAddMore() {
-    const added = await pickRosterTemplates(this.#templates);
+    const sourceFolder = this.element.querySelector('[name="sourceFolder"]')?.value || null;
+    const added = await pickRosterTemplates(this.#templates, sourceFolder);
     if (!added.length) return;
     this.#templates = [...this.#templates, ...added];
     const list = this.element.querySelector('#sf-char-list');
@@ -104,13 +116,25 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
     if (!row) return;
     const actor = game.actors.get(row.dataset.actorId);
     if (!actor) return;
-    await editCharacterDossier(actor);
+    await editCharacterDossier(actor, this.#scene);
   }
 
   static async #onSave() {
-    const ids = [...this.element.querySelectorAll('.sf-char-row[data-actor-id]')]
+    const ids          = [...this.element.querySelectorAll('.sf-char-row[data-actor-id]')]
       .map(el => el.dataset.actorId);
-    await this.#scene.update({ 'flags.sceneforge.roster.templates': ids });
+    const sourceFolder = this.element.querySelector('[name="sourceFolder"]')?.value || null;
+    const destFolder   = this.element.querySelector('[name="destFolder"]')?.value   || null;
+
+    if (sourceFolder && destFolder && sourceFolder === destFolder) {
+      ui.notifications.error('Source folder and destination folder cannot be the same.');
+      return;
+    }
+
+    await this.#scene.update({
+      'flags.sceneforge.roster.templates':    ids,
+      'flags.sceneforge.roster.sourceFolder': sourceFolder,
+      'flags.sceneforge.roster.destFolder':   destFolder,
+    });
     this.close();
   }
 

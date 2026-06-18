@@ -1,4 +1,24 @@
 <div class="sf-char-manager">
+  <div class="sf-scene-folders">
+    <div class="form-group stacked">
+      <label>Source folder <span class="units">(template actors)</span></label>
+      <select name="sourceFolder">
+        <option value="">— none —</option>
+        {{#each allFolders}}
+        <option value="{{id}}" {{#if (eq id ../sourceFolder)}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+    <div class="form-group stacked">
+      <label>Destination folder <span class="units">(player copies)</span></label>
+      <select name="destFolder">
+        <option value="">— none —</option>
+        {{#each allFolders}}
+        <option value="{{id}}" {{#if (eq id ../destFolder)}}selected{{/if}}>{{name}}</option>
+        {{/each}}
+      </select>
+    </div>
+  </div>
   <div class="sf-char-list" id="sf-char-list">
     {{#each characters}}
     <div class="sf-char-row" data-actor-id="{{id}}">

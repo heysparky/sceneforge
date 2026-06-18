@@ -53,7 +53,7 @@ export default class RosterScene extends SceneForgeScene {
   #toViewModel(actor, user) {
     const claimedBy = actor.getFlag('sceneforge', 'claimedBy') ?? null;
     const locked    = actor.getFlag('sceneforge', 'locked') ?? false;
-    const d         = actor.getFlag('sceneforge', 'dossier') ?? {};
+    const d         = this._scene?.flags?.sceneforge?.roster?.dossiers?.[actor.id] ?? {};
 
     let status;
     if (locked)                     status = 'locked';

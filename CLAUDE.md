@@ -39,10 +39,10 @@ scenes/
   roster/
     RosterScene.js      <- full M2 UI: tile grid, claim/release/lock, live sync
     RosterConfig.js     <- pickRosterTemplates(excludeIds, folderId) actor picker dialog
-    RosterCharManager.js <- "Edit Characters" ApplicationV2 dialog: reorder, remove, add
-    RosterCharEdit.js   <- per-character dossier editor (DialogV2)
+    RosterCharManager.js <- "Edit Scene" ApplicationV2 dialog: reorder/remove/add characters, source/dest folder config
+    RosterCharEdit.js   <- per-character dossier editor (DialogV2); reads/writes scene.flags.sceneforge.roster.dossiers[actorId]
     TokenPlacer.js      <- cursor-stack token placement; ghost cursor; prompts GM to activate scene after last token
-    charManager.html    <- character manager list template
+    charManager.html    <- Edit Scene template (folder selects + character list)
     roster.html         <- tile grid template
 ```
 
@@ -58,22 +58,16 @@ Written by GM drag handles; read by `renderer.js _getBounds()` on every `_applyB
 ```js
 {
   templates:    string[],   // actor IDs on the roster
-  sourceFolder: string|null, // Actor folder ID templates were drawn from
-  destFolder:   string|null, // Actor folder ID where player clones are placed on claim
+  sourceFolder: string|null, // Actor folder ID templates were drawn from (must differ from destFolder)
+  destFolder:   string|null, // Actor folder ID where player clones are placed on claim (must differ from sourceFolder)
+  dossiers:     { [actorId]: DossierData }, // per-character dossier, keyed by template actor ID
 }
 ```
 
-Per-template flags (on the Actor document itself):
-- `sceneforge.claimedBy` — userId of the claiming player (null = unclaimed)
-- `sceneforge.cloneId`   — id of the player's cloned actor
-- `sceneforge.locked`    — GM-only lock (boolean)
-- `sceneforge.role`, `sceneforge.specialties` — display metadata
-- `sceneforge.dossier`   — GM-configured dossier fields (see below)
-
-Roster tile dossier — configured per-character via "Edit Characters → Dossier":
+Dossier shape (stored in `scene.flags.sceneforge.roster.dossiers[actorId]`):
 ```js
-actor.flags.sceneforge.dossier = {
-  showConcept: bool, concept: string,     // character concept / archetype
+{
+  showConcept: bool, concept: string,
   showLevel:   bool, level:  string,
   showXp:      bool, xp:     string,      // defaults true; falls back to actor.system.xp
   showBackground: bool, background: string, // falls back to actor.system.biography
@@ -81,10 +75,21 @@ actor.flags.sceneforge.dossier = {
   custom: string,                          // always shown if non-empty (no toggle)
 }
 ```
-`sceneforge.role` and `sceneforge.specialties` remain as legacy display metadata alongside the dossier system.
+Dossier lives on the scene, not the actor — each roster starts with a blank dossier. Configured via Edit Scene → Dossier button per character.
+
+Per-template flags (on the Actor document itself):
+- `sceneforge.claimedBy` — userId of the claiming player (null = unclaimed)
+- `sceneforge.cloneId`   — id of the player's cloned actor
+- `sceneforge.locked`    — GM-only lock (boolean)
+- `sceneforge.role`, `sceneforge.specialties` — display metadata
+
+Per-clone flags (on the cloned Actor document):
+- `sceneforge.isClone = true` — set at creation; filters clones out of the template picker
 
 On claim: GM sets `user.color` to the character's token ring color (Dice So Nice) and `user.character` to the clone actor ID (shows in Player Configuration).
-On release/kick: `user.character` is cleared to null.
+On release/kick/clone deletion: `user.character` is cleared to null. Deleting a clone actor from the sidebar triggers `deleteActor` hook → `applyRelease` on the GM client.
+
+Folder guard: `sourceFolder` and `destFolder` must be different (enforced at scene creation and in Edit Scene save). If the same folder is selected, an error toast fires and the operation is aborted.
 
 To add system-specific fields or customize the dossier, edit `#toViewModel` in `scenes/roster/RosterScene.js` and the dossier block in `scenes/roster/roster.html`.
 

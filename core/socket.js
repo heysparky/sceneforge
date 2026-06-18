@@ -5,6 +5,16 @@ export function initSocket() {
     if (!game.user.isGM) return;
     _handleGM(msg).catch(console.error);
   });
+
+  Hooks.on('deleteActor', async (actor) => {
+    if (!game.user.isGM) return;
+    if (!actor.getFlag('sceneforge', 'isClone')) return;
+    const template = game.actors.find(a => a.getFlag('sceneforge', 'cloneId') === actor.id);
+    if (!template) return;
+    const claimedBy = template.getFlag('sceneforge', 'claimedBy');
+    if (!claimedBy) return;
+    await applyRelease(template.id, claimedBy);
+  });
 }
 
 export function emit(msg) {

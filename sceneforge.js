@@ -45,9 +45,9 @@ function _interceptSceneCreate() {
     if (!game.user.isGM) return;
     const el = html.querySelector ? html : html[0];
 
-    // Foundry v14 uses data-action="createDocument" on the create button.
-    // Clone the node to strip Foundry's delegated listener, then replace it.
-    const original = el.querySelector('[data-action="createEntry"]');
+    // v14 uses data-action="createDocument"; older builds used "createEntry"
+    const original = el.querySelector('[data-action="createDocument"]')
+                  ?? el.querySelector('[data-action="createEntry"]');
     if (!original) {
       console.warn('SceneForge | Could not find Create Scene button — selector may need updating for this Foundry version.');
       return;

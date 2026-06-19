@@ -45,7 +45,9 @@ function _interceptSceneCreate() {
     if (!game.user.isGM) return;
     const el = html.querySelector ? html : html[0];
 
-    // v14 uses data-action="createDocument"; older builds used "createEntry"
+    // v14 uses data-action="createDocument"; older builds used "createEntry".
+    // Remove data-action so Foundry's delegated listener (capture or bubble)
+    // never matches this button, then add our own handler directly.
     const original = el.querySelector('[data-action="createDocument"]')
                   ?? el.querySelector('[data-action="createEntry"]');
     if (!original) {
@@ -53,11 +55,9 @@ function _interceptSceneCreate() {
       return;
     }
 
-    const btn = original.cloneNode(true);
-    original.replaceWith(btn);
-    btn.addEventListener('click', e => {
+    original.removeAttribute('data-action');
+    original.addEventListener('click', e => {
       e.preventDefault();
-      e.stopPropagation();
       SceneCreator.open();
     });
   });

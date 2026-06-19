@@ -41,13 +41,20 @@ function _registerSceneTypes() {
 }
 
 function _interceptSceneCreate() {
-  const SceneDir = ui.scenes?.constructor;
-  if (!SceneDir?.DEFAULT_OPTIONS) {
-    console.warn('SceneForge | Could not patch SceneDirectory — Foundry API may have changed.');
-    return;
-  }
-  SceneDir.DEFAULT_OPTIONS.actions ??= {};
-  SceneDir.DEFAULT_OPTIONS.actions.createEntry = async () => {
-    await SceneCreator.open();
-  };
+  Hooks.on('renderSceneDirectory', (_app, html) => {
+    if (!game.user.isGM) return;
+    const el = html.querySelector ? html : html[0];
+    const original = el.querySelector('[data-action="createEntry"]');
+    if (!original) {
+      console.warn('SceneForge | Could not find Create Scene button — selector may need updating for this Foundry version.');
+      return;
+    }
+    const btn = original.cloneNode(true);
+    original.replaceWith(btn);
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      SceneCreator.open().catch(console.error);
+    });
+  });
 }

@@ -61,6 +61,7 @@ Written by GM drag handles; read by `renderer.js _getBounds()` on every `_applyB
   sourceFolder: string|null, // Actor folder ID templates were drawn from (must differ from destFolder)
   destFolder:   string|null, // Actor folder ID where player clones are placed on claim (must differ from sourceFolder)
   dossiers:     { [actorId]: DossierData }, // per-character dossier, keyed by template actor ID
+  claims:       { [actorId]: { claimedBy: string|null, cloneId: string|null } }, // per-scene claim state
 }
 ```
 
@@ -78,16 +79,20 @@ Dossier shape (stored in `scene.flags.sceneforge.roster.dossiers[actorId]`):
 Dossier lives on the scene, not the actor — each roster starts with a blank dossier. Configured via Edit Scene → Dossier button per character.
 
 Per-template flags (on the Actor document itself):
-- `sceneforge.claimedBy` — userId of the claiming player (null = unclaimed)
-- `sceneforge.cloneId`   — id of the player's cloned actor
-- `sceneforge.locked`    — GM-only lock (boolean)
+- `sceneforge.locked`    — GM-only lock (boolean); global across all rosters
 - `sceneforge.role`, `sceneforge.specialties` — display metadata
 
 Per-clone flags (on the cloned Actor document):
 - `sceneforge.isClone = true` — set at creation; filters clones out of the template picker
 
+Claim state is **per-scene**, stored in `scene.flags.sceneforge.roster.claims`:
+```js
+{ [templateActorId]: { claimedBy: userId | null, cloneId: actorId | null } }
+```
+The same template actor can be claimed independently in different roster scenes.
+
 On claim: GM sets `user.color` to the character's token ring color (Dice So Nice) and `user.character` to the clone actor ID (shows in Player Configuration).
-On release/kick/clone deletion: `user.character` is cleared to null. Deleting a clone actor from the sidebar triggers `deleteActor` hook → `applyRelease` on the GM client.
+On release/kick/clone deletion: `user.character` is cleared to null. Deleting a clone actor from the sidebar triggers `deleteActor` hook → searches all scenes' `roster.claims` for the cloneId → `applyRelease` on the GM client.
 
 Folder guard: `sourceFolder` and `destFolder` must be different (enforced at scene creation and in Edit Scene save). If the same folder is selected, an error toast fires and the operation is aborted.
 

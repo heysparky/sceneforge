@@ -31,18 +31,20 @@ export default class RosterScene extends SceneForgeScene {
 
   async _prepareContext(_options) {
     const user = game.user;
-    const templates = this._scene.flags?.sceneforge?.roster?.templates ?? [];
+    const roster = this._scene.flags?.sceneforge?.roster ?? {};
+    const templates = roster.templates ?? [];
+    const claims = roster.claims ?? {};
     const actors = templates.map(id => game.actors.get(id)).filter(Boolean);
 
     const claimedUserIds = new Set(
-      actors.map(a => a.getFlag('sceneforge', 'claimedBy')).filter(Boolean)
+      Object.values(claims).map(c => c?.claimedBy).filter(Boolean)
     );
     const activePlayers = game.users.filter(u => u.active && !u.isGM);
     const remaining = activePlayers.filter(u => !claimedUserIds.has(u.id)).length;
 
     return {
       isGM: user.isGM,
-      characters: actors.map(a => this.#toViewModel(a, user)),
+      characters: actors.map(a => this.#toViewModel(a, user, claims)),
       remaining,
       allClaimed: activePlayers.length > 0 && remaining === 0,
       iHaveClaimed: claimedUserIds.has(user.id),
@@ -50,8 +52,9 @@ export default class RosterScene extends SceneForgeScene {
     };
   }
 
-  #toViewModel(actor, user) {
-    const claimedBy = actor.getFlag('sceneforge', 'claimedBy') ?? null;
+  #toViewModel(actor, user, claims) {
+    const claim     = claims[actor.id] ?? {};
+    const claimedBy = claim.claimedBy ?? null;
     const locked    = actor.getFlag('sceneforge', 'locked') ?? false;
     const d         = this._scene?.flags?.sceneforge?.roster?.dossiers?.[actor.id] ?? {};
 
@@ -111,18 +114,18 @@ export default class RosterScene extends SceneForgeScene {
   static async #onRelease(_e, target) {
     const actorId = RosterScene.#actorIdFrom(target);
     if (!actorId) return;
-    if (game.user.isGM) await applyRelease(actorId, game.user.id);
-    else emit({ action: 'release', actorId, userId: game.user.id });
+    if (game.user.isGM) await applyRelease(actorId, game.user.id, this._scene.id);
+    else emit({ action: 'release', actorId, userId: game.user.id, sceneId: this._scene.id });
   }
 
   static async #onKick(_e, target) {
     if (!game.user.isGM) return;
     const actorId = RosterScene.#actorIdFrom(target);
     if (!actorId) return;
-    const actor = game.actors.get(actorId);
-    const claimedBy = actor?.getFlag('sceneforge', 'claimedBy');
+    const claim = this._scene.flags?.sceneforge?.roster?.claims?.[actorId];
+    const claimedBy = claim?.claimedBy;
     if (!claimedBy) return;
-    await applyRelease(actorId, claimedBy);
+    await applyRelease(actorId, claimedBy, this._scene.id);
   }
 
   static async #onToggleLock(_e, target) {
@@ -181,9 +184,9 @@ export default class RosterScene extends SceneForgeScene {
     const actorId = RosterScene.#actorIdFrom(target);
     if (!actorId) return;
 
-    const templates = this._scene.flags?.sceneforge?.roster?.templates ?? [];
+    const claims = this._scene.flags?.sceneforge?.roster?.claims ?? {};
     const claimedUserIds = new Set(
-      templates.map(id => game.actors.get(id)?.getFlag('sceneforge', 'claimedBy')).filter(Boolean)
+      Object.values(claims).map(c => c?.claimedBy).filter(Boolean)
     );
     const eligible = game.users.filter(u => u.active && !u.isGM && !claimedUserIds.has(u.id));
     if (!eligible.length) { ui.notifications.warn('No unclaimed players to assign.'); return; }
@@ -222,9 +225,9 @@ export default class RosterScene extends SceneForgeScene {
       rejectClose: false,
     });
     if (!result || typeof result !== 'string') return;
-    const roster = this._scene.flags?.sceneforge?.roster ?? {};
-    const cloneIds = (roster.templates ?? [])
-      .map(id => game.actors.get(id)?.getFlag('sceneforge', 'cloneId'))
+    const claims = this._scene.flags?.sceneforge?.roster?.claims ?? {};
+    const cloneIds = (this._scene.flags?.sceneforge?.roster?.templates ?? [])
+      .map(id => claims[id]?.cloneId)
       .filter(Boolean);
     if (cloneIds.length) setPending(cloneIds, result);
     await game.scenes.get(result)?.view();
@@ -232,14 +235,13 @@ export default class RosterScene extends SceneForgeScene {
 
   static async #onReady() {
     if (this.#isReady) {
+      const claims = this._scene.flags?.sceneforge?.roster?.claims ?? {};
       const templates = this._scene.flags?.sceneforge?.roster?.templates ?? [];
-      const actorId = templates.find(id =>
-        game.actors.get(id)?.getFlag('sceneforge', 'claimedBy') === game.user.id
-      );
+      const actorId = templates.find(id => claims[id]?.claimedBy === game.user.id);
       if (!actorId) return;
       this.#isReady = false;
-      if (game.user.isGM) await applyRelease(actorId, game.user.id);
-      else emit({ action: 'release', actorId, userId: game.user.id });
+      if (game.user.isGM) await applyRelease(actorId, game.user.id, this._scene.id);
+      else emit({ action: 'release', actorId, userId: game.user.id, sceneId: this._scene.id });
     } else {
       this.#isReady = true;
       Hooks.callAll('sceneforge:dataChanged', this._scene.id);

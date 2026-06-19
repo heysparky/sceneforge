@@ -7,7 +7,7 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
   static DEFAULT_OPTIONS = {
     id: 'sceneforge-char-manager',
     classes: ['sceneforge-char-manager'],
-    window: { title: 'Edit Scene', resizable: false },
+    window: { title: 'Edit Roster', resizable: false },
     position: { width: 480 },
     actions: {
       moveUp:        RosterCharManager.#onMoveUp,

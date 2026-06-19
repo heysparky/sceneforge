@@ -41,24 +41,12 @@ function _registerSceneTypes() {
 }
 
 function _interceptSceneCreate() {
-  Hooks.on('renderSceneDirectory', (_app, html) => {
-    if (!game.user.isGM) return;
-    const el = html.querySelector ? html : html[0];
-
-    // v14 uses data-action="createDocument"; older builds used "createEntry".
-    // Remove data-action so Foundry's delegated listener (capture or bubble)
-    // never matches this button, then add our own handler directly.
-    const original = el.querySelector('[data-action="createDocument"]')
-                  ?? el.querySelector('[data-action="createEntry"]');
-    if (!original) {
-      console.warn('SceneForge | Could not find Create Scene button — selector may need updating for this Foundry version.');
-      return;
-    }
-
-    original.removeAttribute('data-action');
-    original.addEventListener('click', e => {
-      e.preventDefault();
-      SceneCreator.open();
-    });
-  });
+  const SceneDir = ui.scenes?.constructor;
+  if (!SceneDir?.DEFAULT_OPTIONS?.actions) {
+    console.warn('SceneForge | Could not patch SceneDirectory.createDocument — Foundry API may have changed.');
+    return;
+  }
+  SceneDir.DEFAULT_OPTIONS.actions.createDocument = async () => {
+    await SceneCreator.open();
+  };
 }

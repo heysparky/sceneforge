@@ -42,11 +42,12 @@ function _registerSceneTypes() {
 
 function _interceptSceneCreate() {
   const SceneDir = ui.scenes?.constructor;
-  if (!SceneDir?.DEFAULT_OPTIONS?.actions) {
-    console.warn('SceneForge | Could not patch SceneDirectory.createDocument — Foundry API may have changed.');
+  if (!SceneDir?.DEFAULT_OPTIONS) {
+    console.warn('SceneForge | Could not patch SceneDirectory — Foundry API may have changed.');
     return;
   }
-  SceneDir.DEFAULT_OPTIONS.actions.createDocument = async () => {
+  SceneDir.DEFAULT_OPTIONS.actions ??= {};
+  SceneDir.DEFAULT_OPTIONS.actions.createEntry = async () => {
     await SceneCreator.open();
   };
 }

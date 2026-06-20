@@ -39,10 +39,10 @@ scenes/
   roster/
     RosterScene.js      <- full M2 UI: tile grid, claim/release/lock, live sync
     RosterConfig.js     <- pickRosterTemplates(excludeIds, folderId) actor picker dialog
-    RosterCharManager.js <- "Edit Scene" ApplicationV2 dialog: reorder/remove/add characters, source/dest folder config
+    RosterCharManager.js <- "Edit Roster" ApplicationV2 dialog: reorder/remove/add characters, source/dest folder config
     RosterCharEdit.js   <- per-character dossier editor (DialogV2); reads/writes scene.flags.sceneforge.roster.dossiers[actorId]
     TokenPlacer.js      <- cursor-stack token placement; ghost cursor; prompts GM to activate scene after last token
-    charManager.html    <- Edit Scene template (folder selects + character list)
+    charManager.html    <- Edit Roster template (folder selects side-by-side + character list)
     roster.html         <- tile grid template
 ```
 

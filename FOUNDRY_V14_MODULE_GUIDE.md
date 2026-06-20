@@ -571,6 +571,8 @@ Checklist:
 | Multiple `setFlag` calls for one state change | Batch into one write |
 | Hardcoded colors in CSS | CSS custom properties |
 | `renderSceneDirectory` html treated as jQuery | Guard: `html.querySelector ? html : html[0]` |
+| Intercepting Create Scene button via `data-action="createDocument"` | Wrong selector — the button is `data-action="createEntry"` (on `DocumentDirectory`). There is a separate `createDocument` element elsewhere that the selector silently matches instead. Use `createEntry` only. |
+| Patching `SceneDirectory.DEFAULT_OPTIONS.actions` to override sidebar actions | ApplicationV2 compiles its action map at render time; patching class-level `DEFAULT_OPTIONS` after render has no effect. Use `renderSceneDirectory` + `cloneNode(true)` + `original.replaceWith(clone)` + listener with `stopPropagation` instead. |
 | `updateScene` not firing | Check diff is non-empty; use null-sentinel or `_v` bump |
 | GM client missing its own `updateScene` | Re-render locally after `await setFlag` |
 | `canvasReady` handler registered in `ready` misses hard-reload | `canvasReady` fires before `ready` in v14 — also call handler immediately if `canvas?.ready` |

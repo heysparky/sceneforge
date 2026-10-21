@@ -1,7 +1,7 @@
 /* ── SceneForge base ── */
 
 .sceneforge-scene-app {
-  background: var(--color-bg, #1a1a2e);
+  background: #000;
   overflow-y: auto;
   border: none;
   border-radius: 0;
@@ -178,11 +178,11 @@
 }
 .sf-roster__fade--left {
   left: 0;
-  background: linear-gradient(to right, var(--color-bg, #1a1a2e), transparent);
+  background: linear-gradient(to right, #000, transparent);
 }
 .sf-roster__fade--right {
   right: 0;
-  background: linear-gradient(to left, var(--color-bg, #1a1a2e), transparent);
+  background: linear-gradient(to left, #000, transparent);
 }
 .sf-roster__fade--hidden { opacity: 0; }
 

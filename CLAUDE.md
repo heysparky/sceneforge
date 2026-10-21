@@ -18,6 +18,8 @@ Edit `.js`, `.html`, and `.css` files directly, then reload the module in Foundr
 
 Testing happens in a running Foundry v14 instance. Zero console errors is a hard requirement.
 
+**Git:** The user makes all commits. Never run `git commit` (or `push`, `tag`, or create releases) — leave changes uncommitted and summarize what changed so the user can commit it.
+
 ## File layout
 
 ```
@@ -100,9 +102,11 @@ To add system-specific fields or customize the dossier, edit `#toViewModel` in `
 
 ## Before release
 
-- Change `manifest` in `module.json` from the raw GitHub URL back to the release URL:
+- Change `manifest` in `module.json` from the raw GitHub URL to the release URL (only when ready to share broadly — the release URL 404s until a release exists):
   `https://github.com/heysparky/sceneforge/releases/latest/download/module.json`
-- Create a GitHub Release with `module.json` and a zipped build attached
+- Create a GitHub Release tagged exactly with the `version` (e.g. `0.1.0`, no `v` prefix), with `module.json` and `module.zip` attached
+- After the release is published, confirm the README's install URL works and remove the TODO comment above it in `README.md`
+- For each later release: bump `version` and the version in the `download` URL together
 
 ## Socket envelope
 

@@ -33,9 +33,11 @@ Intended as a foundation document for any new module — feed it to Claude Code 
   "socket": true,
   "url": "https://github.com/you/your-module",
   "manifest": "https://github.com/you/your-module/releases/latest/download/module.json",
-  "download": "https://github.com/you/your-module/releases/download/{{version}}/module.zip"
+  "download": "https://github.com/you/your-module/releases/download/1.0.0/module.zip"
 }
 ```
+
+- `download` must contain the literal version. Foundry does not substitute `{{version}}` — that placeholder only works if a release workflow (e.g. a GitHub Action) rewrites it. Without one, bump the version in `download` whenever you bump `version`.
 
 - `id` must be lowercase and hyphenated — this is your namespace everywhere
 - `"socket": true` is **required** if the module uses `game.socket`. Without it the Foundry server silently drops all socket emissions — client-side `on` registers fine and `emit` completes without error, but messages never reach other clients. Requires a full server restart to take effect.

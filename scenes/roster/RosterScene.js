@@ -166,7 +166,11 @@ export default class RosterScene extends SceneForgeScene {
   _onRender(context, _options) {
     if (this.#refocus) {
       this.#refocus = false;
-      this.element.querySelector('.sf-tile.is-focused .sf-tile__pick')?.focus();
+      this.element.querySelector('.sf-tile.is-focused .sf-tile__pick')?.focus({ preventScroll: true });
+      // Stacked layout (matches the 720px container query): the panel is below the fold, so bring it up.
+      if (this.element.querySelector('.sf-roster')?.clientWidth <= 720) {
+        this.element.querySelector('.sf-dossier')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
     this.#markNewClaims();
   }

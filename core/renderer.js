@@ -91,9 +91,20 @@ async function _mount(scene) {
   _currentSceneId = scene.id;
 }
 
+// Until a GM drags the handles, a scene opens at a fixed size (six roster characters
+// with no scrolling), centered, and shrunk only if the window is too small to hold it.
+const DEFAULT_SIZE   = { width: 1140, height: 890 };
+const DEFAULT_MARGIN = 24;
+
 function _getBounds() {
-  const b = game.scenes.viewed?.flags?.sceneforge?.sceneBounds
-    ?? { top: 25, left: 25, right: 25, bottom: 25 };
+  const b = game.scenes.viewed?.flags?.sceneforge?.sceneBounds;
+  if (!b) {
+    const w = Math.min(DEFAULT_SIZE.width,  window.innerWidth  - 2 * DEFAULT_MARGIN);
+    const h = Math.min(DEFAULT_SIZE.height, window.innerHeight - 2 * DEFAULT_MARGIN);
+    const x = (window.innerWidth  - w) / 2;
+    const y = (window.innerHeight - h) / 2;
+    return { top: y, left: x, right: x, bottom: y };
+  }
   return {
     top:    (b.top    / 100) * window.innerHeight,
     left:   (b.left   / 100) * window.innerWidth,

@@ -1,7 +1,6 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 import { pickRosterTemplates } from './RosterConfig.js';
-import { editCharacterDossier } from './RosterCharEdit.js';
 
 export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
@@ -14,7 +13,6 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
       moveDown:      RosterCharManager.#onMoveDown,
       remove:        RosterCharManager.#onRemove,
       addMore:       RosterCharManager.#onAddMore,
-      editDossier:   RosterCharManager.#onEditDossier,
       saveManager:   RosterCharManager.#onSave,
       cancelManager: RosterCharManager.#onCancel,
     },
@@ -112,18 +110,9 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
       <img class="sf-char-row__img" src="${actor.img}" alt="${actor.name}">
       <span class="sf-char-row__name">${actor.name}</span>
       <div class="sf-char-row__btns">
-        <button type="button" class="sf-btn sf-btn--ghost sf-btn--sm" data-action="editDossier">Dossier</button>
         <button type="button" class="sf-icon-btn sf-icon-btn--remove" data-action="remove" title="Remove">✕</button>
       </div>
     </div>`;
-  }
-
-  static async #onEditDossier(_e, target) {
-    const row = RosterCharManager.#rowFrom(target);
-    if (!row) return;
-    const actor = game.actors.get(row.dataset.actorId);
-    if (!actor) return;
-    await editCharacterDossier(actor, this.#scene);
   }
 
   static async #onSave() {

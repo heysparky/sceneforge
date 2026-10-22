@@ -26,7 +26,7 @@ Testing happens in a running Foundry v14 instance. Zero console errors is a hard
 sceneforge.js           <- entry point: hook registration only
 sceneforge.css          <- all styles
 core/
-  settings.js           <- game.settings registration (currently empty — sceneBounds moved to scene flag)
+  settings.js           <- world settings: which roster panel sections show (rosterShow*) and the class field path (rosterClassPath)
   socket.js             <- GM-authority socket handler (claim / release / color sync / user.character sync)
   registry.js           <- scene type registry + dynamic loader
   renderer.js           <- canvasReady → mount/teardown SceneForge apps; resize listener; enforces 460px min height
@@ -42,8 +42,7 @@ scenes/
     RosterScene.js      <- full M2 UI: tile grid, claim/release/lock, live sync
     RosterConfig.js     <- pickRosterTemplates(excludeIds, folderId) actor picker dialog
     RosterCharManager.js <- "Edit Roster" ApplicationV2 dialog: reorder/remove/add characters, source/dest folder config
-    RosterCharEdit.js   <- per-character dossier editor (ApplicationV2 form + live themed preview); reads/writes scene.flags.sceneforge.roster.dossiers[actorId]; sheetBiography() helper
-    dossierEdit.html    <- dossier editor template
+    sheetSummary.js     <- sheetSummary(actor): what the panel shows, read live from the actor (biography, XP; Roll for Shoes skills/inventory/statuses)
     TokenPlacer.js      <- cursor-stack token placement; ghost cursor; prompts GM to activate scene after last token
     charManager.html    <- Edit Roster template (folder selects side-by-side + character list)
     roster.html         <- tile grid template
@@ -65,27 +64,15 @@ Written by GM drag handles; read by `renderer.js _getBounds()` on every `_applyB
   templates:    string[],   // actor IDs on the roster
   sourceFolder: string|null, // Actor folder ID templates were drawn from (must differ from destFolder)
   destFolder:   string|null, // Actor folder ID where player clones are placed on claim (must differ from sourceFolder)
-  dossiers:     { [actorId]: DossierData }, // per-character dossier, keyed by template actor ID
+  dossiers:     { … },        // obsolete: older scenes may still carry it; nothing reads it
   claims:       { [actorId]: { claimedBy: string|null, cloneId: string|null } }, // per-scene claim state
 }
 ```
 
-Dossier shape (stored in `scene.flags.sceneforge.roster.dossiers[actorId]`):
-```js
-{
-  showConcept: bool, concept: string,
-  showLevel:   bool, level:  string,
-  showXp:      bool, xp:     string,      // shown only when entered ("Fill from sheet" copies the actor's XP)
-  showBackground: bool, background: string, // legacy: showBackground with empty text falls back to sheetBiography(actor)
-  showQuote:   bool, quote:  string,
-  custom: string,                          // always shown if non-empty (no toggle)
-}
-```
-The editor has no per-field toggles: empty means hidden, and save writes `show* = !!value` so the shape is unchanged. Dossier lives on the scene, not the actor — each roster starts with a blank dossier. Configured via Edit Scene → Dossier button per character.
+Character details in the roster panel come only from the actor (`sheetSummary.js`), so the roster always matches the character sheet. Which sections show (class, XP, biography, skills, inventory, statuses) is a world setting. Class has no core Foundry meaning: it's auto-detected (class items, then `system.class`, `system.details.class`, `system.concept`, `system.archetype`…) unless the GM sets an explicit actor path. There is no per-scene dossier anymore; edit the sheet instead.
 
 Per-template flags (on the Actor document itself):
 - `sceneforge.locked`    — GM-only lock (boolean); global across all rosters
-- `sceneforge.role`, `sceneforge.specialties` — display metadata
 
 Per-clone flags (on the cloned Actor document):
 - `sceneforge.isClone = true` — set at creation; filters clones out of the template picker
@@ -101,7 +88,7 @@ On release/kick/clone deletion: `user.character` is cleared to null. Deleting a 
 
 Folder guard: `sourceFolder` and `destFolder` must be different (enforced at scene creation and in Edit Scene save). If the same folder is selected, an error toast fires and the operation is aborted.
 
-To add system-specific fields or customize the dossier, edit `#toViewModel` in `scenes/roster/RosterScene.js` and the dossier block in `scenes/roster/roster.html`.
+To show more system-specific fields, extend `sheetSummary()` in `scenes/roster/sheetSummary.js` and the panel block in `scenes/roster/roster.html`.
 
 ## Before release
 

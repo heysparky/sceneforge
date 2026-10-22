@@ -1,7 +1,8 @@
 import { SceneForgeScene } from '../SceneForgeScene.js';
 import { emit, applyClaim, applyRelease } from '../../core/socket.js';
 import { RosterCharManager } from './RosterCharManager.js';
-import { editCharacterDossier, sheetBiography } from './RosterCharEdit.js';
+import { sheetSummary } from './sheetSummary.js';
+import { rosterFieldsShown } from '../../core/settings.js';
 import { setPending } from './TokenPlacer.js';
 
 export default class RosterScene extends SceneForgeScene {
@@ -25,7 +26,6 @@ export default class RosterScene extends SceneForgeScene {
       ready:        RosterScene.#onReady,
       openSheet:    RosterScene.#onOpenSheet,
       focus:        RosterScene.#onFocus,
-      editDossier:  RosterScene.#onEditDossier,
     },
   };
 
@@ -49,7 +49,9 @@ export default class RosterScene extends SceneForgeScene {
     const activePlayers = game.users.filter(u => u.active && !u.isGM);
     const remaining = activePlayers.filter(u => !claimedUserIds.has(u.id)).length;
 
-    const characters = actors.map(a => this.#toViewModel(a, user, claims));
+    const shown = rosterFieldsShown();
+    const classPath = game.settings.get('sceneforge', 'rosterClassPath').trim();
+    const characters = actors.map(a => this.#toViewModel(a, user, claims, shown, classPath));
     const focus = characters.find(c => c.id === this.#focusedId)
       ?? characters.find(c => c.status === 'mine')
       ?? characters.find(c => c.status === 'open')
@@ -81,11 +83,10 @@ export default class RosterScene extends SceneForgeScene {
     return 116;
   }
 
-  #toViewModel(actor, user, claims) {
+  #toViewModel(actor, user, claims, shown, classPath) {
     const claim     = claims[actor.id] ?? {};
     const claimedBy = claim.claimedBy ?? null;
     const locked    = actor.getFlag('sceneforge', 'locked') ?? false;
-    const d         = this._scene?.flags?.sceneforge?.roster?.dossiers?.[actor.id] ?? {};
 
     let status;
     if (locked)                     status = 'locked';
@@ -96,16 +97,8 @@ export default class RosterScene extends SceneForgeScene {
     const i18n = game.i18n;
     const claimedByName = claimedBy ? (game.users.get(claimedBy)?.name ?? '?') : null;
 
-    // Dossier fields: null means "don't render". XP only shows when the GM entered it.
-    const concept    = d.showConcept && d.concept ? d.concept : null;
-    const level      = d.showLevel   && d.level   ? d.level   : null;
-    const xp         = d.showXp !== false && d.xp ? d.xp      : null;
-    const background = d.showBackground ? (d.background || sheetBiography(actor)) : null;
-    const epithet = [
-      concept,
-      level ? i18n.format('SCENEFORGE.Roster.Level', { level }) : null,
-      xp    ? i18n.format('SCENEFORGE.Roster.Xp',    { xp })    : null,
-    ].filter(Boolean).join(' · ');
+    // Everything about the character comes from the sheet, so the roster can't drift from it.
+    const sheet = sheetSummary(actor, shown, classPath);
 
     const note = {
       mine:   i18n.localize('SCENEFORGE.Roster.NoteYou'),
@@ -118,8 +111,6 @@ export default class RosterScene extends SceneForgeScene {
       name:          actor.name,
       img:           actor.img,
       ringColor:     actor.prototypeToken?.ring?.colors?.ring ?? null,
-      role:          actor.getFlag('sceneforge', 'role') ?? '',
-      specialties:   [actor.getFlag('sceneforge', 'specialties') ?? []].flat().join(' · '),
       status,
       note,
       claimedByName,
@@ -127,10 +118,12 @@ export default class RosterScene extends SceneForgeScene {
       canKick:       status === 'taken' &&  user.isGM,
       canClaim:      status === 'open'  && !user.isGM && !this.#isReady,
       canRelease:    status === 'mine'  && !user.isGM && !this.#isReady,
-      epithet,
-      dBackground:   background || null,
-      dQuote:        d.showQuote && d.quote ? d.quote  : null,
-      dCustom:       d.custom               ? d.custom : null,
+      epithet:       [sheet.className, sheet.xp ? i18n.format('SCENEFORGE.Roster.Xp', { xp: sheet.xp }) : '']
+                       .filter(Boolean).join(' · '),
+      biography:     sheet.biography,
+      skills:        sheet.skills,
+      carrying:      sheet.carrying,
+      statuses:      sheet.statuses,
     };
   }
 
@@ -188,12 +181,6 @@ export default class RosterScene extends SceneForgeScene {
     this.#refocus = true;
     // Re-render through the renderer so scene bounds are re-applied afterwards.
     Hooks.callAll('sceneforge:dataChanged', this._scene.id);
-  }
-
-  static async #onEditDossier(_e, target) {
-    if (!game.user.isGM) return;
-    const actor = game.actors.get(RosterScene.#actorIdFrom(target));
-    if (actor) await editCharacterDossier(actor, this._scene);
   }
 
   static #onEditCharacters(_e, _target) {

@@ -383,9 +383,11 @@
   font-style: italic;
   color: var(--sf-ink-muted);
 }
-.sf-dossier__role,
-.sf-dossier__specialties {
-  margin: 0;
+.sf-dossier__label {
+  margin: 0 0 var(--sf-space-1);
+  border: 0;
+  font-family: var(--sf-font-body);
+  font-weight: 400;
   font-size: var(--sf-step--1);
   font-variant-caps: all-small-caps;
   letter-spacing: .06em;
@@ -393,25 +395,28 @@
 }
 
 .sf-dossier__text { display: flex; flex-direction: column; gap: var(--sf-space-3); }
-.sf-dossier__quote {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-family: var(--sf-font-display);
-  font-size: var(--sf-step-1);
-  font-style: italic;
-  line-height: 1.35;
-  color: var(--sf-ink);
-  text-indent: -0.45em; /* hang the opening quote */
-}
-.sf-dossier__quote::before { content: "\201C"; }
-.sf-dossier__quote::after  { content: "\201D"; }
 .sf-dossier__bio {
   margin: 0;
   line-height: 1.55;
   white-space: pre-line;
   color: var(--sf-ink);
 }
+
+.sf-dossier__section { display: flex; flex-direction: column; }
+.sf-dossier__list { margin: 0; line-height: 1.45; color: var(--sf-ink); }
+
+/* skills: a tree, indented by depth, level set flush right */
+.sf-dossier__skills { margin: 0; padding: 0; list-style: none; }
+.sf-dossier__skills li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sf-space-3);
+  padding: 3px 0 3px calc(var(--depth, 0) * var(--sf-space-3));
+  border-bottom: 1px solid var(--sf-rule);
+  line-height: 1.3;
+}
+.sf-dossier__skills li:last-child { border-bottom: 0; }
+.sf-dossier__level { font-variant-numeric: tabular-nums; color: var(--sf-ink-muted); }
 
 .sf-dossier__act {
   margin-top: auto;
@@ -611,44 +616,6 @@
   border-top: 1px solid var(--color-border, #302831);
 }
 .sf-char-manager__foot-right { display: flex; gap: 6px; }
-
-/* ── Dossier Editor ── */
-
-/* fields on the left, a live preview of the roster panel on the right */
-.sf-dossier-edit {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 20px;
-}
-
-.sf-dossier-edit__fields { display: flex; flex-direction: column; gap: 10px; }
-.sf-dossier-edit__fields .form-group { margin: 0; }
-.sf-dossier-edit__fields textarea { resize: vertical; }
-.sf-dossier-edit__pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-.sf-dossier-edit__hint {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0;
-  font-size: var(--font-size-12, 12px);
-  color: var(--color-text-secondary, #8f8b7e);
-}
-.sf-dossier-edit__fill {
-  flex: none;
-  width: auto;
-}
-
-/* the preview reuses the roster's own panel and theme, at panel height */
-.sf-dossier-edit__preview { height: 520px; }
-.sf-roster.sf-roster--preview {
-  height: 100%;
-  padding: 0;
-  background: none;
-}
-.sf-roster--preview .sf-dossier { height: 100%; }
-.sf-roster--preview [hidden] { display: none !important; }
 
 /* ── Token Placer ── */
 

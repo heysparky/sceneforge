@@ -40,14 +40,35 @@
       <header class="sf-dossier__head">
         <h2 class="sf-dossier__name">{{f.name}}</h2>
         {{#if f.epithet}}<p class="sf-dossier__epithet">{{f.epithet}}</p>{{/if}}
-        {{#if f.role}}<p class="sf-dossier__role">{{f.role}}</p>{{/if}}
       </header>
 
       <div class="sf-dossier__text">
-        {{#if f.dQuote}}<blockquote class="sf-dossier__quote">{{f.dQuote}}</blockquote>{{/if}}
-        {{#if f.dBackground}}<p class="sf-dossier__bio">{{f.dBackground}}</p>{{/if}}
-        {{#if f.dCustom}}<p class="sf-dossier__bio">{{f.dCustom}}</p>{{/if}}
-        {{#if f.specialties}}<p class="sf-dossier__specialties">{{f.specialties}}</p>{{/if}}
+        {{#if f.biography}}<p class="sf-dossier__bio">{{f.biography}}</p>{{/if}}
+
+        {{#if f.skills.length}}
+        <section class="sf-dossier__section">
+          <h3 class="sf-dossier__label">{{localize "SCENEFORGE.Roster.Skills"}}</h3>
+          <ul class="sf-dossier__skills">
+            {{#each f.skills}}
+            <li style="--depth: {{depth}};"><span>{{name}}</span><span class="sf-dossier__level">{{level}}</span></li>
+            {{/each}}
+          </ul>
+        </section>
+        {{/if}}
+
+        {{#if f.carrying}}
+        <section class="sf-dossier__section">
+          <h3 class="sf-dossier__label">{{localize "SCENEFORGE.Roster.Carrying"}}</h3>
+          <p class="sf-dossier__list">{{f.carrying}}</p>
+        </section>
+        {{/if}}
+
+        {{#if f.statuses}}
+        <section class="sf-dossier__section">
+          <h3 class="sf-dossier__label">{{localize "SCENEFORGE.Roster.Statuses"}}</h3>
+          <p class="sf-dossier__list">{{f.statuses}}</p>
+        </section>
+        {{/if}}
       </div>
 
       <footer class="sf-dossier__act">
@@ -66,7 +87,6 @@
           {{#if @root.isGM}}
             {{#if f.canAssign}}<button type="button" class="sf-quiet" data-action="assign"><i class="fas fa-user-plus" inert></i> {{localize "SCENEFORGE.Roster.AssignTo"}}</button>{{/if}}
             {{#if f.canKick}}<button type="button" class="sf-quiet" data-action="kick"><i class="fas fa-user-minus" inert></i> {{localize "SCENEFORGE.Roster.ReleaseFrom" player=f.claimedByName}}</button>{{/if}}
-            <button type="button" class="sf-quiet" data-action="editDossier"><i class="fas fa-feather" inert></i> {{localize "SCENEFORGE.Roster.EditDossier"}}</button>
             <button type="button" class="sf-quiet" data-action="toggleLock">
               {{#if (eq f.status "locked")}}<i class="fas fa-lock-open" inert></i> {{localize "SCENEFORGE.Unlock"}}{{else}}<i class="fas fa-lock" inert></i> {{localize "SCENEFORGE.Lock"}}{{/if}}
             </button>

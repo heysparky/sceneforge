@@ -1,18 +1,18 @@
 <div class="sf-char-manager">
   <div class="sf-scene-folders">
     <div class="form-group stacked">
-      <label>Source folder <span class="units">(template actors)</span></label>
+      <label>{{localize "SCENEFORGE.Folders.Source"}}</label>
       <select name="sourceFolder">
-        <option value="">— none —</option>
+        <option value="">{{localize "SCENEFORGE.Folders.SourceAll"}}</option>
         {{#each allFolders}}
         <option value="{{id}}" {{#if (eq id ../sourceFolder)}}selected{{/if}}>{{name}}</option>
         {{/each}}
       </select>
     </div>
     <div class="form-group stacked">
-      <label>Destination folder <span class="units">(player copies)</span></label>
+      <label>{{localize "SCENEFORGE.Folders.Dest"}}</label>
       <select name="destFolder">
-        <option value="">— none —</option>
+        <option value="">{{localize "SCENEFORGE.Folders.DestNone"}}</option>
         {{#each allFolders}}
         <option value="{{id}}" {{#if (eq id ../destFolder)}}selected{{/if}}>{{name}}</option>
         {{/each}}
@@ -27,29 +27,29 @@
       </select>
     </div>
   </div>
-  <div class="sf-char-list" id="sf-char-list">
+
+  <ol class="sf-char-list">
     {{#each characters}}
-    <div class="sf-char-row" data-actor-id="{{id}}">
-      <div class="sf-char-row__move">
-        <button type="button" class="sf-icon-btn" data-action="moveUp" title="Move up">↑</button>
-        <button type="button" class="sf-icon-btn" data-action="moveDown" title="Move down">↓</button>
-      </div>
-      <img class="sf-char-row__img" src="{{img}}" alt="{{name}}">
+    <li class="sf-char-row" data-actor-id="{{id}}" draggable="true">
+      <i class="fas fa-grip-vertical sf-char-row__grip" data-tooltip="{{localize 'SCENEFORGE.Manager.Drag'}}" inert></i>
+      <img class="sf-char-row__img" src="{{img}}" alt="">
       <span class="sf-char-row__name">{{name}}</span>
-      <div class="sf-char-row__btns">
-        <button type="button" class="sf-icon-btn sf-icon-btn--remove" data-action="remove" title="Remove">✕</button>
-      </div>
-    </div>
+      <span class="sf-char-row__btns">
+        <button type="button" class="sf-icon-btn" data-action="moveUp" aria-label="{{localize 'SCENEFORGE.Manager.MoveUp'}}"><i class="fas fa-chevron-up" inert></i></button>
+        <button type="button" class="sf-icon-btn" data-action="moveDown" aria-label="{{localize 'SCENEFORGE.Manager.MoveDown'}}"><i class="fas fa-chevron-down" inert></i></button>
+        <button type="button" class="sf-icon-btn sf-icon-btn--remove" data-action="remove" data-tooltip="{{localize 'SCENEFORGE.Manager.Remove'}}" aria-label="{{localize 'SCENEFORGE.Manager.Remove'}}"><i class="fas fa-xmark" inert></i></button>
+      </span>
+    </li>
+    {{else}}
+    <li class="sf-char-manager__empty">{{localize "SCENEFORGE.Manager.Empty"}}</li>
     {{/each}}
-    {{#unless characters.length}}
-    <p class="sf-char-manager__empty">No characters yet.</p>
-    {{/unless}}
-  </div>
+  </ol>
+
   <footer class="sf-char-manager__foot">
-    <button type="button" class="sf-btn sf-btn--ghost" data-action="addMore">+ Add Characters</button>
+    <button type="button" class="sf-btn sf-btn--ghost" data-action="addMore"><i class="fas fa-user-plus" inert></i> {{localize "SCENEFORGE.Manager.Add"}}</button>
     <span class="sf-char-manager__foot-right">
-      <button type="button" class="sf-btn sf-btn--ghost" data-action="cancelManager">Cancel</button>
-      <button type="button" class="sf-btn sf-btn--accent" data-action="saveManager">Save</button>
+      <button type="button" class="sf-btn sf-btn--ghost" data-action="cancelManager">{{localize "SCENEFORGE.Cancel"}}</button>
+      <button type="button" class="sf-btn sf-btn--accent" data-action="saveManager">{{localize "SCENEFORGE.Save"}}</button>
     </span>
   </footer>
 </div>

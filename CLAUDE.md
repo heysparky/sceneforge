@@ -36,12 +36,12 @@ lang/
 scenes/
   SceneForgeScene.js    <- ApplicationV2 base class for all scene types
   picker/
-    SceneTypePicker.js  <- "Create Scene" dialog; pre-fills name from type label; two-step roster config (folders → actors); ＋ buttons create Actor folders inline
+    SceneTypePicker.js  <- "Create Scene" dialog (only available types shown); pre-fills name from type label; two-step roster config (folders → actors); folder-plus buttons create Actor folders inline
     picker.html
   roster/
-    RosterScene.js      <- full M2 UI: tile grid, claim/release/lock, live sync
+    RosterScene.js      <- roster UI: portrait grid + focused-character panel, party bar, claim/release/assign/lock, Begin Session (scene thumbnail picker)
     RosterConfig.js     <- pickRosterTemplates(excludeIds, folderId) actor picker dialog
-    RosterCharManager.js <- "Edit Roster" ApplicationV2 dialog: reorder/remove/add characters, source/dest folder config
+    RosterCharManager.js <- "Edit Roster" ApplicationV2: drag (or arrow) reorder, remove/add characters, folders, theme; DOM rows are the working order, synced to state before re-render
     sheetSummary.js     <- sheetSummary(actor): what the panel shows, read live from the actor (biography, XP; Roll for Shoes skills/inventory/statuses)
     TokenPlacer.js      <- cursor-stack token placement; ghost cursor; prompts GM to activate scene after last token
     charManager.html    <- Edit Roster template (folder selects side-by-side + character list)
@@ -107,3 +107,7 @@ To show more system-specific fields, extend `sheetSummary()` in `scenes/roster/s
 Current implemented actions: `claim`, `release` (no namespace prefix — kept flat for simplicity).
 
 **Critical:** `module.json` must declare `"socket": true` or the Foundry server silently drops all emissions. Requires a full server restart (not just F5) to take effect after changing module.json.
+
+## Strings
+
+All user-facing text lives in `lang/en.json` (scene type labels are i18n keys too). For text interpolated into DialogV2 HTML, escape with `Handlebars.escapeExpression`.

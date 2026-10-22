@@ -1,8 +1,9 @@
 // Map of type key → { factory, label, icon, available }
 const _types = new Map();
 
-export function registerType(key, factory, { label = key, icon = 'fa-circle', available = true } = {}) {
-  _types.set(key, { factory, label, icon, available });
+// label and hint are i18n keys.
+export function registerType(key, factory, { label = key, hint = '', icon = 'fa-circle', available = true } = {}) {
+  _types.set(key, { factory, label, hint, icon, available });
 }
 
 export function getAll() {

@@ -21,22 +21,22 @@ function _registerSceneTypes() {
   registerType(
     'roster',
     () => import('./scenes/roster/RosterScene.js'),
-    { label: 'Roster', icon: 'fa-users', available: true }
+    { label: 'SCENEFORGE.Type.Roster', hint: 'SCENEFORGE.Type.RosterHint', icon: 'fa-users', available: true }
   );
   registerType(
     'merchant',
     () => import('./scenes/merchant/MerchantScene.js'),
-    { label: 'Merchant', icon: 'fa-store', available: false }
+    { label: 'SCENEFORGE.Type.Merchant', icon: 'fa-store', available: false }
   );
   registerType(
     'timeline',
     () => import('./scenes/timeline/TimelineScene.js'),
-    { label: 'Timeline', icon: 'fa-timeline', available: false }
+    { label: 'SCENEFORGE.Type.Timeline', icon: 'fa-timeline', available: false }
   );
   registerType(
     'loading',
     () => import('./scenes/loading/LoadingScene.js'),
-    { label: 'Loading Screen', icon: 'fa-hourglass', available: false }
+    { label: 'SCENEFORGE.Type.Loading', icon: 'fa-hourglass', available: false }
   );
 }
 

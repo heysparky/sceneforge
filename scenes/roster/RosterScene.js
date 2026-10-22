@@ -278,29 +278,46 @@ export default class RosterScene extends SceneForgeScene {
 
   static async #onBeginSession() {
     if (!game.user.isGM) return;
-    const scenes = game.scenes.contents
-      .filter(s => s.id !== game.scenes.viewed?.id)
-      .sort((a, b) => a.name.localeCompare(b.name));
-    if (!scenes.length) { ui.notifications.warn('No other scenes available.'); return; }
+    const i18n = game.i18n;
+    const esc = v => Handlebars.escapeExpression(v);
 
-    const options = scenes.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    // Play scenes only: the active one first, then the navigation bar's order, then the rest.
+    const active = game.scenes.active;
+    const rank = s => (s === active ? 0 : s.navigation ? 1 : 2);
+    const scenes = game.scenes.contents
+      .filter(s => s.id !== this._scene.id && !s.flags?.sceneforge?.type)
+      .sort((a, b) => rank(a) - rank(b) || (a.sort ?? 0) - (b.sort ?? 0) || a.name.localeCompare(b.name));
+    if (!scenes.length) { ui.notifications.warn('SCENEFORGE.Begin.NoScenes', { localize: true }); return; }
+
+    const cards = scenes.map((s, i) => `
+      <label class="sf-scene-card">
+        <input type="radio" name="sceneId" value="${s.id}"${i === 0 ? ' checked' : ''}>
+        <span class="sf-scene-card__thumb"${s.thumb ? ` style="background-image: url('${esc(s.thumb)}')"` : ''}></span>
+        <span class="sf-scene-card__name">${esc(s.navName || s.name)}</span>
+        ${s === active ? `<span class="sf-scene-card__active">${esc(i18n.localize('SCENEFORGE.Begin.Active'))}</span>` : ''}
+      </label>`).join('');
+
     const result = await foundry.applications.api.DialogV2.wait({
-      window: { title: 'Begin Session — Choose Scene' },
-      content: `<div class="form-group stacked"><label>Navigate to scene</label><select name="sceneId">${options}</select></div>`,
+      window: { title: i18n.localize('SCENEFORGE.Begin.Title'), icon: 'fas fa-flag-checkered' },
+      position: { width: 560 },
+      content: `<p class="sf-scene-pick__prompt">${esc(i18n.localize('SCENEFORGE.Begin.Prompt'))}</p>
+        <div class="sf-scene-pick">${cards}</div>`,
       buttons: [
-        { action: 'view', label: 'Begin Session', default: true,
-          callback: (_e, _b, dialog) => dialog.element.querySelector('[name="sceneId"]').value },
-        { action: 'cancel', label: 'Cancel', callback: () => null },
+        { action: 'go', label: i18n.localize('SCENEFORGE.Begin.Go'), icon: 'fas fa-arrow-right', default: true,
+          callback: (_e, _b, dialog) => ({ sceneId: dialog.element.querySelector('[name="sceneId"]:checked')?.value }) },
+        { action: 'cancel', label: i18n.localize('SCENEFORGE.Cancel'), callback: () => null },
       ],
       rejectClose: false,
     });
-    if (!result || typeof result !== 'string') return;
+    // A falsy callback result resolves to the action name, so only an object means "go".
+    if (!result || typeof result !== 'object' || !result.sceneId) return;
+    const sceneId = result.sceneId;
     const claims = this._scene.flags?.sceneforge?.roster?.claims ?? {};
     const cloneIds = (this._scene.flags?.sceneforge?.roster?.templates ?? [])
       .map(id => claims[id]?.cloneId)
       .filter(Boolean);
-    if (cloneIds.length) setPending(cloneIds, result);
-    await game.scenes.get(result)?.view();
+    if (cloneIds.length) setPending(cloneIds, sceneId);
+    await game.scenes.get(sceneId)?.view();
   }
 
 }

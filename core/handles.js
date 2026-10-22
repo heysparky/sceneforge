@@ -27,7 +27,8 @@ function _createToggle(parent) {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'sf-layout-toggle';
-  btn.title = 'Adjust scene bounds';
+  btn.dataset.tooltip = game.i18n.localize('SCENEFORGE.Bounds.Toggle');
+  btn.setAttribute('aria-label', btn.dataset.tooltip);
   btn.innerHTML = '<i class="fas fa-up-down-left-right"></i>';
   parent.appendChild(btn);
   return btn;

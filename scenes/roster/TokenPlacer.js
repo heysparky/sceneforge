@@ -90,16 +90,18 @@ function _advance() {
 }
 
 async function _promptActivate() {
+  const i18n = game.i18n;
   const result = await foundry.applications.api.DialogV2.wait({
-    window: { title: 'Begin Session' },
-    content: '<p>All tokens placed. Activate this scene for all players?</p>',
+    window: { title: i18n.localize('SCENEFORGE.Place.DoneTitle') },
+    content: `<p>${Handlebars.escapeExpression(i18n.localize('SCENEFORGE.Place.DonePrompt'))}</p>`,
     buttons: [
-      { action: 'activate', label: 'Activate Scene', default: true, callback: () => true },
-      { action: 'cancel',   label: 'Not Yet',        callback: () => null },
+      { action: 'activate', label: i18n.localize('SCENEFORGE.Place.Activate'), default: true, callback: () => true },
+      { action: 'cancel',   label: i18n.localize('SCENEFORGE.Place.NotYet'),   callback: () => null },
     ],
     rejectClose: false,
   });
-  if (result) await canvas.scene?.activate();
+  // "Not yet" resolves to its action name (a truthy string), so test for true exactly.
+  if (result === true) await canvas.scene?.activate();
 }
 
 function _cancel() {
@@ -118,14 +120,14 @@ function _cleanup() {
 }
 
 function _hudHTML(actor, remaining) {
+  const esc = Handlebars.escapeExpression;
   const img = actor.prototypeToken.texture.src ?? actor.img;
-  const name = actor.name;
   const hint = remaining > 1
-    ? `${remaining} remaining · Click to place · Escape to cancel`
-    : 'Last one · Click to place · Escape to cancel';
-  return `<img src="${img}" alt="">
+    ? game.i18n.format('SCENEFORGE.Place.Remaining', { count: remaining })
+    : game.i18n.localize('SCENEFORGE.Place.Last');
+  return `<img src="${esc(img)}" alt="">
     <div class="sf-placer-hud__info">
-      <strong class="sf-placer-hud__name">${name}</strong>
-      <span class="sf-placer-hud__hint">${hint}</span>
+      <strong class="sf-placer-hud__name">${esc(actor.name)}</strong>
+      <span class="sf-placer-hud__hint">${esc(hint)}</span>
     </div>`;
 }

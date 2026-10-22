@@ -6,7 +6,7 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
   static DEFAULT_OPTIONS = {
     id: 'sceneforge-char-manager',
     classes: ['sceneforge-char-manager'],
-    window: { title: 'Edit Roster', resizable: false },
+    window: { icon: 'fas fa-users', resizable: false },
     position: { width: 480 },
     actions: {
       moveUp:        RosterCharManager.#onMoveUp,
@@ -58,6 +58,43 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
     };
   }
 
+  get title() {
+    return game.i18n.localize('SCENEFORGE.Manager.Title');
+  }
+
+  // The rows in the DOM are the working order; drag, the arrows and remove all just move them.
+  _onRender(_context, _options) {
+    const list = this.element.querySelector('.sf-char-list');
+    let dragged = null;
+    list.addEventListener('dragstart', e => {
+      dragged = e.target.closest('.sf-char-row');
+      if (!dragged) return;
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragged.dataset.actorId);
+      dragged.classList.add('is-dragging');
+    });
+    list.addEventListener('dragover', e => {
+      if (!dragged) return;
+      e.preventDefault();
+      const over = e.target.closest('.sf-char-row');
+      if (!over || over === dragged) return;
+      const r = over.getBoundingClientRect();
+      list.insertBefore(dragged, e.clientY > r.top + r.height / 2 ? over.nextSibling : over);
+    });
+    // Keep the drop to ourselves so Foundry's own drop handlers don't see it.
+    list.addEventListener('drop', e => { if (dragged) { e.preventDefault(); e.stopPropagation(); } });
+    list.addEventListener('dragend', () => { dragged?.classList.remove('is-dragging'); dragged = null; });
+  }
+
+  // Pull unsaved edits back into state before a re-render would replace them.
+  #syncFromDom() {
+    const el = this.element;
+    this.#templates    = [...el.querySelectorAll('.sf-char-row[data-actor-id]')].map(r => r.dataset.actorId);
+    this.#sourceFolder = el.querySelector('[name="sourceFolder"]')?.value || null;
+    this.#destFolder   = el.querySelector('[name="destFolder"]')?.value   || null;
+    this.#theme        = el.querySelector('[name="theme"]')?.value        || 'default';
+  }
+
   static #rowFrom(target) {
     return target.closest('[data-actor-id]');
   }
@@ -65,73 +102,39 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
   static #onMoveUp(_e, target) {
     const row = RosterCharManager.#rowFrom(target);
     const prev = row?.previousElementSibling;
-    if (!row || !prev) return;
-    row.parentNode.insertBefore(row, prev);
-    const i = this.#templates.indexOf(row.dataset.actorId);
-    if (i > 0) [this.#templates[i - 1], this.#templates[i]] = [this.#templates[i], this.#templates[i - 1]];
+    if (row && prev) row.parentNode.insertBefore(row, prev);
   }
 
   static #onMoveDown(_e, target) {
     const row = RosterCharManager.#rowFrom(target);
     const next = row?.nextElementSibling;
-    if (!row || !next) return;
-    row.parentNode.insertBefore(next, row);
-    const i = this.#templates.indexOf(row.dataset.actorId);
-    if (i >= 0 && i < this.#templates.length - 1)
-      [this.#templates[i], this.#templates[i + 1]] = [this.#templates[i + 1], this.#templates[i]];
+    if (row && next) row.parentNode.insertBefore(next, row);
   }
 
   static #onRemove(_e, target) {
-    const row = RosterCharManager.#rowFrom(target);
-    if (!row) return;
-    this.#templates = this.#templates.filter(id => id !== row.dataset.actorId);
-    row.remove();
+    RosterCharManager.#rowFrom(target)?.remove();
   }
 
   static async #onAddMore() {
-    const sourceFolder = this.element.querySelector('[name="sourceFolder"]')?.value || null;
-    const added = await pickRosterTemplates(this.#templates, sourceFolder);
+    this.#syncFromDom();
+    const added = await pickRosterTemplates(this.#templates, this.#sourceFolder);
     if (!added.length) return;
     this.#templates = [...this.#templates, ...added];
-    const list = this.element.querySelector('#sf-char-list');
-    for (const id of added) {
-      const actor = game.actors.get(id);
-      if (!actor) continue;
-      list.insertAdjacentHTML('beforeend', RosterCharManager.#buildRow(actor));
-    }
-  }
-
-  static #buildRow(actor) {
-    return `<div class="sf-char-row" data-actor-id="${actor.id}">
-      <div class="sf-char-row__move">
-        <button type="button" class="sf-icon-btn" data-action="moveUp" title="Move up">↑</button>
-        <button type="button" class="sf-icon-btn" data-action="moveDown" title="Move down">↓</button>
-      </div>
-      <img class="sf-char-row__img" src="${actor.img}" alt="${actor.name}">
-      <span class="sf-char-row__name">${actor.name}</span>
-      <div class="sf-char-row__btns">
-        <button type="button" class="sf-icon-btn sf-icon-btn--remove" data-action="remove" title="Remove">✕</button>
-      </div>
-    </div>`;
+    this.render();
   }
 
   static async #onSave() {
-    const ids          = [...this.element.querySelectorAll('.sf-char-row[data-actor-id]')]
-      .map(el => el.dataset.actorId);
-    const sourceFolder = this.element.querySelector('[name="sourceFolder"]')?.value || null;
-    const destFolder   = this.element.querySelector('[name="destFolder"]')?.value   || null;
-    const theme        = this.element.querySelector('[name="theme"]')?.value        || 'default';
-
-    if (sourceFolder && destFolder && sourceFolder === destFolder) {
-      ui.notifications.error('Source folder and destination folder cannot be the same.');
+    this.#syncFromDom();
+    if (this.#sourceFolder && this.#destFolder && this.#sourceFolder === this.#destFolder) {
+      ui.notifications.error('SCENEFORGE.Folders.Same', { localize: true });
       return;
     }
 
     await this.#scene.update({
-      'flags.sceneforge.roster.templates':    ids,
-      'flags.sceneforge.roster.sourceFolder': sourceFolder,
-      'flags.sceneforge.roster.destFolder':   destFolder,
-      'flags.sceneforge.theme':               theme,
+      'flags.sceneforge.roster.templates':    this.#templates,
+      'flags.sceneforge.roster.sourceFolder': this.#sourceFolder,
+      'flags.sceneforge.roster.destFolder':   this.#destFolder,
+      'flags.sceneforge.theme':               this.#theme,
     });
     this.close();
   }

@@ -15,6 +15,7 @@
   "SCENEFORGE.Roster.AssignTo": "Assign to…",
   "SCENEFORGE.Roster.ReleaseFrom": "Release from {player}",
   "SCENEFORGE.Roster.OpenSheet": "Sheet",
+  "SCENEFORGE.Roster.EditDossier": "Edit dossier",
 
   "SCENEFORGE.Theme.Label": "Look",
   "SCENEFORGE.Theme.default": "Plain",

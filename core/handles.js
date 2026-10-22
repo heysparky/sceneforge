@@ -10,7 +10,6 @@ export function injectHandles(el, scene) {
     _layoutMode = !_layoutMode;
     _setVisible(handles, _layoutMode);
     toggle.classList.toggle('sf-active', _layoutMode);
-    toggle.querySelector('i').className = _layoutMode ? 'fas fa-lock-open' : 'fas fa-lock';
   });
 
   return () => {
@@ -29,7 +28,7 @@ function _createToggle(parent) {
   btn.type = 'button';
   btn.className = 'sf-layout-toggle';
   btn.title = 'Adjust scene bounds';
-  btn.innerHTML = '<i class="fas fa-lock"></i>';
+  btn.innerHTML = '<i class="fas fa-up-down-left-right"></i>';
   parent.appendChild(btn);
   return btn;
 }

@@ -1,6 +1,7 @@
 import { SceneForgeScene } from '../SceneForgeScene.js';
 import { emit, applyClaim, applyRelease } from '../../core/socket.js';
 import { RosterCharManager } from './RosterCharManager.js';
+import { editCharacterDossier } from './RosterCharEdit.js';
 import { setPending } from './TokenPlacer.js';
 
 export default class RosterScene extends SceneForgeScene {
@@ -24,6 +25,7 @@ export default class RosterScene extends SceneForgeScene {
       ready:        RosterScene.#onReady,
       openSheet:    RosterScene.#onOpenSheet,
       focus:        RosterScene.#onFocus,
+      editDossier:  RosterScene.#onEditDossier,
     },
   };
 
@@ -192,6 +194,12 @@ export default class RosterScene extends SceneForgeScene {
     this.#refocus = true;
     // Re-render through the renderer so scene bounds are re-applied afterwards.
     Hooks.callAll('sceneforge:dataChanged', this._scene.id);
+  }
+
+  static async #onEditDossier(_e, target) {
+    if (!game.user.isGM) return;
+    const actor = game.actors.get(RosterScene.#actorIdFrom(target));
+    if (actor) await editCharacterDossier(actor, this._scene);
   }
 
   static #onEditCharacters(_e, _target) {

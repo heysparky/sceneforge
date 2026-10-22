@@ -35,6 +35,8 @@
 
     {{#with focus as |f|}}
     <aside class="sf-dossier sf-dossier--{{f.status}}" data-actor-id="{{f.id}}"{{#if f.ringColor}} style="--ring: {{f.ringColor}};"{{/if}}>
+      <div class="sf-dossier__art"><img src="{{f.img}}" alt=""></div>
+
       <header class="sf-dossier__head">
         <h2 class="sf-dossier__name">{{f.name}}</h2>
         {{#if f.epithet}}<p class="sf-dossier__epithet">{{f.epithet}}</p>{{/if}}
@@ -64,6 +66,7 @@
           {{#if @root.isGM}}
             {{#if f.canAssign}}<button type="button" class="sf-quiet" data-action="assign"><i class="fas fa-user-plus" inert></i> {{localize "SCENEFORGE.Roster.AssignTo"}}</button>{{/if}}
             {{#if f.canKick}}<button type="button" class="sf-quiet" data-action="kick"><i class="fas fa-user-minus" inert></i> {{localize "SCENEFORGE.Roster.ReleaseFrom" player=f.claimedByName}}</button>{{/if}}
+            <button type="button" class="sf-quiet" data-action="editDossier"><i class="fas fa-feather" inert></i> {{localize "SCENEFORGE.Roster.EditDossier"}}</button>
             <button type="button" class="sf-quiet" data-action="toggleLock">
               {{#if (eq f.status "locked")}}<i class="fas fa-lock-open" inert></i> {{localize "SCENEFORGE.Unlock"}}{{else}}<i class="fas fa-lock" inert></i> {{localize "SCENEFORGE.Lock"}}{{/if}}
             </button>

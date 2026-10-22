@@ -66,13 +66,14 @@ Written by GM drag handles; read by `renderer.js _getBounds()` on every `_applyB
   destFolder:   string|null, // Actor folder ID where player clones are placed on claim (must differ from sourceFolder)
   dossiers:     { … },        // obsolete: older scenes may still carry it; nothing reads it
   claims:       { [actorId]: { claimedBy: string|null, cloneId: string|null } }, // per-scene claim state
+  locks:        { [actorId]: boolean },     // per-scene GM lock; locked characters can't be claimed in this roster
 }
 ```
 
 Character details in the roster panel come only from the actor (`sheetSummary.js`), so the roster always matches the character sheet. Which sections show (class, XP, biography, skills, inventory, statuses) is a world setting. Class has no core Foundry meaning: it's auto-detected (class items, then `system.class`, `system.details.class`, `system.concept`, `system.archetype`…) unless the GM sets an explicit actor path. There is no per-scene dossier anymore; edit the sheet instead.
 
 Per-template flags (on the Actor document itself):
-- `sceneforge.locked`    — GM-only lock (boolean); global across all rosters
+- `sceneforge.locked`    — obsolete (locks were global); nothing reads it. Locks now live in `roster.locks`.
 
 Per-clone flags (on the cloned Actor document):
 - `sceneforge.isClone = true` — set at creation; filters clones out of the template picker

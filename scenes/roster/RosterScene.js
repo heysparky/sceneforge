@@ -52,7 +52,8 @@ export default class RosterScene extends SceneForgeScene {
 
     const shown = rosterFieldsShown();
     const classPath = game.settings.get('sceneforge', 'rosterClassPath').trim();
-    const characters = actors.map(a => this.#toViewModel(a, user, claims, shown, classPath));
+    const locks = roster.locks ?? {};
+    const characters = actors.map(a => this.#toViewModel(a, user, claims, locks, shown, classPath));
     const focus = characters.find(c => c.id === this.#focusedId)
       ?? characters.find(c => c.status === 'mine')
       ?? characters.find(c => c.status === 'open')
@@ -87,10 +88,10 @@ export default class RosterScene extends SceneForgeScene {
     return 116;
   }
 
-  #toViewModel(actor, user, claims, shown, classPath) {
+  #toViewModel(actor, user, claims, locks, shown, classPath) {
     const claim     = claims[actor.id] ?? {};
     const claimedBy = claim.claimedBy ?? null;
-    const locked    = actor.getFlag('sceneforge', 'locked') ?? false;
+    const locked    = !!locks[actor.id];
 
     let status;
     if (locked)                     status = 'locked';
@@ -169,9 +170,9 @@ export default class RosterScene extends SceneForgeScene {
     if (!game.user.isGM) return;
     const actorId = RosterScene.#actorIdFrom(target);
     if (!actorId) return;
-    const actor = game.actors.get(actorId);
-    if (!actor) return;
-    await actor.setFlag('sceneforge', 'locked', !actor.getFlag('sceneforge', 'locked'));
+    // Locks belong to this roster, like claims: the same character can be open elsewhere.
+    const locked = !!this._scene.flags?.sceneforge?.roster?.locks?.[actorId];
+    await this._scene.update({ [`flags.sceneforge.roster.locks.${actorId}`]: !locked });
   }
 
   _onRender(context, _options) {

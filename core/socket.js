@@ -33,10 +33,10 @@ async function _handleGM({ action, actorId, userId, sceneId }) {
 export async function applyClaim(actorId, userId, sceneId) {
   const template = game.actors.get(actorId);
   if (!template) return;
-  if (template.getFlag('sceneforge', 'locked')) return;
 
   const scene = game.scenes.get(sceneId);
   if (!scene) return;
+  if (scene.flags?.sceneforge?.roster?.locks?.[actorId]) return;
 
   const claims = scene.flags?.sceneforge?.roster?.claims ?? {};
   if (claims[actorId]?.claimedBy) return;

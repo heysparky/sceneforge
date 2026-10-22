@@ -1,98 +1,89 @@
-<section class="sf-roster{{#if isReady}} sf-roster--ready{{/if}}">
+<section class="sf-roster{{#if isReady}} sf-roster--ready{{/if}}" data-sf-theme="{{theme}}" style="--sf-tile-min: {{tileMin}}px;">
 
   <header class="sf-roster__head">
-    <h1 class="sf-roster__title">{{localize "SCENEFORGE.Roster.Heading"}}</h1>
+    <h1 class="sf-roster__title">{{title}}</h1>
+    {{#if isGM}}
+    <div class="sf-roster__gm">
+      <button type="button" class="sf-quiet" data-action="editCharacters">
+        <i class="fas fa-pen-to-square" inert></i> {{localize "SCENEFORGE.EditCharacters"}}
+      </button>
+      {{#if allClaimed}}
+      <button type="button" class="sf-act sf-act--primary sf-act--inline" data-action="beginSession">{{localize "SCENEFORGE.BeginSession"}}</button>
+      {{/if}}
+    </div>
+    {{/if}}
   </header>
-  <p class="sf-roster__sub">{{localize "SCENEFORGE.Roster.Subtitle"}}</p>
 
-  <div class="sf-roster__viewport">
-    <div class="sf-roster__scroller">
+  <div class="sf-roster__body">
+
+    <div class="sf-roster__lineup">
       {{#each characters as |c|}}
-      <article class="sf-tile sf-tile--{{c.status}}" data-actor-id="{{c.id}}" style="--ring: {{c.ringColor}};">
-
-        <div class="sf-tile__frame">
-          <img class="sf-tile__img" src="{{c.img}}" alt="{{c.name}}" data-action="openSheet" style="cursor:pointer;">
-
-          <span class="sf-badge sf-badge--{{c.status}}">
-            <span class="sf-badge__dot"></span>
-            {{#if (eq c.status "taken")}}{{c.claimedByName}}{{else}}{{c.statusLabel}}{{/if}}
-          </span>
-
-          <div class="sf-tile__plate">
-            <span class="sf-tile__dot"></span>
-            <span class="sf-tile__name">{{c.name}}</span>
-            {{#if c.role}}<span class="sf-tile__role">{{c.role}}</span>{{/if}}
-          </div>
-
-          <div class="sf-tile__dossier">
-            {{#if c.dConcept}}<div class="sf-dossier__field"><span class="sf-dossier__label">Concept</span> {{c.dConcept}}</div>{{/if}}
-            {{#if c.dLevel}}<div class="sf-dossier__field"><span class="sf-dossier__label">Level</span> {{c.dLevel}}</div>{{/if}}
-            {{#if c.dXp}}<div class="sf-dossier__field"><span class="sf-dossier__label">XP</span> {{c.dXp}}</div>{{/if}}
-            {{#if c.dBackground}}<p class="sf-dossier__bio">{{c.dBackground}}</p>{{/if}}
-            {{#if c.dQuote}}<p class="sf-dossier__quote">{{c.dQuote}}</p>{{/if}}
-            {{#if c.dCustom}}<p class="sf-dossier__bio">{{c.dCustom}}</p>{{/if}}
-
-            {{#if c.specialties.length}}
-            <div class="sf-dossier__tags">
-              {{#each c.specialties}}<span class="sf-tag">{{this}}</span>{{/each}}
-            </div>
-            {{/if}}
-          </div>
-
-          {{#if @root.isGM}}
-          <button type="button" class="sf-lock" data-action="toggleLock"
-                  data-tooltip="{{localize 'SCENEFORGE.LockTip'}}">
-            {{#if (eq c.status "locked")}}{{localize "SCENEFORGE.Unlock"}}{{else}}{{localize "SCENEFORGE.Lock"}}{{/if}}
-          </button>
-          {{/if}}
-        </div>
-
-        <div class="sf-tile__actions">
-          {{#if c.canAssign}}
-            <button type="button" class="sf-claim sf-claim--open" data-action="assign">{{localize "SCENEFORGE.Assign"}}</button>
-          {{else if c.canClaim}}
-            <button type="button" class="sf-claim sf-claim--open" data-action="claim">{{localize "SCENEFORGE.Claim"}}</button>
-          {{else if c.canRelease}}
-            <button type="button" class="sf-claim sf-claim--mine" data-action="release">{{localize "SCENEFORGE.Release"}}</button>
-          {{else if c.canKick}}
-            <button type="button" class="sf-claim sf-claim--mine" data-action="kick">{{localize "SCENEFORGE.ForceRelease"}}</button>
-          {{else if (eq c.status "taken")}}
-            <button type="button" class="sf-claim sf-claim--taken" disabled>{{c.claimedByName}}</button>
-          {{else if (eq c.status "locked")}}
-            <button type="button" class="sf-claim sf-claim--locked" disabled>{{localize "SCENEFORGE.Status.GMOnly"}}</button>
-          {{else if (eq c.status "mine")}}
-            <button type="button" class="sf-claim sf-claim--mine" disabled>{{localize "SCENEFORGE.Status.You"}}</button>
-          {{else}}
-            <button type="button" class="sf-claim sf-claim--open" disabled>{{localize "SCENEFORGE.Status.Available"}}</button>
-          {{/if}}
-        </div>
-
+      <article class="sf-tile sf-tile--{{c.status}}{{#if c.focused}} is-focused{{/if}}" data-actor-id="{{c.id}}"{{#if c.ringColor}} style="--ring: {{c.ringColor}};"{{/if}}>
+        <button type="button" class="sf-tile__pick" data-action="focus" aria-pressed="{{#if c.focused}}true{{else}}false{{/if}}">
+          <span class="sf-tile__frame"><img class="sf-tile__img" src="{{c.img}}" alt=""></span>
+          <span class="sf-tile__name">{{c.name}}</span>
+          {{#if c.note}}<span class="sf-tile__note">{{#if (eq c.status "locked")}}<i class="fas fa-lock" inert></i> {{/if}}{{c.note}}</span>{{/if}}
+        </button>
       </article>
+      {{else}}
+      <p class="sf-roster__empty">
+        {{localize "SCENEFORGE.Roster.Empty"}}
+        {{#if isGM}}<br>{{localize "SCENEFORGE.Roster.EmptyGM"}}{{/if}}
+      </p>
       {{/each}}
     </div>
-    <div class="sf-roster__fade sf-roster__fade--left" aria-hidden="true"></div>
-    <div class="sf-roster__fade sf-roster__fade--right" aria-hidden="true"></div>
+
+    {{#with focus as |f|}}
+    <aside class="sf-dossier sf-dossier--{{f.status}}" data-actor-id="{{f.id}}"{{#if f.ringColor}} style="--ring: {{f.ringColor}};"{{/if}}>
+      <header class="sf-dossier__head">
+        <h2 class="sf-dossier__name">{{f.name}}</h2>
+        {{#if f.epithet}}<p class="sf-dossier__epithet">{{f.epithet}}</p>{{/if}}
+        {{#if f.role}}<p class="sf-dossier__role">{{f.role}}</p>{{/if}}
+      </header>
+
+      <div class="sf-dossier__text">
+        {{#if f.dQuote}}<blockquote class="sf-dossier__quote">{{f.dQuote}}</blockquote>{{/if}}
+        {{#if f.dBackground}}<p class="sf-dossier__bio">{{f.dBackground}}</p>{{/if}}
+        {{#if f.dCustom}}<p class="sf-dossier__bio">{{f.dCustom}}</p>{{/if}}
+        {{#if f.specialties}}<p class="sf-dossier__specialties">{{f.specialties}}</p>{{/if}}
+      </div>
+
+      <footer class="sf-dossier__act">
+        {{#if f.canClaim}}
+          <button type="button" class="sf-act sf-act--primary" data-action="claim">{{localize "SCENEFORGE.Roster.Take" name=f.name}}</button>
+        {{else if (eq f.status "mine")}}
+          <p class="sf-dossier__state">{{localize "SCENEFORGE.Roster.YoursState" name=f.name}}</p>
+          {{#if f.canRelease}}<button type="button" class="sf-quiet" data-action="release">{{localize "SCENEFORGE.Roster.ChangeMind"}}</button>{{/if}}
+        {{else if (eq f.status "taken")}}
+          <p class="sf-dossier__state">{{localize "SCENEFORGE.Roster.TakenState" player=f.claimedByName name=f.name}}</p>
+        {{else if (eq f.status "locked")}}
+          <p class="sf-dossier__state">{{#if @root.isGM}}{{localize "SCENEFORGE.Roster.LockedStateGM" name=f.name}}{{else}}{{localize "SCENEFORGE.Roster.LockedState" name=f.name}}{{/if}}</p>
+        {{/if}}
+
+        <div class="sf-dossier__tools">
+          {{#if @root.isGM}}
+            {{#if f.canAssign}}<button type="button" class="sf-quiet" data-action="assign"><i class="fas fa-user-plus" inert></i> {{localize "SCENEFORGE.Roster.AssignTo"}}</button>{{/if}}
+            {{#if f.canKick}}<button type="button" class="sf-quiet" data-action="kick"><i class="fas fa-user-minus" inert></i> {{localize "SCENEFORGE.Roster.ReleaseFrom" player=f.claimedByName}}</button>{{/if}}
+            <button type="button" class="sf-quiet" data-action="toggleLock">
+              {{#if (eq f.status "locked")}}<i class="fas fa-lock-open" inert></i> {{localize "SCENEFORGE.Unlock"}}{{else}}<i class="fas fa-lock" inert></i> {{localize "SCENEFORGE.Lock"}}{{/if}}
+            </button>
+          {{/if}}
+          <button type="button" class="sf-quiet" data-action="openSheet"><i class="fas fa-id-card" inert></i> {{localize "SCENEFORGE.Roster.OpenSheet"}}</button>
+        </div>
+      </footer>
+    </aside>
+    {{/with}}
+
   </div>
 
+  {{#unless isGM}}
   <footer class="sf-roster__foot">
-    {{#if isGM}}
-    <span class="sf-roster__actions">
-      <button type="button" class="sf-btn sf-btn--ghost" data-action="editCharacters">{{localize "SCENEFORGE.EditCharacters"}}</button>
-      {{#if allClaimed}}
-      <button type="button" class="sf-btn sf-btn--accent" data-action="beginSession">{{localize "SCENEFORGE.BeginSession"}}</button>
-      {{/if}}
-    </span>
-    {{else}}
-    <span class="sf-roster__actions sf-roster__actions--player">
-      {{#if iHaveClaimed}}
-      <button type="button" class="sf-btn sf-btn--accent" data-action="ready">
-        {{#if isReady}}{{localize "SCENEFORGE.Choose"}}{{else}}{{localize "SCENEFORGE.Ready"}}{{/if}}
-      </button>
-      {{else}}
-      <button type="button" class="sf-btn sf-btn--ghost" disabled>{{localize "SCENEFORGE.Ready"}}</button>
-      {{/if}}
-    </span>
+    {{#if iHaveClaimed}}
+    <button type="button" class="sf-act sf-act--primary sf-act--inline" data-action="ready">
+      {{#if isReady}}{{localize "SCENEFORGE.Choose"}}{{else}}{{localize "SCENEFORGE.Ready"}}{{/if}}
+    </button>
     {{/if}}
   </footer>
+  {{/unless}}
 
 </section>

@@ -18,6 +18,14 @@
         {{/each}}
       </select>
     </div>
+    <div class="form-group stacked sf-scene-folders__wide">
+      <label>{{localize "SCENEFORGE.Theme.Label"}}</label>
+      <select name="theme">
+        {{#each themes}}
+        <option value="{{key}}" {{#if (eq key ../theme)}}selected{{/if}}>{{label}}</option>
+        {{/each}}
+      </select>
+    </div>
   </div>
   <div class="sf-char-list" id="sf-char-list">
     {{#each characters}}

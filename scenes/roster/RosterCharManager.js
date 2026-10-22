@@ -20,6 +20,9 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
     },
   };
 
+  // Keys match [data-sf-theme] blocks in sceneforge.css.
+  static THEMES = ['default', 'ledger', 'file', 'night'];
+
   static PARTS = {
     main: { template: 'modules/sceneforge/scenes/roster/charManager.html' },
   };
@@ -28,6 +31,7 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
   #templates = [];
   #sourceFolder = null;
   #destFolder   = null;
+  #theme        = 'default';
 
   constructor(scene, options = {}) {
     super(options);
@@ -35,6 +39,7 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
     this.#templates     = [...(scene.flags?.sceneforge?.roster?.templates    ?? [])];
     this.#sourceFolder  = scene.flags?.sceneforge?.roster?.sourceFolder ?? null;
     this.#destFolder    = scene.flags?.sceneforge?.roster?.destFolder   ?? null;
+    this.#theme         = scene.flags?.sceneforge?.theme ?? 'default';
   }
 
   async _prepareContext(_options) {
@@ -50,6 +55,8 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
       allFolders,
       sourceFolder: this.#sourceFolder ?? '',
       destFolder:   this.#destFolder   ?? '',
+      themes: RosterCharManager.THEMES.map(key => ({ key, label: game.i18n.localize(`SCENEFORGE.Theme.${key}`) })),
+      theme:  this.#theme,
     };
   }
 
@@ -124,6 +131,7 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
       .map(el => el.dataset.actorId);
     const sourceFolder = this.element.querySelector('[name="sourceFolder"]')?.value || null;
     const destFolder   = this.element.querySelector('[name="destFolder"]')?.value   || null;
+    const theme        = this.element.querySelector('[name="theme"]')?.value        || 'default';
 
     if (sourceFolder && destFolder && sourceFolder === destFolder) {
       ui.notifications.error('Source folder and destination folder cannot be the same.');
@@ -134,6 +142,7 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
       'flags.sceneforge.roster.templates':    ids,
       'flags.sceneforge.roster.sourceFolder': sourceFolder,
       'flags.sceneforge.roster.destFolder':   destFolder,
+      'flags.sceneforge.theme':               theme,
     });
     this.close();
   }

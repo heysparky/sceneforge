@@ -56,6 +56,8 @@ scenes/
 ```
 Written by GM drag handles; read by `renderer.js _getBounds()` on every `_applyBounds` call.
 
+`scene.flags.sceneforge.theme` (roster scenes): preset key, one of `default | ledger | file | night` (set in Edit Roster). Rendered as `data-sf-theme` on `.sf-roster`; each preset is a block of `--sf-*` token overrides in `sceneforge.css`.
+
 `scene.flags.sceneforge.roster` (roster scenes):
 ```js
 {

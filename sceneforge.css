@@ -123,191 +123,355 @@
 
 /* ── Roster ── */
 
-.sceneforge.sceneforge-roster {
-  overflow: hidden;
-  --sf-status-open:   #6aa85f;
-  --sf-status-locked: #d3a23a;
-  --sf-status-taken:  var(--color-text-subtle, #8f8b7e);
-  --sf-status-mine:   var(--color-warm-1, #ee9b3a);
+/*
+ * Theme tokens. Every roster colour, font and size reads from these.
+ * Presets override them via [data-sf-theme]; a world can add its own with
+ *   .sf-roster[data-sf-theme="mine"] { --sf-bg: …; }
+ */
+.sf-roster {
+  --sf-bg:           #000;
+  --sf-surface:      #111014;
+  --sf-ink:          #ebe6da;
+  --sf-ink-muted:    #8c867a;
+  --sf-rule:         rgba(235, 230, 218, 0.12);
+  --sf-accent:       #d6a25a;
+  --sf-on-accent:    #17120a;
+  --sf-font-display: var(--font-h2, "Amiri", serif);
+  --sf-font-body:    var(--font-body, "Signika", sans-serif);
+  --sf-radius:       3px;
+
+  /* type scale, ratio ~1.25 */
+  --sf-step--1: 11px;
+  --sf-step-0:  14px;
+  --sf-step-1:  17px;
+  --sf-step-2:  21px;
+  --sf-step-3:  27px;
+  --sf-step-4:  34px;
+
+  --sf-space-1: 4px;
+  --sf-space-2: 8px;
+  --sf-space-3: 12px;
+  --sf-space-4: 20px;
+  --sf-space-5: 32px;
+
+  --ring: var(--sf-accent);
 }
 
-/* layout shell */
+.sf-roster[data-sf-theme="ledger"] {
+  --sf-bg:           #e7dfcc;
+  --sf-surface:      #f1eadb;
+  --sf-ink:          #2a231e;
+  --sf-ink-muted:    #6e6253;
+  --sf-rule:         rgba(42, 35, 30, 0.2);
+  --sf-accent:       #7a2a1b;
+  --sf-on-accent:    #f6efe1;
+  --sf-font-display: "Amiri", Georgia, serif;
+  --sf-font-body:    Georgia, "Amiri", serif;
+  --sf-radius:       0;
+}
+
+.sf-roster[data-sf-theme="file"] {
+  --sf-bg:           #181b1d;
+  --sf-surface:      #202528;
+  --sf-ink:          #dce2e3;
+  --sf-ink-muted:    #839095;
+  --sf-rule:         rgba(220, 226, 227, 0.12);
+  --sf-accent:       #9bc3b6;
+  --sf-on-accent:    #0f1f1a;
+  --sf-font-display: "Courier New", ui-monospace, monospace;
+  --sf-radius:       0;
+}
+
+.sf-roster[data-sf-theme="night"] {
+  --sf-bg:           #0c0d14;
+  --sf-surface:      #141622;
+  --sf-ink:          #e2e4ee;
+  --sf-ink-muted:    #8389a0;
+  --sf-rule:         rgba(226, 228, 238, 0.1);
+  --sf-accent:       #b3c0dc;
+  --sf-on-accent:    #10131c;
+  --sf-radius:       6px;
+}
+
+/* shell */
+.sceneforge.sceneforge-roster { overflow: hidden; }
+
 .sf-roster {
+  container: sf-roster / inline-size;
   height: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
-  padding: 22px 24px 26px;
-  color: var(--color-text-primary, #d8d6cc);
+  gap: var(--sf-space-4);
+  padding: var(--sf-space-4) var(--sf-space-5);
+  background: var(--sf-bg);
+  color: var(--sf-ink);
+  font-family: var(--sf-font-body);
+  font-size: var(--sf-step-0);
 }
 
 .sf-roster__head {
-  display: flex; flex-wrap: wrap; align-items: flex-end;
-  justify-content: space-between; gap: 6px 16px; margin-bottom: 6px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sf-space-3) var(--sf-space-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--sf-space-3);
+  border-bottom: 1px solid var(--sf-rule);
 }
 .sf-roster__title {
-  margin: 0; line-height: 1.1; white-space: nowrap;
-  font-family: var(--font-h2, "Amiri", serif);
-  font-size: 31px; font-weight: 700;
-  color: var(--color-text-emphatic, #f0efe6);
+  margin: 0;
+  border: 0;
+  font-family: var(--sf-font-display);
+  font-size: var(--sf-step-4);
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--sf-ink);
 }
-.sf-roster__count {
-  font-family: var(--font-body, "Signika", sans-serif);
-  font-size: 12px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .1em; color: var(--color-text-subtle, #8f8b7e); padding-bottom: 4px;
+.sf-roster__gm { display: flex; align-items: center; gap: var(--sf-space-4); }
+
+/* two columns: lineup + dossier; stacks when the panel is narrow */
+.sf-roster__body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(240px, 32%, 360px);
+  gap: var(--sf-space-5);
 }
-.sf-roster__sub {
-  margin: 0 0 20px; font-size: 14px;
-  color: var(--color-text-subtle, #8f8b7e);
+@container sf-roster (max-width: 720px) {
+  .sf-roster__body { grid-template-columns: minmax(0, 1fr); overflow-y: auto; }
+  .sf-roster__lineup { overflow: visible; }
 }
 
-/* horizontal scroller */
-.sf-roster__viewport { position: relative; flex: 1; overflow: hidden; }
-.sf-roster__scroller {
-  display: flex; align-items: flex-start; gap: 14px; overflow-x: auto; overflow-y: visible;
-  padding: 2px 2px 12px; scroll-snap-type: x proximity;
-  height: 100%;
+.sf-roster__lineup {
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--sf-tile-min, 170px), 100%), 1fr));
+  align-content: start;
+  gap: var(--sf-space-4) var(--sf-space-3);
+  padding: 6px; /* room for the focus ring */
 }
-.sf-roster__scroller::-webkit-scrollbar { height: 8px; }
-.sf-roster__scroller::-webkit-scrollbar-thumb {
-  background: var(--color-border, var(--color-cool-4, #302831)); border-radius: 4px;
+.sf-roster__empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--sf-ink-muted);
+  line-height: 1.6;
 }
-.sf-roster__fade {
-  position: absolute; top: 0; bottom: 12px; width: 48px; pointer-events: none;
-  transition: opacity .18s ease;
-}
-.sf-roster__fade--left {
-  left: 0;
-  background: linear-gradient(to right, #000, transparent);
-}
-.sf-roster__fade--right {
-  right: 0;
-  background: linear-gradient(to left, #000, transparent);
-}
-.sf-roster__fade--hidden { opacity: 0; }
 
-/* tile */
-.sf-tile { position: relative; flex: 0 0 190px; scroll-snap-align: start; }
+/* tile: a portrait and a caption, nothing laid over the art */
+.sf-tile__pick {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+}
+.sf-tile__pick:hover,
+.sf-tile__pick:focus { background: none; box-shadow: none; color: inherit; }
+.sf-tile__pick:focus-visible { outline: none; }
+
 .sf-tile__frame {
-  position: relative; aspect-ratio: 3 / 4; overflow: hidden; border-radius: 7px;
-  border: 2px solid var(--ring, #fff);
-  background: linear-gradient(165deg, var(--color-cool-4, #171520), var(--color-cool-5, #0b0a13));
-  box-shadow: 0 0 22px -8px var(--ring, #fff);
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  margin-bottom: var(--sf-space-2);
+  overflow: hidden;
+  border-radius: var(--sf-radius);
+  background: var(--sf-surface);
+  transition: box-shadow .15s ease-out;
 }
-.sf-tile__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.sf-tile__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+  transition: filter .2s ease-out;
+}
+.sf-tile__pick:hover .sf-tile__img { filter: brightness(1.08); }
 
-/* status badge */
-.sf-badge {
-  position: absolute; top: 7px; right: 7px; display: inline-flex; align-items: center; gap: 5px;
-  padding: 3px 8px; border-radius: 4px; white-space: nowrap;
-  font: 600 11px var(--font-body, "Signika", sans-serif);
-  background: color-mix(in srgb, var(--color-cool-5, #0b0a13) 80%, transparent);
-  backdrop-filter: blur(4px);
-  border: 1px solid currentColor;
-}
-.sf-badge__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.sf-badge--open   { color: var(--sf-status-open); }
-.sf-badge--mine   { color: var(--sf-status-mine); }
-.sf-badge--taken  { color: var(--sf-status-taken); }
-.sf-badge--locked { color: var(--sf-status-locked); }
-
-/* name plate (always visible) */
-.sf-tile__plate {
-  position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 8px; pointer-events: none;
-  background: linear-gradient(to top, var(--color-cool-5, #05040a) 12%, transparent);
-}
-.sf-tile__dot {
-  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  background: var(--ring, #fff); box-shadow: 0 0 6px var(--ring, #fff); margin-right: 6px;
-  vertical-align: middle;
-}
 .sf-tile__name {
-  font: 700 17px var(--font-body, "Signika", sans-serif);
-  color: var(--color-text-emphatic, #f0efe6); vertical-align: middle;
+  font-size: var(--sf-step-0);
+  font-weight: 600;
+  color: var(--sf-ink);
 }
-.sf-tile__role {
-  display: block; margin-top: 2px;
-  font: 400 11px var(--font-body, "Signika", sans-serif);
-  color: var(--color-text-subtle, #8f8b7e);
+.sf-tile__note {
+  font-size: var(--sf-step--1);
+  font-variant-caps: all-small-caps;
+  letter-spacing: .06em;
+  color: var(--sf-ink-muted);
 }
 
-/* dossier overlay — CSS hover/focus reveal */
-.sf-tile__dossier {
-  position: absolute; left: 0; right: 0; bottom: 0; top: 34%;
-  display: flex; flex-direction: column; gap: 7px; padding: 12px;
-  border-radius: 0 0 6px 6px; border-top: 2px solid var(--ring, #fff);
-  background: color-mix(in srgb, var(--color-cool-5, #0b0a13) 92%, transparent);
-  backdrop-filter: blur(7px);
-  opacity: 0; transform: translateY(8px); pointer-events: none;
-  transition: opacity .2s ease, transform .2s ease;
+/* focus: a ring set off from the art, in the character's own colour */
+.sf-tile.is-focused .sf-tile__frame,
+.sf-tile__pick:focus-visible .sf-tile__frame {
+  box-shadow: 0 0 0 2px var(--sf-bg), 0 0 0 4px var(--ring);
 }
-.sf-tile:hover .sf-tile__dossier,
-.sf-tile:focus-within .sf-tile__dossier {
-  opacity: 1; transform: translateY(0); pointer-events: auto;
+
+/* yours: a band of the character's colour under the portrait */
+.sf-tile--mine .sf-tile__frame::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 4px;
+  background: var(--ring);
 }
+.sf-tile--mine .sf-tile__note { color: var(--sf-ink); }
+
+/* someone else's, or unavailable: the art recedes */
+.sf-tile--taken .sf-tile__img  { filter: grayscale(1) brightness(.55); }
+.sf-tile--locked .sf-tile__img { filter: grayscale(.7) brightness(.4); }
+.sf-tile--taken .sf-tile__pick:hover .sf-tile__img  { filter: grayscale(1) brightness(.7); }
+.sf-tile--locked .sf-tile__pick:hover .sf-tile__img { filter: grayscale(.7) brightness(.55); }
+.sf-tile__note .fa-lock { font-size: .85em; }
+
+/* dossier panel */
+.sf-dossier {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sf-space-4);
+  padding: var(--sf-space-4);
+  border-top: 3px solid var(--ring);
+  border-radius: var(--sf-radius);
+  background: var(--sf-surface);
+  overflow-y: auto;
+}
+.sf-dossier__head { display: flex; flex-direction: column; gap: var(--sf-space-1); }
+.sf-dossier__name {
+  margin: 0;
+  border: 0;
+  font-family: var(--sf-font-display);
+  font-size: var(--sf-step-3);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--sf-ink);
+}
+.sf-dossier__epithet {
+  margin: 0;
+  font-style: italic;
+  color: var(--sf-ink-muted);
+}
+.sf-dossier__role,
+.sf-dossier__specialties {
+  margin: 0;
+  font-size: var(--sf-step--1);
+  font-variant-caps: all-small-caps;
+  letter-spacing: .06em;
+  color: var(--sf-ink-muted);
+}
+
+.sf-dossier__text { display: flex; flex-direction: column; gap: var(--sf-space-3); }
+.sf-dossier__quote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: var(--sf-font-display);
+  font-size: var(--sf-step-1);
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--sf-ink);
+  text-indent: -0.45em; /* hang the opening quote */
+}
+.sf-dossier__quote::before { content: "\201C"; }
+.sf-dossier__quote::after  { content: "\201D"; }
 .sf-dossier__bio {
-  margin: 0; font: 400 12px var(--font-body, "Signika", sans-serif); line-height: 1.36;
-  color: var(--color-text-primary, #d8d6cc);
-  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
-}
-.sf-dossier__tags { display: flex; gap: 4px; flex-wrap: wrap; }
-.sf-tag {
-  padding: 1px 7px; border-radius: 3px; font: 500 10px var(--font-body, "Signika", sans-serif);
-  color: var(--color-text-subtle, #8f8b7e);
-  border: 1px solid var(--color-border, var(--color-cool-4, #302831));
-}
-.sf-dossier__skill { font: 600 11px var(--font-body, "Signika", sans-serif); color: var(--color-text-primary, #d8d6cc); }
-.sf-dossier__inv { margin-top: auto; font: 400 10px var(--font-body, "Signika", sans-serif); color: var(--color-text-subtle, #8f8b7e); }
-
-/* below-tile action area */
-.sf-tile__actions { margin-top: 8px; }
-
-/* claim button states */
-.sf-claim {
-  width: 100%; padding: 9px; border-radius: 4px; cursor: pointer;
-  font: 600 14px var(--font-body, "Signika", sans-serif); letter-spacing: .02em;
-}
-.sf-claim--open   { background: var(--color-warm-1, #ee9b3a); color: var(--color-cool-5, #0b0a13); border: 1px solid var(--color-warm-1, #ee9b3a); }
-.sf-claim--mine   { background: transparent; color: var(--color-warm-1, #ee9b3a); border: 1.5px solid var(--color-warm-1, #ee9b3a); }
-.sf-claim--taken  { background: var(--color-cool-4, #221d2b); color: var(--color-text-subtle, #8f8b7e); border: 1px solid var(--color-border, #302831); cursor: default; }
-.sf-claim--locked { background: transparent; color: var(--sf-status-locked); border: 1.5px dashed var(--sf-status-locked); cursor: not-allowed; }
-
-/* GM per-tile lock toggle */
-.sf-lock {
-  position: absolute; top: 7px; left: 7px; padding: 2px 8px; border-radius: 4px; cursor: pointer;
-  font: 600 10px var(--font-body, "Signika", sans-serif);
-  background: color-mix(in srgb, var(--color-cool-5, #0b0a13) 80%, transparent);
-  color: var(--color-text-subtle, #8f8b7e);
-  border: 1px solid var(--color-border, #302831);
+  margin: 0;
+  line-height: 1.55;
+  white-space: pre-line;
+  color: var(--sf-ink);
 }
 
-/* footer */
+.sf-dossier__act {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sf-space-3);
+  padding-top: var(--sf-space-3);
+  border-top: 1px solid var(--sf-rule);
+}
+.sf-dossier__state { margin: 0; color: var(--sf-ink); }
+.sf-dossier__tools { display: flex; flex-wrap: wrap; gap: var(--sf-space-2) var(--sf-space-4); }
+
+/* buttons: one solid action; everything else is a quiet text control */
+.sf-act {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: var(--sf-space-3) var(--sf-space-4);
+  border: 0;
+  border-radius: var(--sf-radius);
+  box-shadow: none;
+  font-family: var(--sf-font-body);
+  font-size: var(--sf-step-0);
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.sf-act--primary,
+.sf-act--primary:hover,
+.sf-act--primary:focus { background: var(--sf-accent); color: var(--sf-on-accent); box-shadow: none; }
+.sf-act--primary:hover { filter: brightness(1.08); }
+.sf-act--inline { width: auto; padding: var(--sf-space-2) var(--sf-space-4); }
+.sf-act:focus-visible { outline: 2px solid var(--sf-ink); outline-offset: 2px; }
+
+.sf-quiet,
+.sf-quiet:hover,
+.sf-quiet:focus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  font-family: var(--sf-font-body);
+  font-size: var(--sf-step--1);
+  line-height: 1.2;
+  color: var(--sf-ink-muted);
+  cursor: pointer;
+}
+.sf-quiet:hover { color: var(--sf-ink); text-decoration: underline; text-underline-offset: 3px; }
+.sf-quiet:focus-visible { outline: 2px solid var(--sf-ink); outline-offset: 2px; }
+
+/* footer (players) */
 .sf-roster__foot {
-  display: flex; align-items: center; gap: 10px; margin-top: 20px; padding-top: 16px;
-  border-top: 1px solid var(--color-border, var(--color-cool-4, #302831));
-  font: 400 12px var(--font-body, "Signika", sans-serif); color: var(--color-text-subtle, #8f8b7e);
+  display: flex;
+  justify-content: center;
   flex-shrink: 0;
 }
-.sf-roster__actions { margin-left: auto; display: flex; gap: 8px; }
-.sf-roster__actions--player { margin-left: 0; flex: 1; justify-content: center; }
-.sf-roster__actions--player .sf-btn { padding: 14px 48px; font-size: 17px; }
-.sf-btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; font: 600 13px var(--font-body, "Signika", sans-serif); }
-.sf-btn--ghost  { background: transparent; color: var(--color-text-primary, #d8d6cc); border: 1px solid var(--color-border, #302831); }
-.sf-btn--accent { background: var(--color-warm-1, #ee9b3a); color: var(--color-cool-5, #0b0a13); border: 1px solid var(--color-warm-1, #ee9b3a); font-weight: 700; }
-.sf-btn--sm { padding: 4px 10px; font-size: 11px; }
+.sf-roster__foot:not(:has(button)) { display: none; }
 
-/* ready mode — dim non-claimed tiles and suppress all hover dossiers */
+/* ready mode: everything but your pick steps back */
 .sf-roster--ready .sf-tile:not(.sf-tile--mine) {
-  opacity: 0.18; filter: grayscale(0.8); pointer-events: none;
-  transition: opacity .35s ease, filter .35s ease;
-}
-.sf-roster--ready .sf-tile:hover .sf-tile__dossier,
-.sf-roster--ready .sf-tile:focus-within .sf-tile__dossier {
-  opacity: 0; pointer-events: none; transform: translateY(8px);
+  opacity: .2;
+  pointer-events: none;
+  transition: opacity .35s ease;
 }
 
-/* locked tiles read slightly recessed */
-.sf-tile--locked .sf-tile__img { filter: grayscale(.4) brightness(.8); }
+@media (prefers-reduced-motion: reduce) {
+  .sf-roster * { transition: none !important; }
+}
 
 /* ── Roster Config Picker ── */
 
@@ -375,6 +539,13 @@
   padding: 12px 12px 10px;
   border-bottom: 1px solid var(--color-border, #302831);
 }
+
+.sf-scene-folders__wide { grid-column: 1 / -1; }
+
+.sf-btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; font: 600 13px var(--font-body, "Signika", sans-serif); }
+.sf-btn--ghost  { background: transparent; color: var(--color-text-primary, #d8d6cc); border: 1px solid var(--color-border, #302831); }
+.sf-btn--accent { background: var(--color-warm-1, #ee9b3a); color: var(--color-cool-5, #0b0a13); border: 1px solid var(--color-warm-1, #ee9b3a); font-weight: 700; }
+.sf-btn--sm { padding: 4px 10px; font-size: 11px; }
 
 .sf-char-list {
   display: flex; flex-direction: column; gap: 2px;
@@ -453,22 +624,6 @@
   resize: vertical;
 }
 .sf-dossier-edit__input:focus { outline: none; border-color: var(--color-warm-4, #c9a227); }
-
-/* ── Dossier field display (on tile) ── */
-
-.sf-dossier__field {
-  font: 400 12px var(--font-body, "Signika", sans-serif);
-  color: var(--color-text-primary, #d8d6cc);
-}
-.sf-dossier__label {
-  font-weight: 600; color: var(--color-text-subtle, #8f8b7e); margin-right: 4px;
-}
-.sf-dossier__quote {
-  margin: 0; padding: 0 0 0 8px;
-  border-left: 2px solid var(--color-warm-4, #c9a227);
-  font: 400 italic 12px var(--font-body, "Signika", sans-serif);
-  color: var(--color-text-subtle, #8f8b7e);
-}
 
 /* ── Token Placer ── */
 

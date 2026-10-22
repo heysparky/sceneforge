@@ -7,7 +7,8 @@ export default class RosterScene extends SceneForgeScene {
   static TYPE = 'roster';
 
   #isReady = false;
-  #_ro = null;
+  #focusedId = null;
+  #refocus = false;
 
   static DEFAULT_OPTIONS = {
     id: 'sceneforge-roster',
@@ -22,11 +23,15 @@ export default class RosterScene extends SceneForgeScene {
       beginSession: RosterScene.#onBeginSession,
       ready:        RosterScene.#onReady,
       openSheet:    RosterScene.#onOpenSheet,
+      focus:        RosterScene.#onFocus,
     },
   };
 
   static PARTS = {
-    main: { template: 'modules/sceneforge/scenes/roster/roster.html' },
+    main: {
+      template: 'modules/sceneforge/scenes/roster/roster.html',
+      scrollable: ['.sf-roster__lineup', '.sf-roster__body'],
+    },
   };
 
   async _prepareContext(_options) {
@@ -42,14 +47,36 @@ export default class RosterScene extends SceneForgeScene {
     const activePlayers = game.users.filter(u => u.active && !u.isGM);
     const remaining = activePlayers.filter(u => !claimedUserIds.has(u.id)).length;
 
+    const characters = actors.map(a => this.#toViewModel(a, user, claims));
+    const focus = characters.find(c => c.id === this.#focusedId)
+      ?? characters.find(c => c.status === 'mine')
+      ?? characters.find(c => c.status === 'open')
+      ?? characters[0]
+      ?? null;
+    if (focus) focus.focused = true;
+    this.#focusedId = focus?.id ?? null;
+
     return {
       isGM: user.isGM,
-      characters: actors.map(a => this.#toViewModel(a, user, claims)),
+      title: this._scene.name,
+      theme: this._scene.flags?.sceneforge?.theme ?? 'default',
+      tileMin: RosterScene.#tileMin(characters.length),
+      characters,
+      focus,
       remaining,
       allClaimed: activePlayers.length > 0 && remaining === 0,
       iHaveClaimed: claimedUserIds.has(user.id),
       isReady: this.#isReady,
     };
+  }
+
+  // Fewer characters get bigger portraits; large rosters fall back to a dense grid.
+  static #tileMin(count) {
+    if (count <= 2)  return 260;
+    if (count <= 4)  return 210;
+    if (count <= 8)  return 170;
+    if (count <= 16) return 140;
+    return 116;
   }
 
   #toViewModel(actor, user, claims) {
@@ -64,40 +91,51 @@ export default class RosterScene extends SceneForgeScene {
     else if (claimedBy)             status = 'taken';
     else                            status = 'open';
 
-    const xpVal = d.xp ? Number(d.xp) : (actor.system?.xp ?? 0);
+    const i18n = game.i18n;
+    const claimedByName = claimedBy ? (game.users.get(claimedBy)?.name ?? '?') : null;
+
+    // Dossier fields: null means "don't render". XP only shows when the GM entered it.
+    const concept    = d.showConcept && d.concept ? d.concept : null;
+    const level      = d.showLevel   && d.level   ? d.level   : null;
+    const xp         = d.showXp !== false && d.xp ? d.xp      : null;
+    const background = d.showBackground ? (d.background || RosterScene.#plainText(actor.system?.biography)) : null;
+    const epithet = [
+      concept,
+      level ? i18n.format('SCENEFORGE.Roster.Level', { level }) : null,
+      xp    ? i18n.format('SCENEFORGE.Roster.Xp',    { xp })    : null,
+    ].filter(Boolean).join(' · ');
+
+    const note = {
+      mine:   i18n.localize('SCENEFORGE.Roster.NoteYou'),
+      taken:  claimedByName,
+      locked: i18n.localize('SCENEFORGE.Roster.NoteLocked'),
+    }[status] ?? null;
 
     return {
       id:            actor.id,
       name:          actor.name,
       img:           actor.img,
-      ringColor:     actor.prototypeToken?.ring?.colors?.ring ?? '#ffffff',
+      ringColor:     actor.prototypeToken?.ring?.colors?.ring ?? null,
       role:          actor.getFlag('sceneforge', 'role') ?? '',
-      specialties:   actor.getFlag('sceneforge', 'specialties') ?? [],
+      specialties:   [actor.getFlag('sceneforge', 'specialties') ?? []].flat().join(' · '),
       status,
-      statusLabel:   RosterScene.#statusLabel(status),
-      claimedByName: claimedBy ? (game.users.get(claimedBy)?.name ?? '?') : null,
+      note,
+      claimedByName,
       canAssign:     status === 'open'  &&  user.isGM,
       canKick:       status === 'taken' &&  user.isGM,
       canClaim:      status === 'open'  && !user.isGM && !this.#isReady,
       canRelease:    status === 'mine'  && !user.isGM && !this.#isReady,
-      // dossier fields — null means "don't render"
-      dConcept:    d.showConcept    && d.concept                            ? d.concept                            : null,
-      dLevel:      d.showLevel      && d.level                              ? d.level                              : null,
-      dXp:         d.showXp !== false                                       ? String(xpVal)                        : null,
-      dBackground: d.showBackground && (d.background || actor.system?.biography)
-                     ? (d.background || actor.system?.biography)           : null,
-      dQuote:      d.showQuote      && d.quote                              ? d.quote                              : null,
-      dCustom:     d.custom                                                 ? d.custom                             : null,
+      epithet,
+      dBackground:   background || null,
+      dQuote:        d.showQuote && d.quote ? d.quote  : null,
+      dCustom:       d.custom               ? d.custom : null,
     };
   }
 
-  static #statusLabel(status) {
-    return {
-      open:   game.i18n.localize('SCENEFORGE.Status.Available'),
-      mine:   game.i18n.localize('SCENEFORGE.Status.You'),
-      taken:  game.i18n.localize('SCENEFORGE.Status.Taken'),
-      locked: game.i18n.localize('SCENEFORGE.Status.GMOnly'),
-    }[status];
+  // Biographies are often stored as HTML; DOMParser gives inert text without loading anything.
+  static #plainText(html) {
+    if (typeof html !== 'string' || !html) return '';
+    return new DOMParser().parseFromString(html, 'text/html').body.textContent.trim();
   }
 
   static #actorIdFrom(target) {
@@ -138,35 +176,22 @@ export default class RosterScene extends SceneForgeScene {
   }
 
   _onRender(context, _options) {
-    this.#initFade();
+    if (this.#refocus) {
+      this.#refocus = false;
+      this.element.querySelector('.sf-tile.is-focused .sf-tile__pick')?.focus();
+    }
     if (!context.isReady) return;
     const mineTile = this.element.querySelector('.sf-tile--mine');
-    mineTile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    mineTile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
   }
 
-  #initFade() {
-    const scroller = this.element.querySelector('.sf-roster__scroller');
-    const fadeL = this.element.querySelector('.sf-roster__fade--left');
-    const fadeR = this.element.querySelector('.sf-roster__fade--right');
-    if (!scroller || !fadeL || !fadeR) return;
-
-    const measure = () => {
-      const atStart = scroller.scrollLeft <= 4;
-      const atEnd = scroller.scrollLeft >= scroller.scrollWidth - scroller.clientWidth - 1;
-      fadeL.classList.toggle('sf-roster__fade--hidden', atStart);
-      fadeR.classList.toggle('sf-roster__fade--hidden', atEnd);
-    };
-
-    if (this.#_ro) this.#_ro.disconnect();
-    scroller.onscroll = measure;
-    this.#_ro = new ResizeObserver(measure);
-    this.#_ro.observe(scroller);
-    measure();
-  }
-
-  async close(options) {
-    if (this.#_ro) { this.#_ro.disconnect(); this.#_ro = null; }
-    return super.close(options);
+  static #onFocus(_e, target) {
+    const actorId = RosterScene.#actorIdFrom(target);
+    if (!actorId || actorId === this.#focusedId) return;
+    this.#focusedId = actorId;
+    this.#refocus = true;
+    // Re-render through the renderer so scene bounds are re-applied afterwards.
+    Hooks.callAll('sceneforge:dataChanged', this._scene.id);
   }
 
   static #onEditCharacters(_e, _target) {

@@ -364,6 +364,9 @@ Hooks.on('canvasReady', () => { });
 //   }
 
 // Scene directory rendered — html is HTMLElement in v14 (not jQuery)
+// ⚠️ Same race as canvasReady: the sidebar can render before `ready`.
+// Register this in `init`, and in `ready` also patch `ui.scenes.element`
+// if it already exists (make the patch idempotent).
 Hooks.on('renderSceneDirectory', (_app, html) => {
   const el = html.querySelector ? html : html[0];  // guard for compat
 });

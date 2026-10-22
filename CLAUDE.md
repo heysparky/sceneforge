@@ -23,7 +23,7 @@ Testing happens in a running Foundry v14 instance. Zero console errors is a hard
 ## File layout
 
 ```
-sceneforge.js           <- entry point: hook registration only
+sceneforge.js           <- entry point: hook registration; Create Scene intercept (hook registered in init, existing sidebar patched in ready)
 sceneforge.css          <- all styles
 core/
   settings.js           <- world settings: which roster panel sections show (rosterShow*) and the class field path (rosterClassPath)
@@ -44,8 +44,8 @@ scenes/
     RosterCharManager.js <- "Edit Roster" ApplicationV2: drag (or arrow) reorder, remove/add characters, folders, theme; DOM rows are the working order, synced to state before re-render
     sheetSummary.js     <- sheetSummary(actor): what the panel shows, read live from the actor (biography, XP; Roll for Shoes skills/inventory/statuses)
     TokenPlacer.js      <- cursor-stack token placement; ghost cursor; prompts GM to activate scene after last token
-    charManager.html    <- Edit Roster template (folder selects side-by-side + character list)
-    roster.html         <- tile grid template
+    charManager.html    <- Edit Roster template (folder selects, theme, draggable character list)
+    roster.html         <- roster screen: header, portrait grid, focused-character panel, party bar
 ```
 
 ## Scene data model
@@ -87,7 +87,9 @@ The same template actor can be claimed independently in different roster scenes.
 On claim: GM sets `user.color` to the character's token ring color (Dice So Nice) and `user.character` to the clone actor ID (shows in Player Configuration).
 On release/kick/clone deletion: `user.character` is cleared to null. Deleting a clone actor from the sidebar triggers `deleteActor` hook → searches all scenes' `roster.claims` for the cloneId → `applyRelease` on the GM client.
 
-Folder guard: `sourceFolder` and `destFolder` must be different (enforced at scene creation and in Edit Scene save). If the same folder is selected, an error toast fires and the operation is aborted.
+Folder guard: `sourceFolder` and `destFolder` must be different (enforced at scene creation and in Edit Roster save). If the same folder is selected, an error toast fires and the operation is aborted.
+
+Roster UI state that is *not* stored: the focused character (`#focusedId`, per client) and the party bar (derived from `game.users` + `roster.claims`). There is no Ready state; the party bar replaced it.
 
 To show more system-specific fields, extend `sheetSummary()` in `scenes/roster/sheetSummary.js` and the panel block in `scenes/roster/roster.html`.
 
@@ -112,3 +114,15 @@ Current implemented actions: `claim`, `release` (no namespace prefix — kept fl
 ## Strings
 
 All user-facing text lives in `lang/en.json` (scene type labels are i18n keys too). For text interpolated into DialogV2 HTML, escape with `Handlebars.escapeExpression`.
+
+## Design principles (roster UI)
+
+The user is sensitive to UI that reads as generic or AI-generated. Keep the roster deliberate:
+
+- **Tokens only.** Roster colors, fonts, sizes and spacing come from `--sf-*` variables (one type scale, one spacing scale). No raw hex values or one-off px font sizes in component rules.
+- **Show each state once.** A tile shows its state in exactly one way: the ring for focus, a band for yours, grayscale for taken, dimming for locked. No badges, status dots or glows layered on top.
+- **One solid action per view.** Everything else is a quiet text control (`.sf-quiet`). Never use disabled buttons as labels; say it in a sentence instead.
+- **Copy talks to people, not about the interface.** No instructional subtitles. Prefer "Play Aurum" or "Player 4 is playing Slammer" over "Claim" or "Taken".
+- **Nothing that isn't built.** Unavailable scene types are hidden, not shown as "Coming Soon".
+- **Motion marks events only:** the claim flourish. Respect `prefers-reduced-motion`.
+- **Sheet is the source of truth** for character details; never add a parallel per-scene copy.

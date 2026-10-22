@@ -477,23 +477,105 @@
 .sf-quiet:hover { color: var(--sf-ink); text-decoration: underline; text-underline-offset: 3px; }
 .sf-quiet:focus-visible { outline: 2px solid var(--sf-ink); outline-offset: 2px; }
 
-/* footer (players) */
-.sf-roster__foot {
-  display: flex;
-  justify-content: center;
+/* party bar: who's here and who they're playing */
+.sf-party {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sf-space-4);
+  padding-top: var(--sf-space-3);
+  border-top: 1px solid var(--sf-rule);
 }
-.sf-roster__foot:not(:has(button)) { display: none; }
+.sf-party__label {
+  flex: none;
+  margin: 0;
+  border: 0;
+  font-family: var(--sf-font-body);
+  font-size: var(--sf-step--1);
+  font-weight: 400;
+  font-variant-caps: all-small-caps;
+  letter-spacing: .06em;
+  color: var(--sf-ink-muted);
+}
+.sf-party__seats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sf-space-3) var(--sf-space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sf-party__empty { color: var(--sf-ink-muted); }
 
-/* ready mode: everything but your pick steps back */
-.sf-roster--ready .sf-tile:not(.sf-tile--mine) {
-  opacity: .2;
+.sf-seat { display: flex; align-items: center; gap: var(--sf-space-2); }
+.sf-seat.is-away { opacity: .55; }
+
+/* empty seat: a dashed ring in the player's colour; filled: the character, ringed in theirs */
+.sf-seat__avatar {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px dashed var(--seat, var(--sf-ink-muted));
+  overflow: hidden;
+}
+.sf-seat.is-filled .sf-seat__avatar { border: 2px solid var(--ring, var(--seat)); }
+.sf-seat__avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 10%;
+  border: 0;
+}
+.sf-seat__text { display: flex; flex-direction: column; line-height: 1.25; }
+.sf-seat__name { font-weight: 600; color: var(--sf-ink); }
+.sf-seat__me, .sf-seat__sub { font-size: var(--sf-step--1); font-weight: 400; color: var(--sf-ink-muted); }
+.sf-seat:not(.is-filled) .sf-seat__sub { font-style: italic; }
+
+/* claim flourish: one ring ripples off the portrait, the band and the seat fill in.
+   --sf-flourish-delay lets a re-render resume the animation instead of restarting it. */
+.sf-tile { position: relative; }
+.sf-tile.sf-just-claimed::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--sf-radius);
   pointer-events: none;
-  transition: opacity .35s ease;
+  animation: sf-claim-ripple 900ms ease-out both;
+  animation-delay: var(--sf-flourish-delay, 0ms);
+}
+.sf-tile.sf-just-claimed .sf-tile__frame::after {
+  transform-origin: left;
+  animation: sf-claim-band 450ms ease-out both;
+  animation-delay: var(--sf-flourish-delay, 0ms);
+}
+.sf-seat.sf-just-claimed .sf-seat__avatar {
+  animation: sf-claim-seat 450ms cubic-bezier(.2, .8, .3, 1.2) both;
+  animation-delay: var(--sf-flourish-delay, 0ms);
+}
+
+@keyframes sf-claim-ripple {
+  0%   { box-shadow: 0 0 0 0 var(--ring); opacity: 1; }
+  100% { box-shadow: 0 0 0 14px var(--ring); opacity: 0; }
+}
+@keyframes sf-claim-band {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes sf-claim-seat {
+  from { transform: scale(.6); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .sf-roster * { transition: none !important; }
+  .sf-roster .sf-just-claimed,
+  .sf-roster .sf-just-claimed *,
+  .sf-roster .sf-just-claimed::before,
+  .sf-roster .sf-just-claimed *::after { animation: none !important; }
 }
 
 /* ── Roster Config Picker ── */

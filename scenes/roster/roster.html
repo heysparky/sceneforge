@@ -1,4 +1,4 @@
-<section class="sf-roster{{#if isReady}} sf-roster--ready{{/if}}" data-sf-theme="{{theme}}" style="--sf-tile-min: {{tileMin}}px;">
+<section class="sf-roster" data-sf-theme="{{theme}}" style="--sf-tile-min: {{tileMin}}px;">
 
   <header class="sf-roster__head">
     <h1 class="sf-roster__title">{{title}}</h1>
@@ -99,14 +99,21 @@
 
   </div>
 
-  {{#unless isGM}}
-  <footer class="sf-roster__foot">
-    {{#if iHaveClaimed}}
-    <button type="button" class="sf-act sf-act--primary sf-act--inline" data-action="ready">
-      {{#if isReady}}{{localize "SCENEFORGE.Choose"}}{{else}}{{localize "SCENEFORGE.Ready"}}{{/if}}
-    </button>
-    {{/if}}
+  <footer class="sf-party">
+    <h3 class="sf-party__label">{{localize "SCENEFORGE.Party.Label"}}</h3>
+    <ul class="sf-party__seats">
+      {{#each party as |p|}}
+      <li class="sf-seat{{#if p.character}} is-filled{{/if}}{{#if p.away}} is-away{{/if}}" data-user-id="{{p.id}}" style="--seat: {{p.color}};{{#if p.ringColor}} --ring: {{p.ringColor}};{{/if}}">
+        <span class="sf-seat__avatar">{{#if p.img}}<img src="{{p.img}}" alt="">{{/if}}</span>
+        <span class="sf-seat__text">
+          <span class="sf-seat__name">{{p.name}}{{#if p.isMe}} <span class="sf-seat__me">{{localize "SCENEFORGE.Party.Me"}}</span>{{/if}}</span>
+          <span class="sf-seat__sub">{{#if p.character}}{{p.character}}{{else}}{{localize "SCENEFORGE.Party.Choosing"}}{{/if}}{{#if p.away}} · {{localize "SCENEFORGE.Party.Away"}}{{/if}}</span>
+        </span>
+      </li>
+      {{else}}
+      <li class="sf-party__empty">{{localize "SCENEFORGE.Party.Empty"}}</li>
+      {{/each}}
+    </ul>
   </footer>
-  {{/unless}}
 
 </section>

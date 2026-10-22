@@ -8,7 +8,8 @@ import { setPending } from './TokenPlacer.js';
 export default class RosterScene extends SceneForgeScene {
   static TYPE = 'roster';
 
-  #isReady = false;
+  #lastClaims = null;      // actorId → userId at the previous render, to spot new claims
+  #flourishes = new Map(); // actorId → { userId, start } for claims still animating
   #focusedId = null;
   #refocus = false;
 
@@ -23,7 +24,6 @@ export default class RosterScene extends SceneForgeScene {
       toggleLock:   RosterScene.#onToggleLock,
       assign:       RosterScene.#onAssign,
       beginSession: RosterScene.#onBeginSession,
-      ready:        RosterScene.#onReady,
       openSheet:    RosterScene.#onOpenSheet,
       focus:        RosterScene.#onFocus,
     },
@@ -69,8 +69,7 @@ export default class RosterScene extends SceneForgeScene {
       focus,
       remaining,
       allClaimed: activePlayers.length > 0 && remaining === 0,
-      iHaveClaimed: claimedUserIds.has(user.id),
-      isReady: this.#isReady,
+      party: this.#partySeats(claims, user),
     };
   }
 
@@ -116,8 +115,8 @@ export default class RosterScene extends SceneForgeScene {
       claimedByName,
       canAssign:     status === 'open'  &&  user.isGM,
       canKick:       status === 'taken' &&  user.isGM,
-      canClaim:      status === 'open'  && !user.isGM && !this.#isReady,
-      canRelease:    status === 'mine'  && !user.isGM && !this.#isReady,
+      canClaim:      status === 'open'  && !user.isGM,
+      canRelease:    status === 'mine'  && !user.isGM,
       epithet:       [sheet.className, sheet.xp ? i18n.format('SCENEFORGE.Roster.Xp', { xp: sheet.xp }) : '']
                        .filter(Boolean).join(' · '),
       biography:     sheet.biography,
@@ -169,9 +168,58 @@ export default class RosterScene extends SceneForgeScene {
       this.#refocus = false;
       this.element.querySelector('.sf-tile.is-focused .sf-tile__pick')?.focus();
     }
-    if (!context.isReady) return;
-    const mineTile = this.element.querySelector('.sf-tile--mine');
-    mineTile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    this.#markNewClaims();
+  }
+
+  // A claim that wasn't there last render gets a short flourish on its tile and seat.
+  // The first render only records state, so opening the roster doesn't animate everything.
+  // A claim triggers several renders (scene, then user); each one resumes the animation
+  // where it was via a negative delay instead of restarting or dropping it.
+  #markNewClaims() {
+    const FLOURISH_MS = 900;
+    const claims = this._scene.flags?.sceneforge?.roster?.claims ?? {};
+    const now = Object.fromEntries(Object.entries(claims).map(([id, c]) => [id, c?.claimedBy ?? null]));
+    const before = this.#lastClaims;
+    this.#lastClaims = now;
+    if (before) {
+      for (const [actorId, userId] of Object.entries(now)) {
+        if (userId && before[actorId] !== userId) this.#flourishes.set(actorId, { userId, start: performance.now() });
+      }
+    }
+    for (const [actorId, { userId, start }] of this.#flourishes) {
+      const elapsed = performance.now() - start;
+      if (elapsed > FLOURISH_MS || now[actorId] !== userId) { this.#flourishes.delete(actorId); continue; }
+      const els = [
+        this.element.querySelector(`.sf-tile[data-actor-id="${actorId}"]`),
+        this.element.querySelector(`.sf-seat[data-user-id="${userId}"]`),
+      ];
+      for (const el of els) {
+        el?.style.setProperty('--sf-flourish-delay', `-${Math.round(elapsed)}ms`);
+        el?.classList.add('sf-just-claimed');
+      }
+    }
+  }
+
+  // One seat per player who is online or holds a claim here, in user-list order.
+  #partySeats(claims, me) {
+    const byUser = new Map(
+      Object.entries(claims).filter(([, c]) => c?.claimedBy).map(([actorId, c]) => [c.claimedBy, actorId])
+    );
+    return game.users
+      .filter(u => !u.isGM && (u.active || byUser.has(u.id)))
+      .map(u => {
+        const actor = game.actors.get(byUser.get(u.id));
+        return {
+          id:        u.id,
+          name:      u.name,
+          isMe:      u.id === me.id,
+          away:      !u.active,
+          color:     u.color?.css ?? String(u.color ?? ''),
+          ringColor: actor?.prototypeToken?.ring?.colors?.ring ?? null,
+          img:       actor?.img ?? null,
+          character: actor?.name ?? null,
+        };
+      });
   }
 
   static #onFocus(_e, target) {
@@ -247,18 +295,4 @@ export default class RosterScene extends SceneForgeScene {
     await game.scenes.get(result)?.view();
   }
 
-  static async #onReady() {
-    if (this.#isReady) {
-      const claims = this._scene.flags?.sceneforge?.roster?.claims ?? {};
-      const templates = this._scene.flags?.sceneforge?.roster?.templates ?? [];
-      const actorId = templates.find(id => claims[id]?.claimedBy === game.user.id);
-      if (!actorId) return;
-      this.#isReady = false;
-      if (game.user.isGM) await applyRelease(actorId, game.user.id, this._scene.id);
-      else emit({ action: 'release', actorId, userId: game.user.id, sceneId: this._scene.id });
-    } else {
-      this.#isReady = true;
-      Hooks.callAll('sceneforge:dataChanged', this._scene.id);
-    }
-  }
 }

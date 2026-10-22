@@ -29,7 +29,7 @@ core/
   settings.js           <- world settings: which roster panel sections show (rosterShow*) and the class field path (rosterClassPath)
   socket.js             <- GM-authority socket handler (claim / release / color sync / user.character sync)
   registry.js           <- scene type registry + dynamic loader
-  renderer.js           <- canvasReady → mount/teardown SceneForge apps; resize listener; enforces 460px min height
+  renderer.js           <- canvasReady → mount/teardown SceneForge apps; re-renders on updateActor/updateUser/userConnected (once per frame); resize listener; enforces 460px min height
   handles.js            <- draggable edge handle injection for GMs
 lang/
   en.json

@@ -4,22 +4,16 @@ import { injectHandles } from './handles.js';
 let _currentApp = null;
 let _currentSceneId = null;
 let _teardownHandles = null;
-let _actorUpdateQueued = false;
+let _renderQueued = false;
 
 export function initRenderer() {
   Hooks.on('canvasReady', _onCanvasReady);
   Hooks.on('updateScene', _onUpdateScene);
   Hooks.on('sceneforge:dataChanged', _onDataChanged);
-  Hooks.on('updateActor', () => {
-    if (!_currentApp?.rendered || _actorUpdateQueued) return;
-    _actorUpdateQueued = true;
-    requestAnimationFrame(async () => {
-      _actorUpdateQueued = false;
-      if (!_currentApp?.rendered) return;
-      await _currentApp.render();
-      _applyBounds(_currentApp);
-    });
-  });
+  // Actor and user changes (sheet edits, players joining or leaving) re-render once per frame.
+  Hooks.on('updateActor', _queueRender);
+  Hooks.on('updateUser', _queueRender);
+  Hooks.on('userConnected', _queueRender);
   window.addEventListener('resize', () => {
     if (_currentApp?.rendered) _applyBounds(_currentApp);
   });
@@ -27,6 +21,17 @@ export function initRenderer() {
   // In v14, canvasReady can fire before ready. If the canvas is already
   // initialised by the time we register, mount immediately.
   if (canvas?.ready) _onCanvasReady().catch(console.error);
+}
+
+function _queueRender() {
+  if (!_currentApp?.rendered || _renderQueued) return;
+  _renderQueued = true;
+  requestAnimationFrame(async () => {
+    _renderQueued = false;
+    if (!_currentApp?.rendered) return;
+    await _currentApp.render();
+    _applyBounds(_currentApp);
+  });
 }
 
 async function _onCanvasReady() {

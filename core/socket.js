@@ -75,14 +75,6 @@ export async function applyClaim(actorId, userId, sceneId) {
     scene.update({ [`flags.sceneforge.roster.claims.${actorId}`]: { claimedBy: userId, cloneId: clone.id } }),
     claimer ? claimer.update(userUpdates) : Promise.resolve(),
   ]);
-
-  const updatedClaims = scene.flags?.sceneforge?.roster?.claims ?? {};
-  const claimedUserIds = new Set(Object.values(updatedClaims).map(c => c?.claimedBy).filter(Boolean));
-  const activePlayers = game.users.filter(u => u.active && !u.isGM);
-  const remaining = activePlayers.filter(u => !claimedUserIds.has(u.id)).length;
-  ui.notifications.info(
-    `${claimer?.name ?? 'Player'} selected ${template.name}. ${remaining} player(s) still need to claim a character.`
-  );
 }
 
 export async function applyRelease(actorId, userId, sceneId) {

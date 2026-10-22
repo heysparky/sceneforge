@@ -33,6 +33,12 @@
   "SCENEFORGE.Settings.ShowStatuses.Name": "Roster: show statuses",
   "SCENEFORGE.Settings.ShowStatuses.Hint": "Show the character's current statuses.",
 
+  "SCENEFORGE.Party.Label": "Party",
+  "SCENEFORGE.Party.Me": "(you)",
+  "SCENEFORGE.Party.Choosing": "choosing…",
+  "SCENEFORGE.Party.Away": "away",
+  "SCENEFORGE.Party.Empty": "No players have joined yet.",
+
   "SCENEFORGE.Theme.Label": "Look",
   "SCENEFORGE.Theme.default": "Plain",
   "SCENEFORGE.Theme.ledger": "Ledger",
@@ -43,7 +49,5 @@
   "SCENEFORGE.Lock": "Lock",
   "SCENEFORGE.Unlock": "Unlock",
   "SCENEFORGE.EditCharacters": "Edit Roster",
-  "SCENEFORGE.BeginSession": "Begin Session",
-  "SCENEFORGE.Ready": "Ready",
-  "SCENEFORGE.Choose": "Not ready"
+  "SCENEFORGE.BeginSession": "Begin Session"
 }

@@ -8,13 +8,17 @@ import { init as initTokenPlacer } from './scenes/roster/TokenPlacer.js';
 Hooks.once('init', () => {
   registerSettings();
   _registerSceneTypes();
+  // Registered early: the Scenes sidebar can render before 'ready', and a hook added
+  // later would miss it, leaving Foundry's own Create Scene button in place.
+  Hooks.on('renderSceneDirectory', (_app, html) => _patchCreateButton(html));
 });
 
 Hooks.once('ready', () => {
   initSocket();
   initRenderer();
   initTokenPlacer();
-  _interceptSceneCreate();
+  // Catch a sidebar that was already rendered before the hook could fire for it.
+  if (ui.scenes?.element) _patchCreateButton(ui.scenes.element);
 });
 
 function _registerSceneTypes() {
@@ -40,21 +44,21 @@ function _registerSceneTypes() {
   );
 }
 
-function _interceptSceneCreate() {
-  Hooks.on('renderSceneDirectory', (_app, html) => {
-    if (!game.user.isGM) return;
-    const el = html.querySelector ? html : html[0];
-    const original = el.querySelector('[data-action="createEntry"]');
-    if (!original) {
-      console.warn('SceneForge | Could not find Create Scene button — selector may need updating for this Foundry version.');
-      return;
-    }
-    const btn = original.cloneNode(true);
-    original.replaceWith(btn);
-    btn.addEventListener('click', e => {
-      e.preventDefault();
-      e.stopPropagation();
-      SceneCreator.open().catch(console.error);
-    });
+function _patchCreateButton(html) {
+  if (!game.user?.isGM) return;
+  const el = html?.querySelector ? html : html?.[0];
+  const original = el?.querySelector('[data-action="createEntry"]');
+  if (!original) {
+    console.warn('SceneForge | Could not find Create Scene button — selector may need updating for this Foundry version.');
+    return;
+  }
+  if (original.dataset.sceneforge) return; // already ours
+  const btn = original.cloneNode(true);
+  btn.dataset.sceneforge = 'create';
+  original.replaceWith(btn);
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    SceneCreator.open().catch(console.error);
   });
 }

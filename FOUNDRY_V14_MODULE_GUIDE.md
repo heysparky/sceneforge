@@ -588,3 +588,4 @@ Checklist:
 | Changing CSS variable fallback has no effect | If Foundry defines the variable (e.g. `--color-warm-1`), the fallback is never reached — re-declare the variable inside the scoped rule |
 | Players get a "no token" vision warning on a full-screen custom scene | The map is hidden, so vision is meaningless: create the scene with `tokenVision: false` (Scene Config → Vision → Token Vision for existing scenes) |
 | `@container` rules overridden in a flat stylesheet | Container/media query blocks don't raise specificity — put them *after* the base rules they override |
+| `render<Sidebar>Directory` hook registered in `ready` never fires | The sidebar can render before `ready`. Register the hook in `init`, and in `ready` patch `ui.<tab>.element` directly if it already exists; mark the patched element so it isn't patched twice |

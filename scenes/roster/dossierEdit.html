@@ -1,0 +1,67 @@
+<div class="sf-dossier-edit">
+
+  <div class="sf-dossier-edit__fields">
+    <div class="form-group stacked">
+      <label for="sf-dossier-concept">{{localize "SCENEFORGE.Dossier.Concept"}}</label>
+      <input id="sf-dossier-concept" type="text" name="concept" value="{{concept}}" placeholder="{{localize 'SCENEFORGE.Dossier.ConceptHint'}}">
+    </div>
+
+    <div class="sf-dossier-edit__pair">
+      <div class="form-group stacked">
+        <label for="sf-dossier-level">{{localize "SCENEFORGE.Dossier.Level"}}</label>
+        <input id="sf-dossier-level" type="text" name="level" value="{{level}}">
+      </div>
+      <div class="form-group stacked">
+        <label for="sf-dossier-xp">{{localize "SCENEFORGE.Dossier.Xp"}}</label>
+        <input id="sf-dossier-xp" type="text" name="xp" value="{{xp}}">
+      </div>
+    </div>
+
+    <div class="form-group stacked">
+      <label for="sf-dossier-quote">{{localize "SCENEFORGE.Dossier.Quote"}}</label>
+      <textarea id="sf-dossier-quote" name="quote" rows="2">{{quote}}</textarea>
+    </div>
+
+    <div class="form-group stacked">
+      <label for="sf-dossier-background">{{localize "SCENEFORGE.Dossier.Background"}}</label>
+      <textarea id="sf-dossier-background" name="background" rows="6">{{background}}</textarea>
+    </div>
+
+    <div class="form-group stacked">
+      <label for="sf-dossier-custom">{{localize "SCENEFORGE.Dossier.Notes"}}</label>
+      <textarea id="sf-dossier-custom" name="custom" rows="3">{{custom}}</textarea>
+    </div>
+
+    <p class="sf-dossier-edit__hint">
+      {{localize "SCENEFORGE.Dossier.Hint"}}
+      {{#if canFill}}
+      <button type="button" class="sf-dossier-edit__fill" data-action="fillFromSheet">
+        <i class="fas fa-file-import" inert></i> {{localize "SCENEFORGE.Dossier.FillFromSheet"}}
+      </button>
+      {{/if}}
+    </p>
+  </div>
+
+  <div class="sf-dossier-edit__preview">
+    <div class="sf-roster sf-roster--preview" data-sf-theme="{{theme}}">
+      <aside class="sf-dossier"{{#if ringColor}} style="--ring: {{ringColor}};"{{/if}}>
+        <div class="sf-dossier__art"><img src="{{img}}" alt=""></div>
+        <header class="sf-dossier__head">
+          <h2 class="sf-dossier__name">{{name}}</h2>
+          <p class="sf-dossier__epithet" data-preview="epithet"></p>
+        </header>
+        <div class="sf-dossier__text">
+          <blockquote class="sf-dossier__quote" data-preview="quote"></blockquote>
+          <p class="sf-dossier__bio" data-preview="background"></p>
+          <p class="sf-dossier__bio" data-preview="custom"></p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+</div>
+
+<footer class="form-footer">
+  <button type="button" data-action="cancel">{{localize "SCENEFORGE.Cancel"}}</button>
+  <button type="submit"><i class="fas fa-check" inert></i> {{localize "SCENEFORGE.Save"}}</button>
+</footer>

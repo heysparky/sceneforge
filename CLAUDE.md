@@ -42,7 +42,8 @@ scenes/
     RosterScene.js      <- full M2 UI: tile grid, claim/release/lock, live sync
     RosterConfig.js     <- pickRosterTemplates(excludeIds, folderId) actor picker dialog
     RosterCharManager.js <- "Edit Roster" ApplicationV2 dialog: reorder/remove/add characters, source/dest folder config
-    RosterCharEdit.js   <- per-character dossier editor (DialogV2); reads/writes scene.flags.sceneforge.roster.dossiers[actorId]
+    RosterCharEdit.js   <- per-character dossier editor (ApplicationV2 form + live themed preview); reads/writes scene.flags.sceneforge.roster.dossiers[actorId]; sheetBiography() helper
+    dossierEdit.html    <- dossier editor template
     TokenPlacer.js      <- cursor-stack token placement; ghost cursor; prompts GM to activate scene after last token
     charManager.html    <- Edit Roster template (folder selects side-by-side + character list)
     roster.html         <- tile grid template
@@ -74,13 +75,13 @@ Dossier shape (stored in `scene.flags.sceneforge.roster.dossiers[actorId]`):
 {
   showConcept: bool, concept: string,
   showLevel:   bool, level:  string,
-  showXp:      bool, xp:     string,      // defaults true; falls back to actor.system.xp
-  showBackground: bool, background: string, // falls back to actor.system.biography
+  showXp:      bool, xp:     string,      // shown only when entered ("Fill from sheet" copies the actor's XP)
+  showBackground: bool, background: string, // legacy: showBackground with empty text falls back to sheetBiography(actor)
   showQuote:   bool, quote:  string,
   custom: string,                          // always shown if non-empty (no toggle)
 }
 ```
-Dossier lives on the scene, not the actor — each roster starts with a blank dossier. Configured via Edit Scene → Dossier button per character.
+The editor has no per-field toggles: empty means hidden, and save writes `show* = !!value` so the shape is unchanged. Dossier lives on the scene, not the actor — each roster starts with a blank dossier. Configured via Edit Scene → Dossier button per character.
 
 Per-template flags (on the Actor document itself):
 - `sceneforge.locked`    — GM-only lock (boolean); global across all rosters

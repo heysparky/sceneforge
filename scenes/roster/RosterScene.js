@@ -1,7 +1,7 @@
 import { SceneForgeScene } from '../SceneForgeScene.js';
 import { emit, applyClaim, applyRelease } from '../../core/socket.js';
 import { RosterCharManager } from './RosterCharManager.js';
-import { editCharacterDossier } from './RosterCharEdit.js';
+import { editCharacterDossier, sheetBiography } from './RosterCharEdit.js';
 import { setPending } from './TokenPlacer.js';
 
 export default class RosterScene extends SceneForgeScene {
@@ -100,7 +100,7 @@ export default class RosterScene extends SceneForgeScene {
     const concept    = d.showConcept && d.concept ? d.concept : null;
     const level      = d.showLevel   && d.level   ? d.level   : null;
     const xp         = d.showXp !== false && d.xp ? d.xp      : null;
-    const background = d.showBackground ? (d.background || RosterScene.#plainText(actor.system?.biography)) : null;
+    const background = d.showBackground ? (d.background || sheetBiography(actor)) : null;
     const epithet = [
       concept,
       level ? i18n.format('SCENEFORGE.Roster.Level', { level }) : null,
@@ -132,12 +132,6 @@ export default class RosterScene extends SceneForgeScene {
       dQuote:        d.showQuote && d.quote ? d.quote  : null,
       dCustom:       d.custom               ? d.custom : null,
     };
-  }
-
-  // Biographies are often stored as HTML; DOMParser gives inert text without loading anything.
-  static #plainText(html) {
-    if (typeof html !== 'string' || !html) return '';
-    return new DOMParser().parseFromString(html, 'text/html').body.textContent.trim();
   }
 
   static #actorIdFrom(target) {

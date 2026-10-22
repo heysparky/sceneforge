@@ -1,71 +1,143 @@
-export async function editCharacterDossier(actor, scene) {
-  const { DialogV2 } = foundry.applications.api;
-  const d = scene?.flags?.sceneforge?.roster?.dossiers?.[actor.id] ?? {};
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-  const val   = (key, fallback = '') => d[key] !== undefined ? d[key] : fallback;
-  const chk   = (key, def = false)  => (d[key] !== undefined ? d[key] : def) ? 'checked' : '';
-  const cap   = s => s.charAt(0).toUpperCase() + s.slice(1);
+// Biographies are often stored as HTML; DOMParser gives inert text without loading anything.
+function plainText(html) {
+  if (typeof html !== 'string' || !html) return '';
+  return new DOMParser().parseFromString(html, 'text/html').body.textContent.trim();
+}
 
-  const row = (key, label, type = 'text', fallback = '', defShow = false) => {
-    const showKey = `show${cap(key)}`;
-    const input = type === 'textarea'
-      ? `<textarea class="sf-dossier-edit__input" name="${key}" rows="2">${val(key, fallback)}</textarea>`
-      : `<input class="sf-dossier-edit__input" type="${type}" name="${key}" value="${val(key, fallback)}">`;
-    return `<div class="sf-dossier-edit__row">
-      <label class="sf-dossier-edit__check">
-        <input type="checkbox" name="${showKey}" ${chk(showKey, defShow)}> ${label}
-      </label>
-      ${input}
-    </div>`;
+// Systems keep these in different places; take the first one that looks right.
+export function sheetBiography(actor) {
+  const s = actor.system ?? {};
+  const raw = [s.biography, s.biography?.value, s.details?.biography?.value, s.details?.biography, s.description]
+    .find(v => typeof v === 'string' && v.trim());
+  return plainText(raw);
+}
+
+function sheetXp(actor) {
+  const s = actor.system ?? {};
+  const raw = [s.xp, s.xp?.value, s.details?.xp?.value].find(v => typeof v === 'number');
+  return raw === undefined ? '' : String(raw);
+}
+
+class DossierEditor extends HandlebarsApplicationMixin(ApplicationV2) {
+  static DEFAULT_OPTIONS = {
+    tag: 'form',
+    classes: ['sceneforge-dossier-editor'],
+    window: { icon: 'fas fa-feather', resizable: false },
+    position: { width: 760 },
+    form: {
+      handler: DossierEditor.#onSubmit,
+      closeOnSubmit: true,
+    },
+    actions: {
+      fillFromSheet: DossierEditor.#onFillFromSheet,
+      cancel:        DossierEditor.#onCancel,
+    },
   };
 
-  const content = `<div class="sf-dossier-edit">
-    ${row('concept',    'Concept',    'text',     '')}
-    ${row('level',      'Level',      'text',     '')}
-    ${row('xp',         'XP',         'number',   String(actor.system?.xp ?? ''), true)}
-    ${row('background', 'Background', 'textarea', actor.system?.biography ?? '')}
-    ${row('quote',      'Quote',      'textarea', '')}
-    <div class="sf-dossier-edit__row sf-dossier-edit__row--custom">
-      <label class="sf-dossier-edit__label">Custom text</label>
-      <textarea class="sf-dossier-edit__input" name="custom" rows="3">${val('custom')}</textarea>
-    </div>
-  </div>`;
+  static PARTS = {
+    main: { template: 'modules/sceneforge/scenes/roster/dossierEdit.html' },
+  };
 
-  const get     = (el, name) => el.querySelector(`[name="${name}"]`);
-  const checked = (el, name) => get(el, name)?.checked ?? false;
-  const value   = (el, name) => get(el, name)?.value?.trim() ?? '';
+  #actor;
+  #scene;
 
-  const result = await DialogV2.wait({
-    window: { title: `Dossier — ${actor.name}` },
-    position: { width: 420 },
-    content,
-    buttons: [
-      {
-        action: 'save',
-        label: 'Save',
-        default: true,
-        callback: (_e, _b, dialog) => {
-          const el = dialog.element;
-          return {
-            showConcept:    checked(el, 'showConcept'),
-            concept:        value(el, 'concept'),
-            showLevel:      checked(el, 'showLevel'),
-            level:          value(el, 'level'),
-            showXp:         checked(el, 'showXp'),
-            xp:             value(el, 'xp'),
-            showBackground: checked(el, 'showBackground'),
-            background:     value(el, 'background'),
-            showQuote:      checked(el, 'showQuote'),
-            quote:          value(el, 'quote'),
-            custom:         value(el, 'custom'),
-          };
-        },
-      },
-      { action: 'cancel', label: 'Cancel', callback: () => null },
-    ],
-    rejectClose: false,
-  });
+  constructor(actor, scene, options = {}) {
+    super({ ...options, id: `sceneforge-dossier-${scene.id}-${actor.id}` });
+    this.#actor = actor;
+    this.#scene = scene;
+  }
 
-  if (!result || typeof result !== 'object') return;
-  await scene.update({ ['flags.sceneforge.roster.dossiers.' + actor.id]: result });
+  get title() {
+    return game.i18n.format('SCENEFORGE.Dossier.Title', { name: this.#actor.name });
+  }
+
+  async _prepareContext(_options) {
+    const actor = this.#actor;
+    const d = this.#scene.flags?.sceneforge?.roster?.dossiers?.[actor.id] ?? {};
+    // Older dossiers kept a separate "show" toggle per field; a hidden field opens empty.
+    const field = (key, def = false) => (d[`show${key.charAt(0).toUpperCase()}${key.slice(1)}`] ?? def) ? (d[key] ?? '') : '';
+
+    return {
+      name:       actor.name,
+      img:        actor.img,
+      ringColor:  actor.prototypeToken?.ring?.colors?.ring ?? null,
+      theme:      this.#scene.flags?.sceneforge?.theme ?? 'default',
+      concept:    field('concept'),
+      level:      field('level'),
+      xp:         field('xp', true),
+      quote:      field('quote'),
+      background: d.showBackground ? (d.background || sheetBiography(actor)) : '',
+      custom:     d.custom ?? '',
+      canFill:    !!(sheetBiography(actor) || sheetXp(actor)),
+    };
+  }
+
+  _onFirstRender(_context, _options) {
+    this.element.addEventListener('input', () => this.#updatePreview());
+  }
+
+  _onRender(_context, _options) {
+    this.#updatePreview();
+  }
+
+  #value(name) {
+    return this.element.querySelector(`[name="${name}"]`)?.value.trim() ?? '';
+  }
+
+  #updatePreview() {
+    const i18n = game.i18n;
+    const level = this.#value('level');
+    const xp    = this.#value('xp');
+    const text = {
+      epithet: [
+        this.#value('concept'),
+        level ? i18n.format('SCENEFORGE.Roster.Level', { level }) : '',
+        xp    ? i18n.format('SCENEFORGE.Roster.Xp',    { xp })    : '',
+      ].filter(Boolean).join(' · '),
+      quote:      this.#value('quote'),
+      background: this.#value('background'),
+      custom:     this.#value('custom'),
+    };
+    for (const [key, value] of Object.entries(text)) {
+      const el = this.element.querySelector(`[data-preview="${key}"]`);
+      if (!el) continue;
+      el.textContent = value;
+      el.hidden = !value;
+    }
+  }
+
+  static #onFillFromSheet() {
+    const bio = sheetBiography(this.#actor);
+    const xp  = sheetXp(this.#actor);
+    if (bio) this.element.querySelector('[name="background"]').value = bio;
+    if (xp)  this.element.querySelector('[name="xp"]').value = xp;
+    this.#updatePreview();
+  }
+
+  static #onCancel() {
+    this.close();
+  }
+
+  // Empty means hidden; the show* flags are kept so the stored shape doesn't change.
+  static async #onSubmit(_event, _form, formData) {
+    const f = formData.object;
+    const v = key => String(f[key] ?? '').trim();
+    const data = {
+      showConcept:    !!v('concept'),    concept:    v('concept'),
+      showLevel:      !!v('level'),      level:      v('level'),
+      showXp:         !!v('xp'),         xp:         v('xp'),
+      showBackground: !!v('background'), background: v('background'),
+      showQuote:      !!v('quote'),      quote:      v('quote'),
+      custom:         v('custom'),
+    };
+    await this.#scene.update({ [`flags.sceneforge.roster.dossiers.${this.#actor.id}`]: data });
+  }
+}
+
+export async function editCharacterDossier(actor, scene) {
+  const existing = foundry.applications.instances.get(`sceneforge-dossier-${scene.id}-${actor.id}`);
+  if (existing) return existing.render({ force: true });
+  return new DossierEditor(actor, scene).render({ force: true });
 }

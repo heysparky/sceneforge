@@ -55,7 +55,9 @@ export class SceneCreator {
     if (type === 'battlemap') {
       await Scene.create({ name }, { renderSheet: true });
     } else {
-      const scene = await Scene.create({ name, flags: { sceneforge: { type } } });
+      // SceneForge scenes hide the map, so token vision only produces a spurious
+      // "no token" warning for players.
+      const scene = await Scene.create({ name, tokenVision: false, flags: { sceneforge: { type } } });
       if (type === 'roster') await _configureRoster(scene);
     }
   }

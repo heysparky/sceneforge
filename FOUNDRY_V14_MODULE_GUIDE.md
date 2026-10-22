@@ -586,3 +586,5 @@ Checklist:
 | `if (!result) return` after `DialogV2.wait` | Doesn't catch action strings — use `if (!result \|\| typeof result !== 'object') return` |
 | CSS class `width`/`height` ignored on dynamic `div` | Foundry's global CSS can override module stylesheet rules on elements appended to `document.body` — set layout via inline `style.cssText` instead |
 | Changing CSS variable fallback has no effect | If Foundry defines the variable (e.g. `--color-warm-1`), the fallback is never reached — re-declare the variable inside the scoped rule |
+| Players get a "no token" vision warning on a full-screen custom scene | The map is hidden, so vision is meaningless: create the scene with `tokenVision: false` (Scene Config → Vision → Token Vision for existing scenes) |
+| `@container` rules overridden in a flat stylesheet | Container/media query blocks don't raise specificity — put them *after* the base rules they override |

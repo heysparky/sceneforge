@@ -83,9 +83,23 @@
           <p class="sf-dossier__state">{{#if @root.isGM}}{{localize "SCENEFORGE.Roster.LockedStateGM" name=f.name}}{{else}}{{localize "SCENEFORGE.Roster.LockedState" name=f.name}}{{/if}}</p>
         {{/if}}
 
+        {{#if f.canAssign}}
+        <div class="sf-assign">
+          <h3 class="sf-dossier__label">{{localize "SCENEFORGE.Roster.AssignTo"}}</h3>
+          <div class="sf-assign__chips">
+            {{#each @root.unseated as |u|}}
+            <button type="button" class="sf-chip" data-action="assign" data-user-id="{{u.id}}" style="--seat: {{u.color}};">
+              <span class="sf-chip__ring"></span>{{u.name}}
+            </button>
+            {{else}}
+            <span class="sf-assign__none">{{localize "SCENEFORGE.Roster.AssignNone"}}</span>
+            {{/each}}
+          </div>
+        </div>
+        {{/if}}
+
         <div class="sf-dossier__tools">
           {{#if @root.isGM}}
-            {{#if f.canAssign}}<button type="button" class="sf-quiet" data-action="assign"><i class="fas fa-user-plus" inert></i> {{localize "SCENEFORGE.Roster.AssignTo"}}</button>{{/if}}
             {{#if f.canKick}}<button type="button" class="sf-quiet" data-action="kick"><i class="fas fa-user-minus" inert></i> {{localize "SCENEFORGE.Roster.ReleaseFrom" player=f.claimedByName}}</button>{{/if}}
             <button type="button" class="sf-quiet" data-action="toggleLock">
               {{#if (eq f.status "locked")}}<i class="fas fa-lock-open" inert></i> {{localize "SCENEFORGE.Unlock"}}{{else}}<i class="fas fa-lock" inert></i> {{localize "SCENEFORGE.Lock"}}{{/if}}

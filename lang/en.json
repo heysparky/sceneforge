@@ -11,7 +11,8 @@
   "SCENEFORGE.Roster.TakenState": "{player} is playing {name}.",
   "SCENEFORGE.Roster.LockedState": "{name} isn't available this time.",
   "SCENEFORGE.Roster.LockedStateGM": "Locked. Players can't choose {name}.",
-  "SCENEFORGE.Roster.AssignTo": "Assign to…",
+  "SCENEFORGE.Roster.AssignTo": "Assign to",
+  "SCENEFORGE.Roster.AssignNone": "Every player online already has a character.",
   "SCENEFORGE.Roster.ReleaseFrom": "Release from {player}",
   "SCENEFORGE.Roster.OpenSheet": "Open sheet",
   "SCENEFORGE.Roster.Skills": "Skills",
@@ -45,7 +46,6 @@
   "SCENEFORGE.Theme.file": "File",
   "SCENEFORGE.Theme.night": "Night",
 
-  "SCENEFORGE.Assign": "Assign",
   "SCENEFORGE.Lock": "Lock",
   "SCENEFORGE.Unlock": "Unlock",
   "SCENEFORGE.EditCharacters": "Edit Roster",

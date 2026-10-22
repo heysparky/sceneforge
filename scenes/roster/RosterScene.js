@@ -10,6 +10,7 @@ export default class RosterScene extends SceneForgeScene {
 
   #lastClaims = null;      // actorId → userId at the previous render, to spot new claims
   #flourishes = new Map(); // actorId → { userId, start } for claims still animating
+  #lastPick = { actorId: null, at: 0 }; // for double-click → sheet across re-renders
   #focusedId = null;
   #refocus = false;
 
@@ -70,6 +71,10 @@ export default class RosterScene extends SceneForgeScene {
       remaining,
       allClaimed: activePlayers.length > 0 && remaining === 0,
       party: this.#partySeats(claims, user),
+      // Online players without a character here: the GM's assign targets.
+      unseated: activePlayers
+        .filter(u => !claimedUserIds.has(u.id))
+        .map(u => ({ id: u.id, name: u.name, color: u.color?.css ?? String(u.color ?? '') })),
     };
   }
 
@@ -124,6 +129,12 @@ export default class RosterScene extends SceneForgeScene {
       carrying:      sheet.carrying,
       statuses:      sheet.statuses,
     };
+  }
+
+  // Token art as it appears on the map: the dynamic-ring subject if a ring is on, else the token image.
+  static #tokenArt(actor) {
+    const t = actor.prototypeToken;
+    return (t?.ring?.enabled && t.ring.subject?.texture) || t?.texture?.src || actor.img;
   }
 
   static #actorIdFrom(target) {
@@ -220,7 +231,7 @@ export default class RosterScene extends SceneForgeScene {
           away:      !u.active,
           color:     u.color?.css ?? String(u.color ?? ''),
           ringColor: actor?.prototypeToken?.ring?.colors?.ring ?? null,
-          img:       actor?.img ?? null,
+          img:       actor ? RosterScene.#tokenArt(actor) : null,
           character: actor?.name ?? null,
         };
       });
@@ -228,7 +239,16 @@ export default class RosterScene extends SceneForgeScene {
 
   static #onFocus(_e, target) {
     const actorId = RosterScene.#actorIdFrom(target);
-    if (!actorId || actorId === this.#focusedId) return;
+    if (!actorId) return;
+
+    // A native dblclick is unreliable here: the first click re-renders and replaces the
+    // tile. Two clicks on the same character in quick succession open its sheet instead.
+    const now = performance.now();
+    const isDouble = this.#lastPick.actorId === actorId && now - this.#lastPick.at < 400;
+    this.#lastPick = isDouble ? { actorId: null, at: 0 } : { actorId, at: now };
+    if (isDouble) { game.actors.get(actorId)?.sheet.render(true); return; }
+
+    if (actorId === this.#focusedId) return;
     this.#focusedId = actorId;
     this.#refocus = true;
     // Re-render through the renderer so scene bounds are re-applied afterwards.
@@ -248,28 +268,12 @@ export default class RosterScene extends SceneForgeScene {
   static async #onAssign(_e, target) {
     if (!game.user.isGM) return;
     const actorId = RosterScene.#actorIdFrom(target);
-    if (!actorId) return;
-
+    const userId  = target.dataset.userId;
+    if (!actorId || !userId) return;
+    // The chip may be stale if that player claimed something since the last render.
     const claims = this._scene.flags?.sceneforge?.roster?.claims ?? {};
-    const claimedUserIds = new Set(
-      Object.values(claims).map(c => c?.claimedBy).filter(Boolean)
-    );
-    const eligible = game.users.filter(u => u.active && !u.isGM && !claimedUserIds.has(u.id));
-    if (!eligible.length) { ui.notifications.warn('No unclaimed players to assign.'); return; }
-
-    const options = eligible.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
-    const result = await foundry.applications.api.DialogV2.wait({
-      window: { title: 'Assign Character' },
-      content: `<div class="form-group stacked"><label>Assign to player</label><select name="userId">${options}</select></div>`,
-      buttons: [
-        { action: 'assign', label: 'Assign', default: true,
-          callback: (_e, _b, dialog) => dialog.element.querySelector('[name="userId"]').value },
-        { action: 'cancel', label: 'Cancel', callback: () => null },
-      ],
-      rejectClose: false,
-    });
-    if (!result || typeof result !== 'string') return;
-    await applyClaim(actorId, result, this._scene.id);
+    if (Object.values(claims).some(c => c?.claimedBy === userId)) return;
+    await applyClaim(actorId, userId, this._scene.id);
   }
 
   static async #onBeginSession() {

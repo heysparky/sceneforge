@@ -1,5 +1,6 @@
 import { getAll } from '../../core/registry.js';
 import { pickRosterTemplates } from '../roster/RosterConfig.js';
+import { defaultRosterFolder } from '../../core/socket.js';
 
 const esc = s => Handlebars.escapeExpression(s);
 
@@ -183,12 +184,7 @@ async function _configureRoster(scene) {
     return;
   }
 
-  let resolvedDest = destFolder;
-  if (!resolvedDest) {
-    let folder = game.folders.find(f => f.type === 'Actor' && f.name === 'Roster');
-    if (!folder) folder = await Folder.create({ name: 'Roster', type: 'Actor' });
-    resolvedDest = folder.id;
-  }
+  const resolvedDest = destFolder || await defaultRosterFolder();
 
   const selectedIds = await pickRosterTemplates([], sourceFolder);
 

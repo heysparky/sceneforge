@@ -57,7 +57,7 @@
   "SCENEFORGE.Folders.SourceAll": "All actors",
   "SCENEFORGE.Folders.Dest": "Player copies go to",
   "SCENEFORGE.Folders.DestAuto": "A new “Roster” folder",
-  "SCENEFORGE.Folders.DestNone": "No folder",
+  "SCENEFORGE.Folders.DestNone": "A folder called Roster",
   "SCENEFORGE.Folders.New": "New folder",
   "SCENEFORGE.Folders.NewTitle": "New actor folder",
   "SCENEFORGE.Folders.NewPlaceholder": "Folder name",

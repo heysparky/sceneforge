@@ -61,8 +61,8 @@ export async function applyClaim(actorId, userId, sceneId) {
     [userId]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER,
   };
 
-  const destFolder = scene.flags?.sceneforge?.roster?.destFolder ?? null;
-  if (destFolder) data.folder = destFolder;
+  // Always set the folder: left alone, the clone inherits the template's and lands beside it.
+  data.folder = scene.flags?.sceneforge?.roster?.destFolder || await defaultRosterFolder();
 
   const clone = await Actor.create(data);
   if (!clone) return;
@@ -75,6 +75,13 @@ export async function applyClaim(actorId, userId, sceneId) {
     scene.update({ [`flags.sceneforge.roster.claims.${actorId}`]: { claimedBy: userId, cloneId: clone.id } }),
     claimer ? claimer.update(userUpdates) : Promise.resolve(),
   ]);
+}
+
+// Where player clones go when a roster names no destination folder.
+export async function defaultRosterFolder() {
+  let folder = game.folders.find(f => f.type === 'Actor' && f.name === 'Roster');
+  if (!folder) folder = await Folder.create({ name: 'Roster', type: 'Actor' });
+  return folder.id;
 }
 
 export async function applyRelease(actorId, userId, sceneId) {

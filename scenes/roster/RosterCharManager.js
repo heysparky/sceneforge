@@ -1,7 +1,7 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 import { pickRosterTemplates } from './RosterConfig.js';
-import { createRosterFolder, nextRosterFolderName } from '../../core/socket.js';
+import { createRosterFolder } from '../../core/socket.js';
 
 export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
@@ -54,7 +54,6 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
       allFolders,
       sourceFolder: this.#sourceFolder ?? '',
       destFolder:   this.#destFolder   ?? '',
-      newDestName:  nextRosterFolderName(),
       themes: RosterCharManager.THEMES.map(key => ({ key, label: game.i18n.localize(`SCENEFORGE.Theme.${key}`) })),
       theme:  this.#theme,
     };

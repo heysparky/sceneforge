@@ -1,6 +1,6 @@
 import { getAll } from '../../core/registry.js';
 import { pickRosterTemplates } from '../roster/RosterConfig.js';
-import { createRosterFolder, nextRosterFolderName } from '../../core/socket.js';
+import { createRosterFolder } from '../../core/socket.js';
 
 const esc = s => Handlebars.escapeExpression(s);
 
@@ -99,7 +99,7 @@ async function _pickRosterFolders() {
     <div class="form-group stacked">
       <label>${esc(i18n.localize('SCENEFORGE.Folders.Dest'))}</label>
       <div class="sf-folder-row">
-        <select name="destFolder"><option value="">${esc(nextRosterFolderName())}</option>${options}</select>
+        <select name="destFolder"><option value="">${esc(i18n.localize('SCENEFORGE.Folders.DestNew'))}</option>${options}</select>
         ${newFolderBtn('destFolder')}
       </div>
     </div>

@@ -86,7 +86,7 @@ export async function applyClaim(actorId, userId, sceneId) {
 }
 
 // The first free name for a roster's clone folder: "Roster", then "Roster 2", "Roster 3"…
-export function nextRosterFolderName() {
+function nextRosterFolderName() {
   const base = game.i18n.localize('SCENEFORGE.Folders.RosterName');
   const taken = new Set(game.folders.filter(f => f.type === 'Actor').map(f => f.name));
   let name = base;

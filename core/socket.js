@@ -62,7 +62,14 @@ export async function applyClaim(actorId, userId, sceneId) {
   };
 
   // Always set the folder: left alone, the clone inherits the template's and lands beside it.
-  data.folder = scene.flags?.sceneforge?.roster?.destFolder || await defaultRosterFolder();
+  // A missing or deleted folder gets replaced, or the clone would be invisible in the Actors sidebar.
+  const sceneUpdates = {};
+  const destFolder = scene.flags?.sceneforge?.roster?.destFolder;
+  data.folder = game.folders.get(destFolder)?.id;
+  if (!data.folder) {
+    data.folder = await createRosterFolder();
+    sceneUpdates['flags.sceneforge.roster.destFolder'] = data.folder;
+  }
 
   const clone = await Actor.create(data);
   if (!clone) return;
@@ -71,16 +78,24 @@ export async function applyClaim(actorId, userId, sceneId) {
   const userUpdates = { character: clone.id };
   if (ringColor) userUpdates.color = ringColor;
 
+  sceneUpdates[`flags.sceneforge.roster.claims.${actorId}`] = { claimedBy: userId, cloneId: clone.id };
   await Promise.all([
-    scene.update({ [`flags.sceneforge.roster.claims.${actorId}`]: { claimedBy: userId, cloneId: clone.id } }),
+    scene.update(sceneUpdates),
     claimer ? claimer.update(userUpdates) : Promise.resolve(),
   ]);
 }
 
-// Where player clones go when a roster names no destination folder.
-export async function defaultRosterFolder() {
-  let folder = game.folders.find(f => f.type === 'Actor' && f.name === 'Roster');
-  if (!folder) folder = await Folder.create({ name: 'Roster', type: 'Actor' });
+// The first free name for a roster's clone folder: "Roster", then "Roster 2", "Roster 3"…
+export function nextRosterFolderName() {
+  const base = game.i18n.localize('SCENEFORGE.Folders.RosterName');
+  const taken = new Set(game.folders.filter(f => f.type === 'Actor').map(f => f.name));
+  let name = base;
+  for (let n = 2; taken.has(name); n++) name = `${base} ${n}`;
+  return name;
+}
+
+export async function createRosterFolder() {
+  const folder = await Folder.create({ name: nextRosterFolderName(), type: 'Actor' });
   return folder.id;
 }
 

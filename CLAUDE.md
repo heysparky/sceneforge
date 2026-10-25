@@ -63,7 +63,7 @@ Written by GM drag handles; read by `renderer.js _getBounds()` on every `_applyB
 {
   templates:    string[],   // actor IDs on the roster
   sourceFolder: string|null, // Actor folder ID templates were drawn from (must differ from destFolder)
-  destFolder:   string|null, // Actor folder ID where player clones are placed on claim (must differ from sourceFolder); null = a "Roster" folder (defaultRosterFolder in core/socket.js). Changing it never moves existing clones.
+  destFolder:   string|null, // Actor folder ID where player clones are placed on claim (must differ from sourceFolder); left blank, a new folder is created ("Roster", then "Roster 2", "Roster 3"…; createRosterFolder in core/socket.js) on scene creation, Edit Roster save, or a claim that finds the folder deleted. Changing it never moves existing clones.
   dossiers:     { … },        // obsolete: older scenes may still carry it; nothing reads it
   claims:       { [actorId]: { claimedBy: string|null, cloneId: string|null } }, // per-scene claim state
   locks:        { [actorId]: boolean },     // per-scene GM lock; locked characters can't be claimed in this roster

@@ -1,6 +1,7 @@
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 import { pickRosterTemplates } from './RosterConfig.js';
+import { createRosterFolder, nextRosterFolderName } from '../../core/socket.js';
 
 export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
@@ -53,6 +54,7 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
       allFolders,
       sourceFolder: this.#sourceFolder ?? '',
       destFolder:   this.#destFolder   ?? '',
+      newDestName:  nextRosterFolderName(),
       themes: RosterCharManager.THEMES.map(key => ({ key, label: game.i18n.localize(`SCENEFORGE.Theme.${key}`) })),
       theme:  this.#theme,
     };
@@ -129,6 +131,8 @@ export class RosterCharManager extends HandlebarsApplicationMixin(ApplicationV2)
       ui.notifications.error('SCENEFORGE.Folders.Same', { localize: true });
       return;
     }
+    // A blank (or deleted) destination becomes a new folder now, so the dialog shows its real name next time.
+    if (!game.folders.get(this.#destFolder)) this.#destFolder = await createRosterFolder();
 
     await this.#scene.update({
       'flags.sceneforge.roster.templates':    this.#templates,

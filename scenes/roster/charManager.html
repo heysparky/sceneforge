@@ -12,7 +12,7 @@
     <div class="form-group stacked">
       <label>{{localize "SCENEFORGE.Folders.Dest"}}</label>
       <select name="destFolder">
-        <option value="">{{localize "SCENEFORGE.Folders.DestNone"}}</option>
+        <option value="">{{newDestName}}</option>
         {{#each allFolders}}
         <option value="{{id}}" {{#if (eq id ../destFolder)}}selected{{/if}}>{{name}}</option>
         {{/each}}
